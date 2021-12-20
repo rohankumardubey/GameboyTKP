@@ -1,5 +1,7 @@
 # GameboyTKP
 Gameboy emulator written in C++ for [TKPEmu](https://github.com/OFFTKP/TKPEmu).
+
+This emulator can be integrated into other projects. Check `example_main.cpp` for an example.
 ## Features
  - Customizable palette
  - Disassembler/Debugger with step/reset/pause functionality
