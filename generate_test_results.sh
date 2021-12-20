@@ -1,6 +1,7 @@
 #!/bin/sh
 if (( $# != 3 )); then
-    >&2 echo "Correct syntax: generate_test_results (TKPEmu path) (blargg tests directory) (mooneye-gb tests directory)"
+    echo "This script requires TKPEmu: https://github.com/OFFTKP/TKPEmu"
+    >&2 echo "Correct syntax: ./generate_test_results.sh (TKPEmu path) (blargg tests directory) (mooneye-gb tests directory)"
     exit
 fi
 
