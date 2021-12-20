@@ -19,11 +19,11 @@ This emulator can be integrated into other projects. Check `example_main.cpp` fo
 See generated test results [here](./TEST_RESULTS.md).    
 Always generate new test results before pushing a commit when changing the code.
 
------
 **[mattcurie](https://github.com/mattcurrie)'s tests:**
 |Test|GameboyTKP  |
 |--|--|
 | dmg-acid2 | ❌ (Milestone [#1](https://github.com/OFFTKP/TKPEmu/milestone/1)) |
 
----
-[License](./LICENSE)
+## License
+TKPEmu is licensed under the MIT license    
+Copyright (C) 2021-2021 Paris Oplopoios
