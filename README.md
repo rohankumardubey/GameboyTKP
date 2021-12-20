@@ -25,5 +25,5 @@ Always generate new test results before pushing a commit when changing the code.
 |--|--|
 | dmg-acid2 | ❌ (Milestone [#1](https://github.com/OFFTKP/TKPEmu/milestone/1)) |
 
-## License
-See [TKPEmu](https://github.com/OFFTKP/TKPEmu) license
+---
+[License](./LICENSE)
