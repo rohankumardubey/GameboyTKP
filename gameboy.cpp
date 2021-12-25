@@ -236,7 +236,7 @@ namespace TKPEmu::Gameboy {
 	}
 	std::string Gameboy::print() const { 
 		return "GameboyTKP for TKPEmu\n"
-		       "Read more: https://github.com/OFFTKP/TKPEmu/tree/master/TKPEmu/gb_tkp";
+		       "Read more: https://github.com/OFFTKP/TKPEmu/tree/master/TKPEmu/GameboyTKP";
 	}
 	void Gameboy::HandleKeyDown(SDL_Keycode key) {
 		if (auto it_dir = std::find(direction_keys_.begin(), direction_keys_.end(), key); it_dir != direction_keys_.end()) {

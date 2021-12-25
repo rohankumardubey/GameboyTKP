@@ -25,4 +25,4 @@ echo "Testing mooneye directory $mooneye"
 # Generate mooneye tests
 $emu -T $mooneye -r -p -g -G $outf
 echo "-----" >> $outf
-echo "To generate these test results, use generate_test_results.sh in /gb_tkp/" >> $outf
+echo "To generate these test results, use generate_test_results.sh in /GameboyTKP/" >> $outf

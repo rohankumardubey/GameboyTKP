@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
-project(gb_tkp)
+project(GameboyTKP)
 file(GLOB SRC_FILES "*.cpp")
 file(GLOB HDR_FILES "*.h")
-add_library(gb_tkp ${HDR_FILES} ${SRC_FILES})
+add_library(GameboyTKP ${HDR_FILES} ${SRC_FILES})
