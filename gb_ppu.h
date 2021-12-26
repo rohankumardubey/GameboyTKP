@@ -17,6 +17,7 @@ namespace TKPEmu::Gameboy::Devices {
 		void Reset();
         int CalcCycles();
 		float* GetScreenData();
+		void FillTileset(float* pixels, uint16_t addr = 0x8000);
 	private:
 		Bus* bus_;
 		std::mutex* draw_mutex_;

@@ -1,5 +1,6 @@
 #include "gb_ppu.h"
 #include "../glad/glad/glad.h"
+#include <iostream>
 
 namespace TKPEmu::Gameboy::Devices {
 	PPU::PPU(Bus* bus, std::mutex* draw_mutex) : bus_(bus), draw_mutex_(draw_mutex), next_stat_mode(bus->NextMode),
@@ -293,6 +294,27 @@ namespace TKPEmu::Gameboy::Devices {
 						screen_color_data_[idx++] = bus_->Palette[color][1];
 						screen_color_data_[idx++] = bus_->Palette[color][2];
 						screen_color_data_[idx] = 255;
+					}
+				}
+			}
+		}
+	}
+	void PPU::FillTileset(float* pixels, uint16_t addr) {
+		for (int y_ = 0; y_ < 16; ++y_) {
+			for (int x_ = 0; x_ < 16; ++x_) {
+				for (size_t i = 0; i < 16; i += 2) {
+					uint16_t curr_addr = 0x8000 + i + x_ * 16 + y_ * 256;
+					uint8_t data1 = bus_->Read(curr_addr);
+					uint8_t data2 = bus_->Read(curr_addr + 1);
+					int x = (i / 16) * 8 + x_ * 8;
+					int y = i / 2 + y_ * 8;
+					size_t start_idx = y * 256 * 4 + x * 4;
+					for (size_t j = 0; j < 8; j++) {
+						int color = (((data1 >> (7 - j)) & 0b1) << 1) + ((data2 >> (7 - j)) & 0b1);
+						pixels[start_idx + (j * 4) + 0] = bus_->Palette[color][0];
+						pixels[start_idx + (j * 4) + 1] = bus_->Palette[color][1];
+						pixels[start_idx + (j * 4) + 2] = bus_->Palette[color][2];
+						pixels[start_idx + (j * 4) + 3] = 255.0f;
 					}
 				}
 			}

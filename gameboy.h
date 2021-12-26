@@ -40,6 +40,7 @@ namespace TKPEmu::Gameboy {
 		GameboyPalettes& GetPalette();
 		Cartridge* GetCartridge();
 		CPU& GetCPU() { return cpu_; }
+		PPU& GetPPU() { return ppu_; }
 		std::vector<GameboyBreakpoint> Breakpoints{};
 		std::vector<DisInstr> Instructions{};
 	private:

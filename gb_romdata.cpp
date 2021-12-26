@@ -1,10 +1,35 @@
 #include "gb_romdata.h"
+#include <iostream>
+
 namespace TKPEmu::Applications {
     GameboyRomData::GameboyRomData(std::string menu_title, std::string window_title) 
         : IMApplication(menu_title, window_title) 
     {
         min_size = ImVec2(400, 400);
         max_size = ImVec2(500, 400);
+        image_data_.resize(256 * 256 * 4);
+        glGenTextures(1, &texture_);
+        glBindTexture(GL_TEXTURE_2D, texture_);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glBindTexture(GL_TEXTURE_2D, texture_);
+		glTexImage2D(
+			GL_TEXTURE_2D,
+			0,
+			GL_RGBA,
+			256,
+		    256,
+			0,
+			GL_RGBA,
+			GL_FLOAT,
+			NULL
+		);
+		glBindTexture(GL_TEXTURE_2D, 0);
+    }
+    GameboyRomData::~GameboyRomData() {
+        glDeleteTextures(1, &texture_);
     }
     void GameboyRomData::v_draw() {
         if (ImGui::BeginTabBar("RomDataTabs", ImGuiTabBarFlags_None)) {
@@ -13,6 +38,7 @@ namespace TKPEmu::Applications {
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Tilesets")) {
+                draw_tilesets();
                 ImGui::EndTabItem();
             }
             ImGui::EndTabBar();
@@ -38,5 +64,28 @@ namespace TKPEmu::Applications {
         if (hashed) {
             ImGui::InputText("emulator_results.h hash", result.data(), result.length(), ImGuiInputTextFlags_ReadOnly);
         }
+    }
+    void GameboyRomData::draw_tilesets() {
+        ImGui::Image((void*)(intptr_t)texture_, ImVec2(256, 256));
+        if (ImGui::Button("test")) {
+            update_tilesets();
+        }
+    }
+    void GameboyRomData::update_tilesets() {
+        Gameboy* gb = static_cast<Gameboy*>(emulator_);
+        gb->GetPPU().FillTileset(image_data_.data());
+        glBindTexture(GL_TEXTURE_2D, texture_);
+        glTexSubImage2D(
+            GL_TEXTURE_2D,
+            0,
+            0,
+            0,
+            256,
+            256,
+            GL_RGBA,
+            GL_FLOAT,
+            image_data_.data()
+        );
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 }
