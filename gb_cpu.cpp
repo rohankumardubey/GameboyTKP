@@ -8,8 +8,7 @@ namespace TKPEmu::Gameboy::Devices {
 		timer_(timer),
 		IF(bus->GetReference(0xFF0F)),
 		IE(bus->GetReference(0xFFFF)),
-		LY(bus->GetReference(0xFF44)),
-		JOYP(bus->GetReference(0xFF00))
+		LY(bus->GetReference(0xFF44))
 	{
 		A = 0; B = 0; C = 0; D = 0; E = 0; H = 0; L = 0;
 		F = 0; SP = 0; PC = 0; ime_ = true;
@@ -2265,7 +2264,6 @@ namespace TKPEmu::Gameboy::Devices {
 		TotalClocks = 0;
 		halt_ = false; stop_ = false;
 		ime_ = false; ime_scheduled_ = false;
-		JOYP = 0b1110'1111;
 	}
 	int CPU::Update() {
 		tTemp = 0;

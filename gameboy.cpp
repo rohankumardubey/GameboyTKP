@@ -35,7 +35,7 @@ namespace TKPEmu::Gameboy {
 	}
 	void Gameboy::v_log_state() {
 		*ofstream_ptr_ << std::setfill('0');
-		int inst = bus_.ReadSafe(cpu_.PC);
+		int inst = bus_.Read(cpu_.PC);
 		std::cout << std::hex << (int)cpu_.PC << " " << std::hex << inst << std::endl;
 		for (const auto& t : *log_types_ptr_) {
 			switch (t) {
@@ -302,7 +302,7 @@ namespace TKPEmu::Gameboy {
 		if (bp.PC_using) { register_checks.push_back([this, gbbp = bp.PC_value]() { return cpu_.PC == gbbp; }); }
 		if (bp.SP_using) { register_checks.push_back([this, gbbp = bp.SP_value]() { return cpu_.SP == gbbp; }); }
 		if (bp.SP_using) { register_checks.push_back([this, gbbp = bp.SP_value]() { return cpu_.SP == gbbp; }); }
-		if (bp.Ins_using) { register_checks.push_back([this, gbbp = bp.Ins_value]() { return (bus_.ReadSafe(cpu_.PC)) == gbbp; }); }
+		if (bp.Ins_using) { register_checks.push_back([this, gbbp = bp.Ins_value]() { return (bus_.Read(cpu_.PC)) == gbbp; }); }
 		if (bp.Clocks_using) { register_checks.push_back([this, gbbp = bp.Clocks_value]() { return cpu_.TotalClocks == gbbp; }); }
 		auto lamb = [rc = std::move(register_checks)]() {
 			for (auto& check : rc) {

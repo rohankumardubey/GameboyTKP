@@ -205,17 +205,14 @@ namespace TKPEmu::Gameboy::Devices {
 	}
 
 	uint8_t Bus::Read(uint16_t address) {
-		return ReadSafe(address);
-	}
-	uint8_t Bus::ReadSafe(uint16_t address) {
-		// ReadSafe does not alter the machine state
 		switch(address) {
 			case addr_joy: {
-				if (action_key_mode_) { 
-					return ActionKeys;
-				} else {
-					return DirectionKeys;
+				uint8_t res = ~(ActionKeys & DirectionKeys) & 0b00001111;
+				if (!res) {
+					// No key is currently pressed, return 0xCF
+					return 0b1100'1111;
 				}
+				return action_key_mode_ ? ActionKeys : DirectionKeys;
 			}
 		}
 		uint8_t read = redirect_address(address);
@@ -365,7 +362,7 @@ namespace TKPEmu::Gameboy::Devices {
 	void Bus::Reset() {
 		SoftReset();
 		for (auto& rom : rom_banks_) {
-			rom.fill(0);
+			rom.fill(0xFF);
 		}	
 	}
 	void Bus::SoftReset() {
@@ -375,6 +372,8 @@ namespace TKPEmu::Gameboy::Devices {
 		hram_.fill(0);
 		oam_.fill(0);
 		vram_.fill(0);
+		DirectionKeys = 0b1110'1111;
+        ActionKeys = 0b1101'1111;
 		selected_rom_bank_ = 1;
 		selected_ram_bank_ = 0;
 		BiosEnabled = true;
@@ -395,7 +394,7 @@ namespace TKPEmu::Gameboy::Devices {
 				auto index = dma_index_ + i;
 				if (index < oam_.size() + 1) {
 					uint16_t source = dma_offset_ | index;
-					oam_[index] = ReadSafe(source);	
+					oam_[index] = Read(source);	
 				} else {
 					dma_transfer_ = false;
 					return;
