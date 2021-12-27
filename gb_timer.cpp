@@ -1,4 +1,5 @@
 #include "gb_timer.h"
+#include <iostream>
 namespace TKPEmu::Gameboy::Devices {
     Timer::Timer(Bus* bus) : 
         bus_(bus), 
@@ -17,13 +18,26 @@ namespace TKPEmu::Gameboy::Devices {
         timer_counter_ = 0;
 		div_reset_index_ = 0;
 		tima_overflow_ = false;
+		just_overflown_ = false;
     }
     bool Timer::Update(uint8_t cycles, uint8_t old_if) {
+		if (just_overflown_) {
+			// Passes tima_write_reloading
+			// If TIMA is written while cycle [B] (check cycle accurate docs) TMA is written instead
+			if (bus_->TIMAChanged) {
+				TIMA = TMA;
+			}
+			if (bus_->TMAChanged) {
+				TIMA = TMA;
+			}
+		}
+		just_overflown_ = false;
 		bool enabled = TAC & 0b100;
         if (tima_overflow_) {
 			// TIMA might've changed in this strange cycle (see the comment below)
 			// If it changes in that cycle, it doesn't update to be equal to TMA
 			if (TIMA == 0) {
+				just_overflown_ = true;
 				TIMA = TMA;
 				// If this isn't true, IF has changed during this instruction so the new value persists
 				if (IF == old_if) {

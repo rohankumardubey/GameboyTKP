@@ -242,6 +242,8 @@ namespace TKPEmu::Gameboy::Devices {
 			handle_mbc(address, data);
 		}
 		else {
+			TIMAChanged = false;
+			TMAChanged = false;
 			switch (address) {
 				case addr_std: {
 					// TODO: implement serial
@@ -279,7 +281,6 @@ namespace TKPEmu::Gameboy::Devices {
 					}
 					break;
 				}
-
 				// Any unused bits in these registers are set, passes unused_hwio-GS.gb test (mooneye)
 				case addr_div: {
 					DIVReset = true;
@@ -288,6 +289,14 @@ namespace TKPEmu::Gameboy::Devices {
 				case addr_tac: {
 					TACChanged = true;
 					data |= 0b1111'1000;
+					break;
+				}
+				case addr_tim: {
+					TIMAChanged = true;
+					break;
+				}
+				case addr_tma: {
+					TMAChanged = true;
 					break;
 				}
 				case addr_joy: {

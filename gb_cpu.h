@@ -100,6 +100,7 @@ namespace TKPEmu::Gameboy::Devices {
 		void execute_interrupt(int bit);
 		void update_timers(int cycles);
 		int get_clk_freq();
+		void setup_hwio();
 
 	public:
 		CPU(Bus* bus, PPU* ppu, Timer* timer);

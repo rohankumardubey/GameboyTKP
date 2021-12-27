@@ -66,6 +66,8 @@ namespace TKPEmu::Gameboy::Devices {
         std::array<uint8_t, 4> OBJ1Palette{};
         bool DIVReset = false;
         bool TACChanged = false;
+        bool TMAChanged = false;
+        bool TIMAChanged = false;
         bool WriteToVram = false;
         uint8_t NextMode = 0;
         uint8_t DirectionKeys = 0b1110'1111;
