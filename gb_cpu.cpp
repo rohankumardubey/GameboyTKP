@@ -1159,7 +1159,9 @@ namespace TKPEmu::Gameboy::Devices {
 	}
 	void CPU::CALL16() {
 		SP -= 2;
-		bus_->WriteL(SP, PC + 2);
+		bus_->Write(SP, (PC + 2) & 0xFF);
+		write(SP + 1, (PC + 2) >> 8);
+		//bus_->WriteL(SP, PC + 2);
 		PC = bus_->ReadL(PC);
 		tTemp = 24;
 	}
