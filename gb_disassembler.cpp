@@ -33,6 +33,7 @@ namespace TKPEmu::Applications {
         }
     }
     void GameboyDisassembler::v_draw() {
+		std::lock_guard<std::mutex> lg(emulator_->DebugUpdateMutex);
         static Gameboy* gameboy = static_cast<Gameboy*>(emulator_);
         bool bp_add_popup = false;
         int goto_pc = -1;
@@ -143,14 +144,12 @@ namespace TKPEmu::Applications {
                             if (gameboy->Paused.load()) {
                                 sel_map_[row_n].flip();
                                 if (sel_map_[row_n]) {
-					                std::lock_guard<std::mutex> lg(emulator_->DebugUpdateMutex);
                                     GBBPArguments bp_arg;
                                     bp_arg.PC_using = true;
                                     bp_arg.PC_value = ins.InstructionProgramCode;
                                     gameboy->AddBreakpoint(bp_arg);
                                 }
                                 else {
-					                std::lock_guard<std::mutex> lg(emulator_->DebugUpdateMutex);
                                     auto it = std::find_if(
                                         std::execution::par_unseq,
                                         gameboy->Breakpoints.begin(),

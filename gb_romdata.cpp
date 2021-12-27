@@ -30,6 +30,7 @@ namespace TKPEmu::Applications {
         glDeleteTextures(1, &texture_);
     }
     void GameboyRomData::v_draw() {
+		std::lock_guard<std::mutex> lg(emulator_->DebugUpdateMutex);
         if (ImGui::BeginTabBar("RomDataTabs", ImGuiTabBarFlags_None)) {
             if (ImGui::BeginTabItem("Info")) {
                 draw_info();
