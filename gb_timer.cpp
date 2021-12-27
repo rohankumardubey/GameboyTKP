@@ -16,7 +16,6 @@ namespace TKPEmu::Gameboy::Devices {
         TMA = 0;
         oscillator_ = 0;
         timer_counter_ = 0;
-		div_reset_index_ = 0;
 		tima_overflow_ = false;
 		just_overflown_ = false;
     }
@@ -24,10 +23,7 @@ namespace TKPEmu::Gameboy::Devices {
 		if (just_overflown_) {
 			// Passes tima_write_reloading
 			// If TIMA is written while cycle [B] (check cycle accurate docs) TMA is written instead
-			if (bus_->TIMAChanged) {
-				TIMA = TMA;
-			}
-			if (bus_->TMAChanged) {
+			if (bus_->TIMAChanged || bus_->TMAChanged) {
 				TIMA = TMA;
 			}
 		}
@@ -49,34 +45,22 @@ namespace TKPEmu::Gameboy::Devices {
         int freq = interr_times_[TAC & 0b11];
 		if (bus_->DIVReset) {
 			bus_->DIVReset = false;
-			if (div_reset_index_ >= freq / 2) {
-				TIMA++;
-			}
 			oscillator_ = 0;
 			timer_counter_ = 0;
-			div_reset_index_ = -1;
 		}
 		oscillator_ += cycles;
 		// Divider always equals the top 8 bits of the oscillator
 		DIV = oscillator_ >> 8;
-		if (div_reset_index_ != -1)
-			div_reset_index_ += cycles;
-		if (div_reset_index_ > freq) {
-			TIMA++;
-			div_reset_index_ = -1;
-		}
 		if (enabled) {
 			timer_counter_ += cycles;
 			while (timer_counter_ >= freq) {
 				timer_counter_ -= freq;
-				//timer_counter_ = get_clk_freq();
 				if (TIMA == 0xFF) {
 					// After TIMA overflows, it stays 00 for 1 clock and *then* becomes =TMA
 					TIMA = 0;
 					tima_overflow_ = true;
 					return true;
-				}
-				else {
+				} else {
 					TIMA++;
 				}
 			}
