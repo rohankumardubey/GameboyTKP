@@ -227,13 +227,25 @@ namespace TKPEmu::Gameboy::Devices {
 		}
 	}
 	void CPU::conditional_jump(bool condition) {
-		tTemp = 12;
 		if (condition) {
 			delay();
 			PC = bus_->ReadL(PC);
 			tTemp = 16;
 		} else {
 			PC += 2;
+			tTemp = 12;
+		}
+	}
+	void CPU::conditional_call(bool condition) {
+		if (condition) {
+			SP -= 2;
+			bus_->Write(SP, (PC + 2) & 0xFF);
+			write(SP + 1, (PC + 2) >> 8);
+			PC = bus_->ReadL(PC);
+			tTemp = 24;
+		} else {
+			PC += 2;
+			tTemp = 12;
 		}
 	}
 	void CPU::rst(RegisterType addr) {
@@ -1161,57 +1173,20 @@ namespace TKPEmu::Gameboy::Devices {
 		SP -= 2;
 		bus_->Write(SP, (PC + 2) & 0xFF);
 		write(SP + 1, (PC + 2) >> 8);
-		//bus_->WriteL(SP, PC + 2);
 		PC = bus_->ReadL(PC);
 		tTemp = 24;
 	}
 	void CPU::CALLNZ16() {
-		if (!(F & FLAG_ZERO_MASK)) {
-			SP -= 2;
-			bus_->WriteL(SP, PC + 2);
-			PC = bus_->ReadL(PC);
-			tTemp = 24;
-		}
-		else {
-			PC += 2;
-			tTemp = 12;
-		}
+		conditional_call(!(F & FLAG_ZERO_MASK));
 	}
 	void CPU::CALLZ16() {
-		if ((F & 0x80) == 0x80) {
-			SP -= 2;
-			bus_->WriteL(SP, PC + 2);
-			PC = bus_->ReadL(PC);
-			tTemp = 24;
-		}
-		else {
-			PC += 2;
-			tTemp = 12;
-		}
+		conditional_call(F & FLAG_ZERO_MASK);
 	}
 	void CPU::CALLNC16() {
-		if ((F & 0x10) == 0x00) {
-			SP -= 2;
-			bus_->WriteL(SP, PC + 2);
-			PC = bus_->ReadL(PC);
-			tTemp = 24;
-		}
-		else {
-			PC += 2;
-			tTemp = 12;
-		}
+		conditional_call(!(F & FLAG_CARRY_MASK));
 	}
 	void CPU::CALLC16() {
-		if ((F & 0x10) == 0x10) {
-			SP -= 2;
-			bus_->WriteL(SP, PC + 2);
-			PC = bus_->ReadL(PC);
-			tTemp = 24;
-		}
-		else {
-			PC += 2;
-			tTemp = 12;
-		}
+		conditional_call(F & FLAG_CARRY_MASK);
 	}
 	void CPU::LDSP16() {
 		SP = bus_->ReadL(PC);

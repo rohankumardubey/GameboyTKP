@@ -96,6 +96,7 @@ namespace TKPEmu::Gameboy::Devices {
 		void delay_dur(uint8_t dur);
 		void conditional_jump_rel(bool condition);
 		void conditional_jump(bool condition);
+		void conditional_call(bool condition);
 		void rst(RegisterType addr);
 		void handle_interrupts();
 		void execute_interrupt(int bit);
