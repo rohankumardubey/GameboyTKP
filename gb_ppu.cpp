@@ -299,16 +299,16 @@ namespace TKPEmu::Gameboy::Devices {
 			}
 		}
 	}
-	void PPU::FillTileset(float* pixels, uint16_t addr) {
+	void PPU::FillTileset(float* pixels, size_t x_off, size_t y_off, uint16_t addr) {
 		for (int y_ = 0; y_ < 16; ++y_) {
 			for (int x_ = 0; x_ < 16; ++x_) {
 				for (size_t i = 0; i < 16; i += 2) {
-					uint16_t curr_addr = 0x8000 + i + x_ * 16 + y_ * 256;
+					uint16_t curr_addr = addr + i + x_ * 16 + y_ * 256;
 					uint8_t data1 = bus_->Read(curr_addr);
 					uint8_t data2 = bus_->Read(curr_addr + 1);
-					int x = (i / 16) * 8 + x_ * 8;
+					int x = ((i / 16) + x_) * 8;
 					int y = i / 2 + y_ * 8;
-					size_t start_idx = y * 256 * 4 + x * 4;
+					size_t start_idx = y * 256 * 4 + x * 4 + x_off * 4 + y_off * 256 * 4;
 					for (size_t j = 0; j < 8; j++) {
 						int color = (((data1 >> (7 - j)) & 0b1) << 1) + ((data2 >> (7 - j)) & 0b1);
 						pixels[start_idx + (j * 4) + 0] = bus_->Palette[color][0];

@@ -2,6 +2,7 @@
 #ifndef TKPEMU_GB_ROMDATA_H
 #define TKPEMU_GB_ROMDATA_H
 #include <string>
+#include <chrono>
 #include "../include/base_application.h"
 #include "gameboy.h"
 #include "gb_cartridge.h"
@@ -17,8 +18,10 @@ namespace TKPEmu::Applications {
         void draw_info();
         void draw_tilesets();
         void update_tilesets();
+        bool texture_cached_ = false;
         GLuint texture_;
         std::vector<float> image_data_;
+        std::chrono::high_resolution_clock::time_point clock_a = std::chrono::high_resolution_clock::now();
     };
 }
 #endif

@@ -1,13 +1,11 @@
 #include "gb_romdata.h"
-#include <iostream>
-
 namespace TKPEmu::Applications {
     GameboyRomData::GameboyRomData(std::string menu_title, std::string window_title) 
         : IMApplication(menu_title, window_title) 
     {
         min_size = ImVec2(400, 400);
         max_size = ImVec2(500, 400);
-        image_data_.resize(256 * 256 * 4);
+        image_data_.resize(256 * 128 * 4);
         glGenTextures(1, &texture_);
         glBindTexture(GL_TEXTURE_2D, texture_);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -20,7 +18,7 @@ namespace TKPEmu::Applications {
 			0,
 			GL_RGBA,
 			256,
-		    256,
+		    128,
 			0,
 			GL_RGBA,
 			GL_FLOAT,
@@ -66,14 +64,25 @@ namespace TKPEmu::Applications {
         }
     }
     void GameboyRomData::draw_tilesets() {
-        ImGui::Image((void*)(intptr_t)texture_, ImVec2(256, 256));
-        if (ImGui::Button("test")) {
+        ImGui::Image((void*)(intptr_t)texture_, ImVec2(256, 128));
+        if (!texture_cached_) {
             update_tilesets();
+            texture_cached_ = true;
+            clock_a = std::chrono::high_resolution_clock::now();
+        } else {
+            if (!emulator_->Paused) {
+                std::chrono::high_resolution_clock::time_point clock_b = std::chrono::high_resolution_clock::now();
+                auto seconds = std::chrono::duration_cast<std::chrono::seconds>(clock_b - clock_a).count();
+                if (seconds >= 1) {
+                    texture_cached_ = false;
+                }
+            }
         }
     }
     void GameboyRomData::update_tilesets() {
         Gameboy* gb = static_cast<Gameboy*>(emulator_);
         gb->GetPPU().FillTileset(image_data_.data());
+        gb->GetPPU().FillTileset(image_data_.data(), 128, 0, 0x8800);
         glBindTexture(GL_TEXTURE_2D, texture_);
         glTexSubImage2D(
             GL_TEXTURE_2D,
@@ -81,7 +90,7 @@ namespace TKPEmu::Applications {
             0,
             0,
             256,
-            256,
+            128,
             GL_RGBA,
             GL_FLOAT,
             image_data_.data()
