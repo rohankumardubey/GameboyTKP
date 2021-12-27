@@ -1,6 +1,6 @@
 #include "gb_cpu.h"
-#include <stdexcept>
-#include <iostream>
+#include <cmath>
+
 namespace TKPEmu::Gameboy::Devices {
 	CPU::CPU(Bus* bus, PPU* ppu, Timer* timer) :
 		bus_(bus),
@@ -2291,8 +2291,24 @@ namespace TKPEmu::Gameboy::Devices {
 	void CPU::execute_interrupt(int bit) {
 		ime_ = false;
 		ime_scheduled_ = false;
+		uint8_t old_if = IF;
 		IF &= ~(1U << bit);
 		rst(0x40 + bit * 0x8);
+		// ie_push special behavior
+		// When IE is changed during upper byte push, the ISR
+		// acts differently
+		if ((SP + 1) == 0xFFFF) {
+			// Only if SP + 1 == 0xFFFF is this bug possible
+			// if SP == 0xFFFF it's not fast enough to change IE
+			PC = 0;
+			IF = old_if;
+			uint8_t other_interrupt = IF & IE & 0x1F;
+			if (other_interrupt) {
+				// If during this bug there is another interrupt queued,
+				// we execute the other interrupt instead
+				execute_interrupt(log2(other_interrupt));
+			}
+		}
 		tTemp = 20;
 		if (halt_) {
 			tTemp = 24;
