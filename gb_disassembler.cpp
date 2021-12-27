@@ -286,6 +286,10 @@ namespace TKPEmu::Applications {
             }
             ImGui::Text("HALT: %lu", t.halt_); ImGui::SameLine(); ImGui::Text("IME: %lu", t.ime_);
             ImGui::Text("Clocks: %lu", t.TotalClocks);
+            if (ImGui::Button("Unhalt")) {
+                static_cast<Gameboy*>(emulator_)->GetCPU().halt_ = false;
+                static_cast<Gameboy*>(emulator_)->GetCPU().ime_ = false;
+            }
             ImGui::Checkbox("Hex", &use_hex);
             ImGui::EndChild();
             // TODO: add switch from hex to binary on every textbox here

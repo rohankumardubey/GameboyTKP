@@ -67,7 +67,7 @@ namespace TKPEmu::Gameboy::Devices {
 		}
 	}
 	void PPU::Reset() {
-		LY = 0x90;
+		LY = 0x0;
 		LCDC = 0b1001'0001;
 		STAT = 0b1000'0000;
 		next_stat_mode = 3;

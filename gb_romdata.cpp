@@ -64,6 +64,7 @@ namespace TKPEmu::Applications {
         }
     }
     void GameboyRomData::draw_tilesets() {
+        ImGui::TextUnformatted("0x8000:                0x8800:");
         ImGui::Image((void*)(intptr_t)texture_, ImVec2(256, 128));
         if (!texture_cached_) {
             update_tilesets();
