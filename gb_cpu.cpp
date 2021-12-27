@@ -1306,6 +1306,7 @@ namespace TKPEmu::Gameboy::Devices {
 	}
 	void CPU::LDH8A() {
 		write(0xFF00 + bus_->Read(PC), A);
+		delay();
 		PC++;
 		tTemp = 12;
 	}

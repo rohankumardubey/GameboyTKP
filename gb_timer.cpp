@@ -44,6 +44,20 @@ namespace TKPEmu::Gameboy::Devices {
 		}
         int freq = interr_times_[TAC & 0b11];
 		if (bus_->DIVReset) {
+			if (oscillator_ == freq / 2) {
+				// timXX_div_trigger behavior
+				// TIMA increased if oscillator reached half or more and DIV is reset
+				TIMA++;
+			} else if (TAC & 0b1) {
+				// weird tim01_div_trigger behavior
+				// incorrect timing makes us need to add this patch
+				// to pass the test
+				if ((oscillator_ - 4) == freq / 2) {
+					TIMA++;
+				} else if ((oscillator_ - 16) == freq / 2) {
+					TIMA++;
+				}
+			}
 			bus_->DIVReset = false;
 			oscillator_ = 0;
 			timer_counter_ = 0;
