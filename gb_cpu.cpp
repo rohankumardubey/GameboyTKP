@@ -2320,6 +2320,7 @@ namespace TKPEmu::Gameboy::Devices {
 		if (halt_) {
 			tTemp = 24;
 		}
+		delay_dur(tTemp);
 	}
 	// Delayed read function
 	uint8_t CPU::read(uint16_t addr) {
@@ -2336,14 +2337,17 @@ namespace TKPEmu::Gameboy::Devices {
 	/// The first read/write function of each instruction does not seem to need to be delayed
 	void CPU::delay() {
 		tRemove += 4;
-		bus_->TransferDMA(4);
-		if (timer_->Update(4, IF)) {
+		delay_dur(4);
+	}
+	void CPU::delay_dur(uint8_t dur) {
+		bus_->TransferDMA(dur);
+		if (timer_->Update(dur, IF)) {
 			if (halt_) {
 				halt_ = false;
 				skip_next_ = true;
 			}
 		}
-		ppu_->Update(4);
+		ppu_->Update(dur);
 	}
 	// Sets hardware registers to correct values
 	void CPU::setup_hwio() {

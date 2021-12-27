@@ -93,6 +93,7 @@ namespace TKPEmu::Gameboy::Devices {
 		uint8_t read(uint16_t addr);
 		void write(uint16_t addr, uint8_t val);
 		void delay();
+		void delay_dur(uint8_t dur);
 		void conditional_jump_rel(bool condition);
 		void conditional_jump(bool condition);
 		void rst(RegisterType addr);
