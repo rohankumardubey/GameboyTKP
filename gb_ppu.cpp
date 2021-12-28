@@ -67,6 +67,12 @@ namespace TKPEmu::Gameboy::Devices {
 		}
 	}
 	void PPU::Reset() {
+		for (int i = 0; i < (screen_color_data_.size() - 4); i += 4) {
+			screen_color_data_[i + 0] = bus_->Palette[0][0];
+			screen_color_data_[i + 1] = bus_->Palette[0][1];
+			screen_color_data_[i + 2] = bus_->Palette[0][2];
+			screen_color_data_[i + 3] = 255.0f;
+		}
 		LY = 0x0;
 		LCDC = 0b1001'0001;
 		STAT = 0b1000'0000;

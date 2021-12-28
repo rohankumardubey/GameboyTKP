@@ -40,13 +40,17 @@ namespace TKPEmu::Applications {
                 draw_tilesets();
                 ImGui::EndTabItem();
             }
+            if (ImGui::BeginTabItem("Draw options")) {
+
+                ImGui::EndTabItem();
+            }
             ImGui::EndTabBar();
         }
     }
     void GameboyRomData::draw_info() {
         Gameboy* gb_ptr = static_cast<Gameboy*>(emulator_);
         ImGui::TextUnformatted("Filename: "); ImGui::SameLine(); ImGui::TextUnformatted(gb_ptr->CurrentFilename.c_str());
-        ImGui::TextUnformatted(gb_ptr->GetCartridge()->GetHeaderText());
+        ImGui::Text(gb_ptr->GetCartridge()->GetHeaderText());
         //ImGui::TextUnformatted("Mapper: "); ImGui::SameLine(); ImGui::TextUnformatted(gb_ptr->GetCartridge()->GetCartridgeTypeName());
         ImGui::InputText("Rom hash", gb_ptr->RomHash.data(), gb_ptr->RomHash.length(), ImGuiInputTextFlags_ReadOnly);
         static bool hashed = false;
@@ -66,7 +70,7 @@ namespace TKPEmu::Applications {
         }
     }
     void GameboyRomData::draw_tilesets() {
-        ImGui::TextUnformatted("0x8000:                0x8800:");
+        ImGui::TextUnformatted("0x8000:              0x8800:");
         ImGui::Image((void*)(intptr_t)texture_, ImVec2(256, 128));
         if (!texture_cached_) {
             update_tilesets();

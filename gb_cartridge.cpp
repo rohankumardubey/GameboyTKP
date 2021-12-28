@@ -30,11 +30,6 @@ namespace TKPEmu::Gameboy::Devices {
 					}
 					break;
 				}
-				default: {
-					// TODO: better error or implement all cartridge types, quit emulator instead of exiting
-					// std::cerr << "Error: Cartridge type not implemented - " << static_cast<int>(ct) << std::endl;
-					//exit(1);
-				}
 			}
 			is.close();
 			// Empty init the rambanks
@@ -108,9 +103,6 @@ namespace TKPEmu::Gameboy::Devices {
 					cgb_type = "Supports GBC";
 				}
 				// TODO: what is pgb mode? Values with Bit 7 set, and either Bit 2 or 3 set, will switch the Game Boy into a special non-CGB-mode called “PGB mode”.
-			} else {
-				name += header_.manufacturer;
-				name += header_.gameboyColor;
 			}
 			std::string licensee = GetLicenseeNew();
 			std::string sgb = "No";
