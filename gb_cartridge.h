@@ -24,9 +24,6 @@ namespace TKPEmu::Gameboy::Devices {
 		MBC3 = 0x11,
 		MBC3_RAM = 0x12,
 		MBC3_RAM_BATTERY = 0x13,
-		MBC4 = 0x15,
-		MBC4_RAM = 0x16,
-		MBC4_RAM_BATTERY = 0x17,
 		MBC5 = 0x19,
 		MBC5_RAM = 0x1A,
 		MBC5_RAM_BATTERY = 0x1B,
@@ -40,28 +37,38 @@ namespace TKPEmu::Gameboy::Devices {
 		HuC3 = 0xFE,
 		HuC1_RAM_BATTERY = 0xFF
 	};
+	struct Header {
+		// 0x4 bytes is the entry point, 0x30 bytes is nintendo
+		char unusedData[0x34];
+		char name[0xB];
+		char manufacturer[0x4];
+		char gameboyColor;
+		char newLicenseeCode[0x2];
+		char sgbFlag;
+		char cartridgeType;
+		char romSize;
+		char ramSize;
+		char destinationCode;
+		char oldLicenseeCode;
+		char romVersionNumber;
+		char headerChecksum;
+		char globalChecksum[2];
+	};
 	class Cartridge {
 	private:
-		struct Header {
-			char unusedData1[0x34];
-			char name[14];
-			char gameboyColor;
-			char unusedData2[4];
-			char cartridgeType;
-			char romSize;
-			char ramSize;
-			char unusedData3[6];
-		} header_;
+		Header header_;
+		int k = sizeof(header_);
 		static constexpr std::array<int, 6> ram_sizes_ { 0, 0, 1, 4, 16, 8 };
-		bool loaded;
+		bool text_cached_ = false;
 	public:
 		void Load(const std::string& fileName, std::vector<std::array<uint8_t, 0x4000>>& romBanks, std::vector<std::array<uint8_t, 0x2000>>& ramBanks);
-		CartridgeType GetCartridgeType() const;
-		int GetRamSize() const;
-		int GetRomSize() const;
-		bool IsGameboyColor() const;
-		const char* GetCartridgeTypeName() const;
-		const char* GetCartridgeName() const;
+		CartridgeType GetCartridgeType();
+		int GetRamSize();
+		int GetRomSize();
+		const char* GetCartridgeTypeName();
+		const char* GetHeaderText();
+		std::string GetLicenseeNew();
+		std::string GetLicenseeOld();
 	};
 }
 #endif
