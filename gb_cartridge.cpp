@@ -16,6 +16,12 @@ namespace TKPEmu::Gameboy::Devices {
 			is.seekg(0, std::ios_base::beg);
 			auto ct = GetCartridgeType();
 			switch (ct) {
+				case CartridgeType::MBC2:
+				case CartridgeType::MBC2_BATTERY: {
+					// MBC2 always has 4 ram banks
+					header_.ramSize = 4;
+					[[fallthrough]];
+				}
 				case CartridgeType::ROM_ONLY:
 				case CartridgeType::MBC1:
 				case CartridgeType::MBC1_RAM:
@@ -70,6 +76,12 @@ namespace TKPEmu::Gameboy::Devices {
 			}
 			case CartridgeType::MBC1_RAM_BATTERY: {
 				return "MBC1 w/ RAM, BATTERY";
+			}
+			case CartridgeType::MBC2: {
+				return "MBC2";
+			}
+			case CartridgeType::MBC2_BATTERY: {
+				return "MBC2 w/ BATTERY";
 			}
 			case CartridgeType::MBC3: {
 				return "MBC3";
@@ -130,6 +142,8 @@ namespace TKPEmu::Gameboy::Devices {
 			header_text += cgb_type.c_str();
 			header_text += "\n";
 			header_text += "SGB:" + sgb + "\n";
+			header_text += "ROM count:" + std::to_string(header_.romSize) + "\n";
+			header_text += "RAM count:" + std::to_string(header_.ramSize) + "\n";
 			header_text += "Destination:" + dest + "\n";
 			header_text += "Header checksum:";
 			std::stringstream ss; ss << "0x" << std::setfill('0') << std::setw(2) << std::hex << (short)header_.headerChecksum;

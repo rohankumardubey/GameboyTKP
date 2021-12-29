@@ -1,8 +1,7 @@
-#include <iostream>
-#include <sstream>
-#include <iomanip>
 #include <algorithm>
 #include <bitset>
+#include <sstream>
+#include <iomanip>
 #include "gb_bus.h"
 #include "gb_addresses.h"
 namespace TKPEmu::Gameboy::Devices {
@@ -37,6 +36,25 @@ namespace TKPEmu::Gameboy::Devices {
 				else {
 					// MODE register
 					banking_mode_ = data & 0b1;
+				}
+				break;
+			}
+			case CartridgeType::MBC2:
+			case CartridgeType::MBC2_BATTERY: {
+				if (address <= 0x3FFF) {
+					// Different behavior when bit 8 of address is set
+					bool ram_wr = (address >> 8) & 0b1;
+					if (ram_wr) {
+						selected_rom_bank_ = data;
+					} else {
+						if ((data & 0b1111) == 0b1010) {
+							ram_enabled_ = true;
+						}
+						else {
+							ram_enabled_ = false;
+						}
+					}
+					
 				}
 				break;
 			}
@@ -135,6 +153,20 @@ namespace TKPEmu::Gameboy::Devices {
 						}
 						break;
 					}
+					case CartridgeType::MBC2: 
+					case CartridgeType::MBC2_BATTERY: {
+						if (address <= 0x3FFF) {
+							return (rom_banks_[0])[address % 0x4000];
+						}
+						else {
+							if ((selected_rom_bank_ & 0b1111) == 0) {
+								selected_rom_bank_ |= 0b1;
+							}
+							auto sel = selected_rom_bank_ % cartridge_->GetRomSize();
+							return (rom_banks_[sel])[address % 0x4000];
+						}
+						break;
+					}
 					case CartridgeType::MBC3:
 					case CartridgeType::MBC3_RAM:
 					case CartridgeType::MBC3_RAM_BATTERY: {
@@ -163,14 +195,32 @@ namespace TKPEmu::Gameboy::Devices {
 			}
 			case 0xA000:
 			case 0xB000: {
-				if (ram_enabled_) {
-					if (cartridge_->GetRamSize() == 0)
-						return eram_default_[address % 0x2000];
-					auto sel = (banking_mode_ ? selected_ram_bank_ : 0) % cartridge_->GetRamSize();
-					return (ram_banks_[sel])[address % 0x2000];
-				} else {
-					unused_mem_area_ = 0xFF;
-					return unused_mem_area_;
+				auto ct = cartridge_->GetCartridgeType();
+				switch(ct) {
+					case CartridgeType::MBC2:
+					case CartridgeType::MBC2_BATTERY: {
+						if (ram_enabled_) {
+							auto sel = (banking_mode_ ? selected_ram_bank_ : 0) % cartridge_->GetRamSize();
+							(ram_banks_[sel])[address % 0x200] |= 0b1111'0000;
+							return (ram_banks_[sel])[address % 0x200];
+						} else {
+							unused_mem_area_ = 0xFF;
+							return unused_mem_area_;
+						}
+						break;
+					}
+					default: {
+						if (ram_enabled_) {
+							if (cartridge_->GetRamSize() == 0)
+								return eram_default_[address % 0x2000];
+							auto sel = (banking_mode_ ? selected_ram_bank_ : 0) % cartridge_->GetRamSize();
+							return (ram_banks_[sel])[address % 0x2000];
+						} else {
+							unused_mem_area_ = 0xFF;
+							return unused_mem_area_;
+						}
+						break;
+					}
 				}
 			}
 			case 0xC000:
@@ -281,7 +331,6 @@ namespace TKPEmu::Gameboy::Devices {
 					}
 					break;
 				}
-				// Any unused bits in these registers are set, passes unused_hwio-GS.gb test (mooneye)
 				case addr_div: {
 					DIVReset = true;
 					break;
