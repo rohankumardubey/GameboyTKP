@@ -13,6 +13,8 @@ This emulator can be integrated into other projects. Check `example_main.cpp` fo
 ## Images
 ![Super Mario Land](./Images/sml.bmp)
 ![Tetris](./Images/tet.bmp)
+![F-1 Race](./Images/f1.bmp)
+![Pokemon Red](./Images/pkm.bmp)
 
 ## Tests
 
