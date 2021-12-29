@@ -182,9 +182,9 @@ namespace TKPEmu::Gameboy {
 					first_instr = false;
 					if (!broken)
 						update();
-				}
-				else {
+				} else {
 					Step.wait(false);
+					std::lock_guard<std::mutex> lg(DebugUpdateMutex);
 					Step.store(false);
 					update();
 					InstructionBreak.store(cpu_.PC);
