@@ -358,9 +358,6 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 			}
-			if (address >= 0xFE00 && address <= 0xFE9F) {
-				oam_[address & 0xFF] = data;
-			}
 			redirect_address(address) = data;
 		}
 	}
@@ -378,6 +375,8 @@ namespace TKPEmu::Gameboy::Devices {
 		for (auto& ram : ram_banks_) {
 			ram.fill(0);
 		}
+		// for (uint16_t st = 0xFF00; st < 0xFFFF; st++)
+		// 	Write(st, 0);
 		hram_.fill(0);
 		oam_.fill(0);
 		vram_.fill(0);

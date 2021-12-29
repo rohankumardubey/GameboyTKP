@@ -1,6 +1,5 @@
 #include "gb_cpu.h"
 #include <cmath>
-
 namespace TKPEmu::Gameboy::Devices {
 	CPU::CPU(Bus* bus, PPU* ppu, Timer* timer) :
 		bus_(bus),
@@ -250,7 +249,8 @@ namespace TKPEmu::Gameboy::Devices {
 	}
 	void CPU::rst(RegisterType addr) {
 		SP -= 2;
-		bus_->WriteL(SP, PC);
+		write(SP + 1, PC >> 8);
+		write(SP, PC & 0xFF);
 		PC = addr;
 		tTemp = 16;
 	}
@@ -432,24 +432,26 @@ namespace TKPEmu::Gameboy::Devices {
 	}
 	void CPU::PUSHBC() {
 		SP -= 2;
-		bus_->WriteL(SP, (B << 8) | C);
+		write(SP + 1, B);
+		write(SP, C);;
 		tTemp = 16;
 	}
 	void CPU::PUSHAF() {
 		SP -= 2;
-		bus_->WriteL(SP, (A << 8) | F);
+		write(SP + 1, A);
+		write(SP, F);
 		tTemp = 16;
 	}
 	void CPU::PUSHDE() {
 		SP -= 2;
-		//write(SP + 1, D);
-		//write(SP, E);
-		bus_->WriteL(SP, (D << 8) | E);
+		write(SP + 1, D);
+		write(SP, E);
 		tTemp = 16;
 	}
 	void CPU::PUSHHL() {
 		SP -= 2;
-		bus_->WriteL(SP, (H << 8) | L);
+		write(SP + 1, H);
+		write(SP, L);
 		tTemp = 16;
 	}
 	void CPU::POPBC() {
@@ -2229,8 +2231,6 @@ namespace TKPEmu::Gameboy::Devices {
 			H = 0; L = 0;
 			SP = 0;
 			PC = 0;
-			bus_->Write(0xFF01, 0x00);
-			bus_->Write(0xFF02, 0x7E);
 		} else {
 			A = 0x01; F = 0xB0;
 			B = 0x00; C = 0x13;
@@ -2238,7 +2238,6 @@ namespace TKPEmu::Gameboy::Devices {
 			H = 0x01; L = 0x4D;
 			SP = 0xFFFE;
 			PC = 0x100;
-			//setup_hwio();
 		}
 		TClock = 0;
 		TotalClocks = 0;
@@ -2313,7 +2312,8 @@ namespace TKPEmu::Gameboy::Devices {
 		if (halt_) {
 			tTemp = 24;
 		}
-		delay_dur(tTemp);
+		delay_dur(tTemp - tRemove);
+		tRemove = 0;
 	}
 	// Delayed read function
 	uint8_t CPU::read(uint16_t addr) {
