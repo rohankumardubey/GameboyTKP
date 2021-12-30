@@ -3,16 +3,16 @@
 #include <iostream>
 
 namespace TKPEmu::Gameboy::Devices {
-	PPU::PPU(Bus* bus, std::mutex* draw_mutex) : bus_(bus), draw_mutex_(draw_mutex), next_stat_mode(bus->NextMode),
-		LCDC(bus->GetReference(0xFF40)),
-		STAT(bus->GetReference(0xFF41)),
-		LYC(bus->GetReference(0xFF45)),
-		LY(bus->GetReference(0xFF44)),
-		IF(bus->GetReference(0xFF0F)),
-		SCY(bus->GetReference(0xFF42)),
-		SCX(bus->GetReference(0xFF43)),
-		WY(bus->GetReference(0xFF4A)),
-		WX(bus->GetReference(0xFF4B))
+	PPU::PPU(Bus& bus, std::mutex* draw_mutex) : bus_(bus), draw_mutex_(draw_mutex), next_stat_mode(bus.NextMode), /*TODO: remove bus.NextMode? */
+		LCDC(bus.GetReference(0xFF40)),
+		STAT(bus.GetReference(0xFF41)),
+		LYC(bus.GetReference(0xFF45)),
+		LY(bus.GetReference(0xFF44)),
+		IF(bus.GetReference(0xFF0F)),
+		SCY(bus.GetReference(0xFF42)),
+		SCX(bus.GetReference(0xFF43)),
+		WY(bus.GetReference(0xFF4A)),
+		WX(bus.GetReference(0xFF4B))
 	{}
 	void PPU::Update(uint8_t cycles) {
 		if (LCDC & LCDCFlag::LCD_ENABLE) {
@@ -69,9 +69,9 @@ namespace TKPEmu::Gameboy::Devices {
 	}
 	void PPU::Reset() {
 		for (int i = 0; i < (screen_color_data_.size() - 4); i += 4) {
-			screen_color_data_[i + 0] = bus_->Palette[0][0];
-			screen_color_data_[i + 1] = bus_->Palette[0][1];
-			screen_color_data_[i + 2] = bus_->Palette[0][2];
+			screen_color_data_[i + 0] = bus_.Palette[0][0];
+			screen_color_data_[i + 1] = bus_.Palette[0][1];
+			screen_color_data_[i + 2] = bus_.Palette[0][2];
 			screen_color_data_[i + 3] = 255.0f;
 		}
 		LY = 0x0;
@@ -126,10 +126,10 @@ namespace TKPEmu::Gameboy::Devices {
 	inline void PPU::renderTiles() {
 		uint16_t tileData = (LCDC & 0b10000) ? 0x8000 : 0x8800;
 
-		uint8_t scrollY = bus_->Read(0xFF42);
-		uint8_t scrollX = bus_->Read(0xFF43);
-		uint8_t windowY = bus_->Read(0xFF4A);
-		uint8_t windowX = bus_->Read(0xFF4B) - 7;
+		uint8_t scrollY = bus_.Read(0xFF42);
+		uint8_t scrollX = bus_.Read(0xFF43);
+		uint8_t windowY = bus_.Read(0xFF4A);
+		uint8_t windowX = bus_.Read(0xFF4B) - 7;
 		bool unsig = true;
 		if (tileData == 0x8800) {
 			unsig = false;
@@ -139,7 +139,7 @@ namespace TKPEmu::Gameboy::Devices {
 		// is the window enabled?f
 		if (LCDC & 0b100000) {
 			// there is no point in drawing the window if its located under the current scanline
-			if (windowY <= bus_->Read(0xFF44)) {
+			if (windowY <= bus_.Read(0xFF44)) {
 				windowEnabled = true;
 			}
 
@@ -151,13 +151,13 @@ namespace TKPEmu::Gameboy::Devices {
 			identifierLocation = (LCDC & 0b1000000) ? 0x9C00 : 0x9800;
 			// if the window is enabled we can get the y-position of the place we need to draw via
 			// window y since window y tells us distance from the area of the first place we need to draw
-			positionY = bus_->Read(0xFF44) - windowY;
+			positionY = bus_.Read(0xFF44) - windowY;
 		}
 		else {
 			identifierLocation = (LCDC & 0b1000) == 1 ? 0x9C00 : 0x9800;
 			// if windows is not enabled we get the edge y-position of the area we need to draw
 			// by adding current scanline and scroll-y
-			positionY = bus_->Read(0xFF44) + scrollY;
+			positionY = bus_.Read(0xFF44) + scrollY;
 		}
 
 		uint16_t tileRow = (((uint8_t)(positionY / 8)) * 32);
@@ -178,10 +178,10 @@ namespace TKPEmu::Gameboy::Devices {
 			uint16_t tileAddress = identifierLocation + tileRow + tileCol;
 
 			if (unsig) {
-				tileNumber = bus_->Read(tileAddress);
+				tileNumber = bus_.Read(tileAddress);
 			}
 			else {
-				tileNumber = static_cast<int8_t>(bus_->Read(tileAddress));
+				tileNumber = static_cast<int8_t>(bus_.Read(tileAddress));
 			}
 
 			uint16_t tileLocation = tileData;
@@ -197,8 +197,8 @@ namespace TKPEmu::Gameboy::Devices {
 			uint8_t line = (positionY % 8);
 			line *= 2;
 
-			uint8_t data1 = bus_->Read(tileLocation + line);
-			uint8_t data2 = bus_->Read(tileLocation + line + 1);
+			uint8_t data1 = bus_.Read(tileLocation + line);
+			uint8_t data2 = bus_.Read(tileLocation + line + 1);
 
 			int colorBit = positionX % 8;
 			// pixel 0 is bit 7, so on
@@ -209,15 +209,15 @@ namespace TKPEmu::Gameboy::Devices {
 			int colorNum = (data2 >> colorBit) & 0x1;
 			colorNum <<= 1;
 			colorNum |= (data1 >> colorBit) & 0x1;
-			int finaly = bus_->Read(0xFF44);
+			int finaly = bus_.Read(0xFF44);
 
 			// safety check to make sure what im about 
 			// to set is int the 160x144 bounds
 			int idx = (pixel * 4) + (finaly * 4 * 160);
 			if (LCDC & 0b01) {
-				screen_color_data_[idx++] = bus_->Palette[bus_->BGPalette[colorNum]][0];
-				screen_color_data_[idx++] = bus_->Palette[bus_->BGPalette[colorNum]][1];
-				screen_color_data_[idx++] = bus_->Palette[bus_->BGPalette[colorNum]][2];
+				screen_color_data_[idx++] = bus_.Palette[bus_.BGPalette[colorNum]][0];
+				screen_color_data_[idx++] = bus_.Palette[bus_.BGPalette[colorNum]][1];
+				screen_color_data_[idx++] = bus_.Palette[bus_.BGPalette[colorNum]][2];
 				screen_color_data_[idx] = 255.0f;
 			}
 		}
@@ -229,15 +229,15 @@ namespace TKPEmu::Gameboy::Devices {
 			use8x16 = true;
 
 		for (int sprite = 0; sprite < 40; sprite++) {
-			uint8_t positionY = bus_->oam_[sprite * 4] - 16;
-			uint8_t positionX = bus_->oam_[sprite * 4 + 1] - 8;
-			uint8_t tileLoc = bus_->oam_[sprite * 4 + 2];
-			uint8_t attributes = bus_->oam_[sprite * 4 + 3];
+			uint8_t positionY = bus_.oam_[sprite * 4] - 16;
+			uint8_t positionX = bus_.oam_[sprite * 4 + 1] - 8;
+			uint8_t tileLoc = bus_.oam_[sprite * 4 + 2];
+			uint8_t attributes = bus_.oam_[sprite * 4 + 3];
 
 			bool yFlip = attributes & 0b1000000;
 			bool xFlip = attributes & 0b100000;
 
-			int scanLine = bus_->Read(0xFF44);
+			int scanLine = bus_.Read(0xFF44);
 			int height = 8;
 			if (use8x16) {
 				height = 16;
@@ -255,8 +255,8 @@ namespace TKPEmu::Gameboy::Devices {
 				line *= 2;
 
 				uint16_t address = (0x8000 + (tileLoc * 16) + line);
-				uint8_t data1 = bus_->Read(address);
-				uint8_t data2 = bus_->Read(address + 1);
+				uint8_t data1 = bus_.Read(address);
+				uint8_t data2 = bus_.Read(address + 1);
 
 
 				for (int tilePixel = 7; tilePixel >= 0; tilePixel--) {
@@ -273,10 +273,10 @@ namespace TKPEmu::Gameboy::Devices {
 					bool obp1 = (attributes & 0b10000);
 					uint8_t color = 1;
 					if (obp1) {
-						color = bus_->OBJ1Palette[colorNum];
+						color = bus_.OBJ1Palette[colorNum];
 					}
 					else {
-						color = bus_->OBJ0Palette[colorNum];
+						color = bus_.OBJ0Palette[colorNum];
 					}
 
 					if (color == 0) {
@@ -297,9 +297,9 @@ namespace TKPEmu::Gameboy::Devices {
 
 					int idx = (pixel * 4) + (scanLine * 4 * 160);
 					if (LCDC & 0b10) {
-						screen_color_data_[idx++] = bus_->Palette[color][0];
-						screen_color_data_[idx++] = bus_->Palette[color][1];
-						screen_color_data_[idx++] = bus_->Palette[color][2];
+						screen_color_data_[idx++] = bus_.Palette[color][0];
+						screen_color_data_[idx++] = bus_.Palette[color][1];
+						screen_color_data_[idx++] = bus_.Palette[color][2];
 						screen_color_data_[idx] = 255;
 					}
 				}
@@ -311,16 +311,16 @@ namespace TKPEmu::Gameboy::Devices {
 			for (int x_ = 0; x_ < 16; ++x_) {
 				for (size_t i = 0; i < 16; i += 2) {
 					uint16_t curr_addr = addr + i + x_ * 16 + y_ * 256;
-					uint8_t data1 = bus_->Read(curr_addr);
-					uint8_t data2 = bus_->Read(curr_addr + 1);
+					uint8_t data1 = bus_.Read(curr_addr);
+					uint8_t data2 = bus_.Read(curr_addr + 1);
 					int x = ((i / 16) + x_) * 8;
 					int y = i / 2 + y_ * 8;
 					size_t start_idx = y * 256 * 4 + x * 4 + x_off * 4 + y_off * 256 * 4;
 					for (size_t j = 0; j < 8; j++) {
 						int color = (((data1 >> (7 - j)) & 0b1) << 1) + ((data2 >> (7 - j)) & 0b1);
-						pixels[start_idx + (j * 4) + 0] = bus_->Palette[color][0];
-						pixels[start_idx + (j * 4) + 1] = bus_->Palette[color][1];
-						pixels[start_idx + (j * 4) + 2] = bus_->Palette[color][2];
+						pixels[start_idx + (j * 4) + 0] = bus_.Palette[color][0];
+						pixels[start_idx + (j * 4) + 1] = bus_.Palette[color][1];
+						pixels[start_idx + (j * 4) + 2] = bus_.Palette[color][2];
 						pixels[start_idx + (j * 4) + 3] = 255.0f;
 					}
 				}

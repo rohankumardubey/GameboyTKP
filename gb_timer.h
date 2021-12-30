@@ -6,11 +6,11 @@
 namespace TKPEmu::Gameboy::Devices {
     class Timer {
     public:
-        Timer(Bus* bus);
+        Timer(Bus& bus);
         void Reset();
         bool Update(uint8_t cycles, uint8_t old_if);
     private:
-        Bus* bus_;
+        Bus& bus_;
         RegisterType &DIV, &TIMA, &TAC, &TMA, &IF;
         // TODO: Reduce these temporaries to oscillator_ and timer_counter_ only
         int oscillator_, timer_counter_, old_tac_;

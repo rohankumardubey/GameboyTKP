@@ -11,6 +11,7 @@
 #include "gb_ppu.h"
 #include "gb_bus.h"
 #include "gb_timer.h"
+#include "gb_apu.h"
 namespace TKPEmu::Gameboy {
 	class Gameboy : public Emulator {
 	private:
@@ -18,6 +19,7 @@ namespace TKPEmu::Gameboy {
 		using GameboyKeys = std::array<SDL_Keycode, 4>;
 		using CPU = TKPEmu::Gameboy::Devices::CPU;
 		using PPU = TKPEmu::Gameboy::Devices::PPU;
+		using APU = TKPEmu::Gameboy::Devices::APU;
 		using Bus = TKPEmu::Gameboy::Devices::Bus;
 		using Timer = TKPEmu::Gameboy::Devices::Timer;
 		using Cartridge = TKPEmu::Gameboy::Devices::Cartridge;
@@ -45,6 +47,7 @@ namespace TKPEmu::Gameboy {
 		std::vector<DisInstr> Instructions{};
 	private:
 		Bus bus_;
+		APU apu_;
 		PPU ppu_;
 		Timer timer_;
 		CPU cpu_;

@@ -89,12 +89,27 @@ constexpr auto addr_tac = 0xFF07;
 // Interrupt flag
 constexpr auto addr_ifl = 0xFF0F;
 // Sound registers
-constexpr auto addr_s1s = 0xFF10;
-constexpr auto addr_s3e = 0xFF1A;
-constexpr auto addr_s3o = 0xFF1C;
-constexpr auto addr_s4l = 0xFF20;
-constexpr auto addr_s4c = 0xFF23;
-constexpr auto addr_snd = 0xFF26;
+constexpr auto addr_NR10 = 0xFF10;
+constexpr auto addr_NR11 = 0xFF11;
+constexpr auto addr_NR12 = 0xFF12;
+constexpr auto addr_NR13 = 0xFF13;
+constexpr auto addr_NR14 = 0xFF14;
+constexpr auto addr_NR21 = 0xFF16;
+constexpr auto addr_NR22 = 0xFF17;
+constexpr auto addr_NR23 = 0xFF18;
+constexpr auto addr_NR24 = 0xFF19;
+constexpr auto addr_NR30 = 0xFF1A;
+constexpr auto addr_NR31 = 0xFF1B;
+constexpr auto addr_NR32 = 0xFF1C;
+constexpr auto addr_NR33 = 0xFF1D;
+constexpr auto addr_NR34 = 0xFF1E;
+constexpr auto addr_NR41 = 0xFF20;
+constexpr auto addr_NR42 = 0xFF21;
+constexpr auto addr_NR43 = 0xFF22;
+constexpr auto addr_NR44 = 0xFF23;
+constexpr auto addr_NR50 = 0xFF24;
+constexpr auto addr_NR51 = 0xFF25;
+constexpr auto addr_NR52 = 0xFF26;
 // PPU & OAM related registers
 constexpr auto addr_lcd = 0xFF40;
 constexpr auto addr_sta = 0xFF41;

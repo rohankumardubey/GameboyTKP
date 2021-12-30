@@ -9,9 +9,10 @@
 namespace TKPEmu::Gameboy {
 	Gameboy::Gameboy() : 
 		bus_(Instructions),
-		ppu_(&bus_, &DrawMutex),
-		timer_(&bus_),
-		cpu_(&bus_, &ppu_, &timer_),
+		apu_(bus_),
+		ppu_(bus_, &DrawMutex),
+		timer_(bus_),
+		cpu_(bus_, ppu_, timer_),
 		joypad_(bus_.GetReference(addr_joy)),
 		interrupt_flag_(bus_.GetReference(addr_if))
 	{}

@@ -14,9 +14,9 @@
 namespace TKPEmu::Gameboy::Devices {
 	class CPU {
 	private:
-		Bus* bus_;
-		PPU* ppu_;
-		Timer* timer_;
+		Bus& bus_;
+		PPU& ppu_;
+		Timer& timer_;
 		bool ime_scheduled_ = false;
 		bool halt_bug_ = false;
 		int tTemp = 0;
@@ -105,7 +105,7 @@ namespace TKPEmu::Gameboy::Devices {
 		void setup_hwio();
 
 	public:
-		CPU(Bus* bus, PPU* ppu, Timer* timer);
+		CPU(Bus& bus, PPU& ppu, Timer& timer);
 		bool halt_ = false;
 		bool ime_ = false;
 		bool skip_next_ = false;

@@ -1,19 +1,19 @@
 #include "gb_cpu.h"
 #include <cmath>
 namespace TKPEmu::Gameboy::Devices {
-	CPU::CPU(Bus* bus, PPU* ppu, Timer* timer) :
+	CPU::CPU(Bus& bus, PPU& ppu, Timer& timer) :
 		bus_(bus),
 		ppu_(ppu),
 		timer_(timer),
-		IF(bus->GetReference(0xFF0F)),
-		IE(bus->GetReference(0xFFFF)),
-		LY(bus->GetReference(0xFF44))
+		IF(bus_.GetReference(0xFF0F)),
+		IE(bus_.GetReference(0xFFFF)),
+		LY(bus_.GetReference(0xFF44))
 	{
 		A = 0; B = 0; C = 0; D = 0; E = 0; H = 0; L = 0;
 		F = 0; SP = 0; PC = 0; ime_ = true;
 		TClock = 0;
 		halt_ = false; stop_ = false;
-		bus_->Write(0xFF00, 0b11011111);
+		bus_.Write(0xFF00, 0b11011111);
 	}
 	void CPU::reg_dec(RegisterType& reg) {
 		auto temp = reg - 1;
@@ -216,7 +216,7 @@ namespace TKPEmu::Gameboy::Devices {
 	}
 	void CPU::conditional_jump_rel(bool condition) {
 		if (condition) {
-			auto temp = bus_->Read(PC);
+			auto temp = bus_.Read(PC);
 			PC += 1;
 			PC += ((temp ^ 0x80) - 0x80);
 			tTemp = 12;
@@ -228,7 +228,7 @@ namespace TKPEmu::Gameboy::Devices {
 	void CPU::conditional_jump(bool condition) {
 		if (condition) {
 			delay();
-			PC = bus_->ReadL(PC);
+			PC = bus_.ReadL(PC);
 			tTemp = 16;
 		} else {
 			PC += 2;
@@ -238,9 +238,9 @@ namespace TKPEmu::Gameboy::Devices {
 	void CPU::conditional_call(bool condition) {
 		if (condition) {
 			SP -= 2;
-			bus_->Write(SP, (PC + 2) & 0xFF);
+			bus_.Write(SP, (PC + 2) & 0xFF);
 			write(SP + 1, (PC + 2) >> 8);
-			PC = bus_->ReadL(PC);
+			PC = bus_.ReadL(PC);
 			tTemp = 24;
 		} else {
 			PC += 2;
@@ -280,12 +280,12 @@ namespace TKPEmu::Gameboy::Devices {
 		reg_add(L);
 	}
 	void CPU::ADDAHL() {
-		uint8_t t = bus_->Read((H << 8) | L);
+		uint8_t t = bus_.Read((H << 8) | L);
 		reg_add(t);
 		tTemp = 8;
 	}
 	void CPU::ADDA8() {
-		uint8_t t = bus_->Read(PC++);
+		uint8_t t = bus_.Read(PC++);
 		reg_add(t);
 		tTemp = 8;
 	}
@@ -305,7 +305,7 @@ namespace TKPEmu::Gameboy::Devices {
 		hl_add(SP);
 	}
 	void CPU::ADDSPD() {
-		int val = bus_->Read(PC);
+		int val = bus_.Read(PC);
 		auto temp = SP + ((val ^ 0x80) - 0x80);
 		auto flag = FLAG_EMPTY_MASK;
 		flag |= (((SP & 0xF) + (val & 0xF)) > 0xF) << FLAG_HCARRY_SHIFT;
@@ -338,12 +338,12 @@ namespace TKPEmu::Gameboy::Devices {
 		reg_adc(L);
 	}
 	void CPU::ADCAHL() {
-		uint8_t t = bus_->Read((H << 8) | L);
+		uint8_t t = bus_.Read((H << 8) | L);
 		reg_adc(t);
 		tTemp = 8;
 	}
 	void CPU::ADCA8() {
-		uint8_t t = bus_->Read(PC++);
+		uint8_t t = bus_.Read(PC++);
 		reg_adc(t);
 		tTemp = 8;
 	}
@@ -369,12 +369,12 @@ namespace TKPEmu::Gameboy::Devices {
 		reg_sub(L);
 	}
 	void CPU::SUBAHL() {
-		uint8_t t = bus_->Read((H << 8) | L);
+		uint8_t t = bus_.Read((H << 8) | L);
 		reg_sub(t);
 		tTemp = 8;
 	}
 	void CPU::SUBA8() {
-		uint8_t t = bus_->Read(PC++);
+		uint8_t t = bus_.Read(PC++);
 		reg_sub(t);
 		tTemp = 8;
 	}
@@ -400,12 +400,12 @@ namespace TKPEmu::Gameboy::Devices {
 		reg_sbc(L);
 	}
 	void CPU::SBCAHL() {
-		uint8_t t = bus_->Read(H << 8 | L);
+		uint8_t t = bus_.Read(H << 8 | L);
 		reg_sbc(t);
 		tTemp = 8;
 	}
 	void CPU::SBCA8() {
-		uint8_t t = bus_->Read(PC++);
+		uint8_t t = bus_.Read(PC++);
 		reg_sbc(t);
 		tTemp = 8;
 	}
@@ -455,28 +455,28 @@ namespace TKPEmu::Gameboy::Devices {
 		tTemp = 16;
 	}
 	void CPU::POPBC() {
-		C = bus_->Read(SP);
+		C = bus_.Read(SP);
 		B = read(SP + 1);
 		delay();
 		SP += 2;
 		tTemp = 12;
 	}
 	void CPU::POPAF() {
-		auto temp = bus_->ReadL(SP);
+		auto temp = bus_.ReadL(SP);
 		A = (temp >> 8) & 0xFF;
 		F = temp & 0xF0;
 		SP += 2;
 		tTemp = 12;
 	}
 	void CPU::POPDE() {
-		E = bus_->Read(SP);
+		E = bus_.Read(SP);
 		D = read(SP + 1);
 		delay();
 		SP += 2;
 		tTemp = 12;
 	}
 	void CPU::POPHL() {
-		L = bus_->Read(SP);
+		L = bus_.Read(SP);
 		H = read(SP + 1);
 		delay();
 		SP += 2;
@@ -484,12 +484,12 @@ namespace TKPEmu::Gameboy::Devices {
 	}
 	void CPU::LDABC() {
 		int addr = C | (B << 8);
-		A = bus_->Read(addr);
+		A = bus_.Read(addr);
 		tTemp = 8;
 	}
 	void CPU::LDADE() {
 		int addr = E | (D << 8);
-		A = bus_->Read(addr);
+		A = bus_.Read(addr);
 		tTemp = 8;
 	}
 	void CPU::LDAA() {
@@ -689,142 +689,142 @@ namespace TKPEmu::Gameboy::Devices {
 		tTemp = 4;
 	}
 	void CPU::LDAHL() {
-		A = bus_->Read((H << 8) | L);
+		A = bus_.Read((H << 8) | L);
 		tTemp = 8;
 	}
 	void CPU::LDBHL() {
-		B = bus_->Read((H << 8) | L);
+		B = bus_.Read((H << 8) | L);
 		tTemp = 8;
 	}
 	void CPU::LDCHL() {
-		C = bus_->Read((H << 8) | L);
+		C = bus_.Read((H << 8) | L);
 		tTemp = 8;
 	}
 	void CPU::LDDHL() {
-		D = bus_->Read((H << 8) | L);
+		D = bus_.Read((H << 8) | L);
 		tTemp = 8;
 	}
 	void CPU::LDEHL() {
-		E = bus_->Read((H << 8) | L);
+		E = bus_.Read((H << 8) | L);
 		tTemp = 8;
 	}
 	void CPU::LDHHL() {
-		H = bus_->Read((H << 8) | L);
+		H = bus_.Read((H << 8) | L);
 		tTemp = 8;
 	}
 	void CPU::LDLHL() {
-		L = bus_->Read((H << 8) | L);
+		L = bus_.Read((H << 8) | L);
 		tTemp = 8;
 	}
 	void CPU::LDHLA() {
-		bus_->Write((H << 8) | L, A);
+		bus_.Write((H << 8) | L, A);
 		tTemp = 8;
 	}
 	void CPU::LDHLB() {
-		bus_->Write((H << 8) | L, B);
+		bus_.Write((H << 8) | L, B);
 		tTemp = 8;
 	}
 	void CPU::LDHLC() {
-		bus_->Write((H << 8) | L, C);
+		bus_.Write((H << 8) | L, C);
 		tTemp = 8;
 	}
 	void CPU::LDHLD() {
-		bus_->Write((H << 8) | L, D);
+		bus_.Write((H << 8) | L, D);
 		tTemp = 8;
 	}
 	void CPU::LDHLE() {
-		bus_->Write((H << 8) | L, E);
+		bus_.Write((H << 8) | L, E);
 		tTemp = 8;
 	}
 	void CPU::LDHLH() {
-		bus_->Write((H << 8) | L, H);
+		bus_.Write((H << 8) | L, H);
 		tTemp = 8;
 	}
 	void CPU::LDHLL() {
-		bus_->Write((H << 8) | L, L);
+		bus_.Write((H << 8) | L, L);
 		tTemp = 8;
 	}
 	void CPU::LDA8() {
-		A = bus_->Read(PC);
+		A = bus_.Read(PC);
 		PC++;
 		tTemp = 8;
 	}
 	void CPU::LDB8() {
-		B = bus_->Read(PC);
+		B = bus_.Read(PC);
 		PC++;
 		tTemp = 8;
 	}
 	void CPU::LDC8() {
-		C = bus_->Read(PC);
+		C = bus_.Read(PC);
 		PC++;
 		tTemp = 8;
 	}
 	void CPU::LDD8() {
-		D = bus_->Read(PC);
+		D = bus_.Read(PC);
 		PC++;
 		tTemp = 8;
 	}
 	void CPU::LDE8() {
-		E = bus_->Read(PC);
+		E = bus_.Read(PC);
 		PC++;
 		tTemp = 8;
 	}
 	void CPU::LDH8() {
-		H = bus_->Read(PC);
+		H = bus_.Read(PC);
 		PC++;
 		tTemp = 8;
 	}
 	void CPU::LDL8() {
-		L = bus_->Read(PC);
+		L = bus_.Read(PC);
 		PC++;
 		tTemp = 8;
 	}
 	void CPU::LDHL8() {
-		write((H << 8) | L, bus_->Read(PC));
+		write((H << 8) | L, bus_.Read(PC));
 		PC++;
 		tTemp = 12;
 	}
 	void CPU::LDBCA() {
-		bus_->Write((B << 8) | C, A);
+		bus_.Write((B << 8) | C, A);
 		tTemp = 8;
 	}
 	void CPU::LDDEA() {
-		bus_->Write((D << 8) | E, A);
+		bus_.Write((D << 8) | E, A);
 		tTemp = 8;
 	}
 	void CPU::LD16A() {
 		delay();
-		write(bus_->ReadL(PC), A);
+		write(bus_.ReadL(PC), A);
 		PC += 2;
 		tTemp = 16;
 	}
 	void CPU::LDA16() {
 		delay();
-		A = read(bus_->ReadL(PC));
+		A = read(bus_.ReadL(PC));
 		PC += 2;
 		tTemp = 16;
 	}
 	void CPU::LDBC16() {
-		C = bus_->Read(PC);
-		B = bus_->Read(PC + 1);
+		C = bus_.Read(PC);
+		B = bus_.Read(PC + 1);
 		PC += 2;
 		tTemp = 12;
 	}
 	void CPU::LDDE16() {
-		E = bus_->Read(PC);
-		D = bus_->Read(PC + 1);
+		E = bus_.Read(PC);
+		D = bus_.Read(PC + 1);
 		PC += 2;
 		tTemp = 12;
 	}
 	void CPU::LDHL16() {
-		L = bus_->Read(PC);
-		H = bus_->Read(PC + 1);
+		L = bus_.Read(PC);
+		H = bus_.Read(PC + 1);
 		PC += 2;
 		tTemp = 12;
 	}
 	void CPU::LD16SP() {
-		bus_->Write(bus_->ReadL(PC), SP & 0xFF);
-		bus_->Write(bus_->ReadL(PC) + 1, (SP >> 8) & 0xFF);
+		bus_.Write(bus_.ReadL(PC), SP & 0xFF);
+		bus_.Write(bus_.ReadL(PC) + 1, (SP >> 8) & 0xFF);
 		PC += 2;
 		tTemp = 20;
 	}
@@ -850,7 +850,7 @@ namespace TKPEmu::Gameboy::Devices {
 		reg_inc(L);
 	}
 	void CPU::INCHLR() {
-		uint8_t t = bus_->Read((H << 8) | L);
+		uint8_t t = bus_.Read((H << 8) | L);
 		reg_inc(t);
 		write((H << 8) | L, t);
 		tTemp = 12;
@@ -877,7 +877,7 @@ namespace TKPEmu::Gameboy::Devices {
 		reg_dec(L);
 	}
 	void CPU::DECHLR() {
-		uint8_t t = bus_->Read((H << 8) | L);
+		uint8_t t = bus_.Read((H << 8) | L);
 		reg_dec(t);
 		write((H << 8) | L, t);
 		tTemp = 12;
@@ -964,12 +964,12 @@ namespace TKPEmu::Gameboy::Devices {
 		reg_and(L);
 	}
 	void CPU::ANDHL() {
-		uint8_t t = bus_->Read((H << 8) | L);
+		uint8_t t = bus_.Read((H << 8) | L);
 		reg_and(t);
 		tTemp = 8;
 	}
 	void CPU::AND8() {
-		uint8_t t = bus_->Read(PC++);
+		uint8_t t = bus_.Read(PC++);
 		reg_and(t);
 		tTemp = 8;
 	}
@@ -995,12 +995,12 @@ namespace TKPEmu::Gameboy::Devices {
 		reg_or(L);
 	}
 	void CPU::ORHL() {
-		uint8_t t = bus_->Read((H << 8) | L);
+		uint8_t t = bus_.Read((H << 8) | L);
 		reg_or(t);
 		tTemp = 8;
 	}
 	void CPU::OR8() {
-		uint8_t t = bus_->Read(PC++);
+		uint8_t t = bus_.Read(PC++);
 		reg_or(t);
 		tTemp = 8;
 	}
@@ -1026,12 +1026,12 @@ namespace TKPEmu::Gameboy::Devices {
 		reg_xor(L);
 	}
 	void CPU::XORHL() {
-		uint8_t t = bus_->Read((H << 8) | L);
+		uint8_t t = bus_.Read((H << 8) | L);
 		reg_xor(t);
 		tTemp = 8;
 	}
 	void CPU::XOR8() {
-		uint8_t t = bus_->Read(PC++);
+		uint8_t t = bus_.Read(PC++);
 		reg_xor(t);
 		tTemp = 8;
 	}
@@ -1043,14 +1043,14 @@ namespace TKPEmu::Gameboy::Devices {
 	}
 	void CPU::RET() {
 		delay();
-		PC = bus_->ReadL(SP);
+		PC = bus_.ReadL(SP);
 		SP += 2;
 		tTemp = 16;
 	}
 	void CPU::RETI() {
 		ime_ = true;
 		delay();
-		PC = bus_->ReadL(SP);
+		PC = bus_.ReadL(SP);
 		SP += 2;
 		tTemp = 16;
 	}
@@ -1059,7 +1059,7 @@ namespace TKPEmu::Gameboy::Devices {
 		if ((F & 0x80) == 0x00) {
 			delay();
 			delay();
-			PC = bus_->ReadL(SP);
+			PC = bus_.ReadL(SP);
 			SP += 2;
 			tTemp += 12;
 		}
@@ -1069,7 +1069,7 @@ namespace TKPEmu::Gameboy::Devices {
 		if ((F & 0x80) == 0x80) {
 			delay();
 			delay();
-			PC = bus_->ReadL(SP);
+			PC = bus_.ReadL(SP);
 			SP += 2;
 			tTemp += 12;
 		}
@@ -1079,7 +1079,7 @@ namespace TKPEmu::Gameboy::Devices {
 		if ((F & 0x10) == 0x00) {
 			delay();
 			delay();
-			PC = bus_->ReadL(SP);
+			PC = bus_.ReadL(SP);
 			SP += 2;
 			tTemp += 12;
 		}
@@ -1089,7 +1089,7 @@ namespace TKPEmu::Gameboy::Devices {
 		if ((F & 0x10) == 0x10) {
 			delay();
 			delay();
-			PC = bus_->ReadL(SP);
+			PC = bus_.ReadL(SP);
 			SP += 2;
 			tTemp += 12;
 		}
@@ -1123,7 +1123,7 @@ namespace TKPEmu::Gameboy::Devices {
 		tTemp = 8;
 	}
 	void CPU::LDAMC() {
-		A = bus_->Read(0xFF00 + C);
+		A = bus_.Read(0xFF00 + C);
 		tTemp = 8;
 	}
 	void CPU::DI() {
@@ -1173,9 +1173,9 @@ namespace TKPEmu::Gameboy::Devices {
 	}
 	void CPU::CALL16() {
 		SP -= 2;
-		bus_->Write(SP, (PC + 2) & 0xFF);
+		bus_.Write(SP, (PC + 2) & 0xFF);
 		write(SP + 1, (PC + 2) >> 8);
-		PC = bus_->ReadL(PC);
+		PC = bus_.ReadL(PC);
 		tTemp = 24;
 	}
 	void CPU::CALLNZ16() {
@@ -1191,12 +1191,12 @@ namespace TKPEmu::Gameboy::Devices {
 		conditional_call(F & FLAG_CARRY_MASK);
 	}
 	void CPU::LDSP16() {
-		SP = bus_->ReadL(PC);
+		SP = bus_.ReadL(PC);
 		PC += 2;
 		tTemp = 12;
 	}
 	void CPU::LDDHLA() {
-		bus_->Write((H << 8) | L, A);
+		bus_.Write((H << 8) | L, A);
 		L = (L - 1) & 0xFF;
 		if (L == 0xFF) {
 			H = (H - 1) & 0xFF;
@@ -1204,7 +1204,7 @@ namespace TKPEmu::Gameboy::Devices {
 		tTemp = 8;
 	}
 	void CPU::LDDAHL() {
-		A = bus_->Read((H << 8) | L);
+		A = bus_.Read((H << 8) | L);
 		L = (L - 1) & 0xFF;
 		if (L == 0xFF) {
 			H = (H - 1) & 0xFF;
@@ -1212,7 +1212,7 @@ namespace TKPEmu::Gameboy::Devices {
 		tTemp = 8;
 	}
 	void CPU::LDIHLA() {
-		bus_->Write((H << 8) | L, A);
+		bus_.Write((H << 8) | L, A);
 		L = (L + 1) & 0xFF;
 		if (!L) {
 			H = (H + 1) & 0xFF;
@@ -1220,7 +1220,7 @@ namespace TKPEmu::Gameboy::Devices {
 		tTemp = 8;
 	}
 	void CPU::LDIAHL() {
-		A = bus_->Read((H << 8) | L);
+		A = bus_.Read((H << 8) | L);
 		L = (L + 1) & 0xFF;
 		if (!L) {
 			H = (H + 1) & 0xFF;
@@ -1267,7 +1267,7 @@ namespace TKPEmu::Gameboy::Devices {
 		tTemp = 4;
 	}
 	void CPU::LDHLSPD() {
-		auto val = bus_->Read(PC);
+		auto val = bus_.Read(PC);
 		auto HL = SP + ((val ^ 0x80) - 0x80);
 		H = (HL >> 8) & 0xFF;
 		L = HL & 0xFF;
@@ -1279,22 +1279,22 @@ namespace TKPEmu::Gameboy::Devices {
 		tTemp = 12;
 	}
 	void CPU::LDHA8() {
-		A = read(0xFF00 + bus_->Read(PC));
+		A = read(0xFF00 + bus_.Read(PC));
 		PC++;
 		tTemp = 12;
 	}
 	void CPU::LDH8A() {
-		write(0xFF00 + bus_->Read(PC), A);
+		write(0xFF00 + bus_.Read(PC), A);
 		delay();
 		PC++;
 		tTemp = 12;
 	}
 	void CPU::LDHCA() {
-		bus_->Write(0xFF00 + C, A);
+		bus_.Write(0xFF00 + C, A);
 		tTemp = 8;
 	}
 	void CPU::EXT() {
-		int i = bus_->Read(PC);
+		int i = bus_.Read(PC);
 		PC++;
 		PC &= 0xFFFF;
 		if (i <= 0xFF) {
@@ -1302,12 +1302,12 @@ namespace TKPEmu::Gameboy::Devices {
 		}
 	}
 	void CPU::CPAHL() {
-		uint8_t t = bus_->Read((H << 8) | L);
+		uint8_t t = bus_.Read((H << 8) | L);
 		reg_cmp(t);
 		tTemp = 8;
 	}
 	void CPU::CP8() {
-		uint16_t m = bus_->Read(PC);
+		uint16_t m = bus_.Read(PC);
 		int temp = A - m;
 		auto flag = FLAG_NEG_MASK;
 		flag |= ((temp & 0xFF) == 0) << FLAG_ZERO_SHIFT;
@@ -2259,14 +2259,14 @@ namespace TKPEmu::Gameboy::Devices {
 		auto old_pc = PC++;
 		PC -= halt_bug_;
 		halt_bug_ = false;
-		(this->*Instructions[bus_->Read(old_pc)].op)();
+		(this->*Instructions[bus_.Read(old_pc)].op)();
 		TClock += tTemp;
 		if (tTemp >= tRemove) {
 			tTemp -= tRemove;
 		} else {
 			tTemp = 0;
 		}
-		bus_->TransferDMA(tTemp);
+		bus_.TransferDMA(tTemp);
 		TotalClocks += 1;
 		return tTemp;
 	}
@@ -2318,12 +2318,12 @@ namespace TKPEmu::Gameboy::Devices {
 	// Delayed read function
 	uint8_t CPU::read(uint16_t addr) {
 		delay();
-		return bus_->Read(addr);
+		return bus_.Read(addr);
 	}
 	// Delayed write function
 	void CPU::write(uint16_t addr, uint8_t val) {
 		delay();
-		bus_->Write(addr, val);
+		bus_.Write(addr, val);
 	}
 	/// Function that updates the dma/timer/ppu mid instruction
 	/// Tests like mem_timing and gekkio acceptance tests check dma/timer values mid instruction
@@ -2333,69 +2333,69 @@ namespace TKPEmu::Gameboy::Devices {
 		delay_dur(4);
 	}
 	void CPU::delay_dur(uint8_t dur) {
-		bus_->TransferDMA(dur);
-		if (timer_->Update(dur, IF)) {
+		bus_.TransferDMA(dur);
+		if (timer_.Update(dur, IF)) {
 			if (halt_) {
 				halt_ = false;
 				skip_next_ = true;
 			}
 		}
-		ppu_->Update(dur);
+		ppu_.Update(dur);
 	}
 	// Sets hardware registers to correct values
 	void CPU::setup_hwio() {
-		bus_->Write(0xFF00, 0xCF);
-		bus_->Write(0xFF01, 0x00);
-		bus_->Write(0xFF02, 0x7E);
-		bus_->Write(0xFF04, 0xAC);
-		bus_->Write(0xFF05, 0x00);
-		bus_->Write(0xFF06, 0x00);
-		bus_->Write(0xFF07, 0xF8);
-		bus_->Write(0xFF0F, 0xE1);
-		bus_->Write(0xFF10, 0x80);
-		bus_->Write(0xFF11, 0xBF);
-		bus_->Write(0xFF12, 0xF3);
-		bus_->Write(0xFF13, 0xFF);
-		bus_->Write(0xFF14, 0xBF);
-		bus_->Write(0xFF16, 0x3F);
-		bus_->Write(0xFF17, 0x00);
-		bus_->Write(0xFF18, 0xFF);
-		bus_->Write(0xFF19, 0xBF);
-		bus_->Write(0xFF1A, 0x7F);
-		bus_->Write(0xFF1B, 0xFF);
-		bus_->Write(0xFF1C, 0x9F);
-		bus_->Write(0xFF1D, 0xFF);
-		bus_->Write(0xFF1E, 0xBF);
-		bus_->Write(0xFF20, 0xFF);
-		bus_->Write(0xFF21, 0x00);
-		bus_->Write(0xFF22, 0x00);
-		bus_->Write(0xFF23, 0xBF);
-		bus_->Write(0xFF24, 0x77);
-		bus_->Write(0xFF25, 0xF3);
-		bus_->Write(0xFF26, 0xF1);
-		bus_->Write(0xFF40, 0x91);
-		bus_->Write(0xFF41, 0x82);
-		bus_->Write(0xFF42, 0x00);
-		bus_->Write(0xFF43, 0x00);
-		bus_->Write(0xFF44, 0x00);
-		bus_->Write(0xFF45, 0x00);
-		bus_->Write(0xFF46, 0xFF);
-		bus_->Write(0xFF47, 0xFC);
-		bus_->Write(0xFF4A, 0x00);
-		bus_->Write(0xFF4B, 0x00);
-		bus_->Write(0xFF4D, 0xFF);
-		bus_->Write(0xFF4F, 0xFF);
-		bus_->Write(0xFF51, 0xFF);
-		bus_->Write(0xFF52, 0xFF);
-		bus_->Write(0xFF53, 0xFF);
-		bus_->Write(0xFF54, 0xFF);
-		bus_->Write(0xFF55, 0xFF);
-		bus_->Write(0xFF56, 0xFF);
-		bus_->Write(0xFF68, 0xFF);
-		bus_->Write(0xFF69, 0xFF);
-		bus_->Write(0xFF6A, 0xFF);
-		bus_->Write(0xFF6B, 0xFF);
-		bus_->Write(0xFF70, 0xFF);
-		bus_->Write(0xFFFF, 0x00);
+		bus_.Write(0xFF00, 0xCF);
+		bus_.Write(0xFF01, 0x00);
+		bus_.Write(0xFF02, 0x7E);
+		bus_.Write(0xFF04, 0xAC);
+		bus_.Write(0xFF05, 0x00);
+		bus_.Write(0xFF06, 0x00);
+		bus_.Write(0xFF07, 0xF8);
+		bus_.Write(0xFF0F, 0xE1);
+		bus_.Write(0xFF10, 0x80);
+		bus_.Write(0xFF11, 0xBF);
+		bus_.Write(0xFF12, 0xF3);
+		bus_.Write(0xFF13, 0xFF);
+		bus_.Write(0xFF14, 0xBF);
+		bus_.Write(0xFF16, 0x3F);
+		bus_.Write(0xFF17, 0x00);
+		bus_.Write(0xFF18, 0xFF);
+		bus_.Write(0xFF19, 0xBF);
+		bus_.Write(0xFF1A, 0x7F);
+		bus_.Write(0xFF1B, 0xFF);
+		bus_.Write(0xFF1C, 0x9F);
+		bus_.Write(0xFF1D, 0xFF);
+		bus_.Write(0xFF1E, 0xBF);
+		bus_.Write(0xFF20, 0xFF);
+		bus_.Write(0xFF21, 0x00);
+		bus_.Write(0xFF22, 0x00);
+		bus_.Write(0xFF23, 0xBF);
+		bus_.Write(0xFF24, 0x77);
+		bus_.Write(0xFF25, 0xF3);
+		bus_.Write(0xFF26, 0xF1);
+		bus_.Write(0xFF40, 0x91);
+		bus_.Write(0xFF41, 0x82);
+		bus_.Write(0xFF42, 0x00);
+		bus_.Write(0xFF43, 0x00);
+		bus_.Write(0xFF44, 0x00);
+		bus_.Write(0xFF45, 0x00);
+		bus_.Write(0xFF46, 0xFF);
+		bus_.Write(0xFF47, 0xFC);
+		bus_.Write(0xFF4A, 0x00);
+		bus_.Write(0xFF4B, 0x00);
+		bus_.Write(0xFF4D, 0xFF);
+		bus_.Write(0xFF4F, 0xFF);
+		bus_.Write(0xFF51, 0xFF);
+		bus_.Write(0xFF52, 0xFF);
+		bus_.Write(0xFF53, 0xFF);
+		bus_.Write(0xFF54, 0xFF);
+		bus_.Write(0xFF55, 0xFF);
+		bus_.Write(0xFF56, 0xFF);
+		bus_.Write(0xFF68, 0xFF);
+		bus_.Write(0xFF69, 0xFF);
+		bus_.Write(0xFF6A, 0xFF);
+		bus_.Write(0xFF6B, 0xFF);
+		bus_.Write(0xFF70, 0xFF);
+		bus_.Write(0xFFFF, 0x00);
 	}
 }

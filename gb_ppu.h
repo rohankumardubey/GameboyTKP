@@ -12,14 +12,14 @@ namespace TKPEmu::Gameboy::Devices {
 	private:
 		using TKPImage = TKPEmu::Tools::TKPImage;
 	public:
-		PPU(Bus* bus, std::mutex* draw_mutex);
+		PPU(Bus& bus, std::mutex* draw_mutex);
 		void Update(uint8_t cycles);
 		void Reset();
         int CalcCycles();
 		float* GetScreenData();
 		void FillTileset(float* pixels, size_t x_off = 0, size_t y_off = 0, uint16_t addr = 0x8000);
 	private:
-		Bus* bus_;
+		Bus& bus_;
 		std::mutex* draw_mutex_;
 		uint8_t& next_stat_mode;
 		std::array<float, 4 * 160 * 144> screen_color_data_{};

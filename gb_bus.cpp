@@ -2,6 +2,7 @@
 #include <bitset>
 #include <sstream>
 #include <iomanip>
+#include <iostream>
 #include "gb_bus.h"
 #include "gb_addresses.h"
 namespace TKPEmu::Gameboy::Devices {
@@ -364,27 +365,27 @@ namespace TKPEmu::Gameboy::Devices {
 					data |= 0b1000'0000;
 					break;
 				}
-				case addr_s1s: {
+				case addr_NR10: {
 					data |= 0b1000'0000;
 					break;
 				}
-				case addr_s3e: {
+				case addr_NR30: {
 					data |= 0b0111'1111;
 					break;
 				}
-				case addr_s3o: {
+				case addr_NR32: {
 					data |= 0b1001'1111;
 					break;
 				}
-				case addr_s4l: {
+				case addr_NR41: {
 					data |= 0b1110'0000;
 					break;
 				}
-				case addr_s4c: {
+				case addr_NR44: {
 					data |= 0b0011'1111;
 					break;
 				}
-				case addr_snd: {
+				case addr_NR52: {
 					data |= 0b0111'0000;
 					break;
 				}
@@ -424,8 +425,6 @@ namespace TKPEmu::Gameboy::Devices {
 		for (auto& ram : ram_banks_) {
 			ram.fill(0);
 		}
-		// for (uint16_t st = 0xFF00; st < 0xFFFF; st++)
-		// 	Write(st, 0);
 		hram_.fill(0);
 		oam_.fill(0);
 		vram_.fill(0);

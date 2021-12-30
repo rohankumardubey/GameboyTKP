@@ -1,13 +1,13 @@
 #include "gb_timer.h"
 #include <iostream>
 namespace TKPEmu::Gameboy::Devices {
-    Timer::Timer(Bus* bus) : 
+    Timer::Timer(Bus& bus) : 
         bus_(bus), 
-        DIV(bus->GetReference(addr_div)),
-        TIMA(bus_->GetReference(addr_tim)),
-        TAC(bus_->GetReference(addr_tac)),
-        TMA(bus_->GetReference(addr_tma)),
-        IF(bus_->GetReference(addr_ifl))
+        DIV(bus.GetReference(addr_div)),
+        TIMA(bus.GetReference(addr_tim)),
+        TAC(bus.GetReference(addr_tac)),
+        TMA(bus.GetReference(addr_tma)),
+        IF(bus.GetReference(addr_ifl))
     {}
     void Timer::Reset() {
         DIV = 0;
@@ -23,7 +23,7 @@ namespace TKPEmu::Gameboy::Devices {
 		if (just_overflown_) {
 			// Passes tima_write_reloading
 			// If TIMA is written while cycle [B] (check cycle accurate docs) TMA is written instead
-			if (bus_->TIMAChanged || bus_->TMAChanged) {
+			if (bus_.TIMAChanged || bus_.TMAChanged) {
 				TIMA = TMA;
 			}
 		}
@@ -43,7 +43,7 @@ namespace TKPEmu::Gameboy::Devices {
 			tima_overflow_ = false;
 		}
         int freq = interr_times_[TAC & 0b11];
-		if (bus_->DIVReset) {
+		if (bus_.DIVReset) {
 			if (oscillator_ == freq / 2) {
 				// timXX_div_trigger behavior
 				// TIMA increased if oscillator reached half or more and DIV is reset
@@ -58,7 +58,7 @@ namespace TKPEmu::Gameboy::Devices {
 					TIMA++;
 				}
 			}
-			bus_->DIVReset = false;
+			bus_.DIVReset = false;
 			oscillator_ = 0;
 			timer_counter_ = 0;
 		}
