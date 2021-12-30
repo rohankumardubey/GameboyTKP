@@ -34,11 +34,11 @@ namespace TKPEmu::Gameboy::Devices {
 					IF |= update_lyc();
 				}
 				else if (mode == 3) {
-					clock_target_ += 172;
+					clock_target_ += 168;
 					next_stat_mode = 0;
 				}
 				else if (mode == 0) {
-					clock_target_ += 204;
+					clock_target_ += 208;
 					if (LY <= 143) {
 						next_stat_mode = 2;
 						std::lock_guard<std::mutex> lg(*draw_mutex_);
