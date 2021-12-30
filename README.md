@@ -47,7 +47,7 @@ Always generate new test results before pushing a commit when changing the code.
 **[mattcurie](https://github.com/mattcurrie)'s tests:**
 |Test|GameboyTKP  |
 |--|--|
-| dmg-acid2 | ❌ (Milestone [#1](https://github.com/OFFTKP/TKPEmu/milestone/1)) |
+| dmg-acid2 | ❌ |
 
 ## License
 TKPEmu is licensed under the MIT license    
