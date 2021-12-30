@@ -11,7 +11,7 @@ namespace TKPEmu::Gameboy {
 		bus_(Instructions),
 		apu_(bus_),
 		ppu_(bus_, &DrawMutex),
-		timer_(bus_),
+		timer_(bus_, apu_),
 		cpu_(bus_, ppu_, timer_),
 		joypad_(bus_.GetReference(addr_joy)),
 		interrupt_flag_(bus_.GetReference(addr_if))

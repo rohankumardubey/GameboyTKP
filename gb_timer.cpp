@@ -1,8 +1,9 @@
 #include "gb_timer.h"
 #include <iostream>
 namespace TKPEmu::Gameboy::Devices {
-    Timer::Timer(Bus& bus) : 
+    Timer::Timer(Bus& bus, APU& apu) : 
         bus_(bus), 
+		apu_(apu),
         DIV(bus.GetReference(addr_div)),
         TIMA(bus.GetReference(addr_tim)),
         TAC(bus.GetReference(addr_tac)),
@@ -20,6 +21,7 @@ namespace TKPEmu::Gameboy::Devices {
 		just_overflown_ = false;
     }
     bool Timer::Update(uint8_t cycles, uint8_t old_if) {
+		bool ret = false;
 		if (just_overflown_) {
 			// Passes tima_write_reloading
 			// If TIMA is written while cycle [B] (check cycle accurate docs) TMA is written instead
@@ -73,12 +75,14 @@ namespace TKPEmu::Gameboy::Devices {
 					// After TIMA overflows, it stays 00 for 1 clock and *then* becomes =TMA
 					TIMA = 0;
 					tima_overflow_ = true;
-					return true;
+					ret = true;
+					break;
 				} else {
 					TIMA++;
 				}
 			}
 		}
-		return false;
+		apu_.Update();
+		return ret;
 	}
 }

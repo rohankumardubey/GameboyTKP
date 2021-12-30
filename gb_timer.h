@@ -2,15 +2,17 @@
 #ifndef TKP_GB_TIMER_H
 #define TKP_GB_TIMER_H
 #include "gb_bus.h"
+#include "gb_apu.h"
 #include "gb_addresses.h"
 namespace TKPEmu::Gameboy::Devices {
     class Timer {
     public:
-        Timer(Bus& bus);
+        Timer(Bus& bus, APU& apu);
         void Reset();
         bool Update(uint8_t cycles, uint8_t old_if);
     private:
         Bus& bus_;
+        APU& apu_;
         RegisterType &DIV, &TIMA, &TAC, &TMA, &IF;
         // TODO: Reduce these temporaries to oscillator_ and timer_counter_ only
         int oscillator_, timer_counter_, old_tac_;
