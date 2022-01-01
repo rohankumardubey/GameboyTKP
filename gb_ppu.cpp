@@ -4,10 +4,10 @@
 
 namespace TKPEmu::Gameboy::Devices {
 	enum STATMode {
-		OAM_SCAN = 2,
-		DRAW_PIXELS = 3,
-		HBLANK = 0,
-		VBLANK = 1,
+		MODE_OAM_SCAN = 2,
+		MODE_DRAW_PIXELS = 3,
+		MODE_HBLANK = 0,
+		MODE_VBLANK = 1,
 	};
 	PPU::PPU(Bus& bus, std::mutex* draw_mutex) : bus_(bus), draw_mutex_(draw_mutex),
 		LCDC(bus.GetReference(0xFF40)),
@@ -22,51 +22,53 @@ namespace TKPEmu::Gameboy::Devices {
 	{}
 	void PPU::Update(uint8_t cycles) {
 		static constexpr int clock_max = 456 * 144 + 456 * 10;
-		static bool vblank_ready = false;
+		static bool oam_scanned = false;
+		static int  mode3_extend = 0; // unused for now
 		bool enabled = LCDC & LCDCFlag::LCD_ENABLE;
 		uint8_t current_mode = STAT & STATFlag::MODE;
-		auto cur_scanline_clocks = clock_ % 456;
 		if (enabled) {
 			clock_ += cycles;
 			clock_ %= clock_max;
 			auto true_ly = clock_ / 456;
 			if (LY != true_ly) {
 				LY = true_ly;
-				// TODO: LYC compare
+				IF |= update_lyc();
 			}
 			if (LY <= 143) {
 				// Normal scanline
-				vblank_ready = true;
+				auto cur_scanline_clocks = clock_ % 456;
+				// Every scanline takes 456 tclocks
+				if (cur_scanline_clocks < 80) {
+					// OAM scan
+					if (get_mode() != MODE_OAM_SCAN) {
+						// Load the 10 sprites for this line
+						cur_scanline_sprites_.clear();
+						for (size_t i = 0; i < (bus_.oam_.size() - 4); i += 4) {
+							if (cur_scanline_sprites_.size() < 10 && is_sprite_eligible(bus_.oam_[i])) {
+								cur_scanline_sprites_.push_back(i);
+							}
+						}
+						// Sprites for this scanline are now scanned
+						IF |= set_mode(MODE_OAM_SCAN);
+					}
+				} else if (cur_scanline_clocks < (80 + 172 + mode3_extend)) {
+					if (get_mode() != MODE_DRAW_PIXELS) {
+						IF |= set_mode(MODE_DRAW_PIXELS);
+					}
+				} else {
+					if (get_mode() != MODE_HBLANK) {
+						IF |= set_mode(MODE_HBLANK);
+					}
+				}
 			} else {
 				// VBlank scanline
-				if (vblank_ready) {
+				if (get_mode() != MODE_VBLANK) {
 					// VBlank interrupt triggers when we first enter vblank
 					// and never again during vblank
 					IF |= IFInterrupt::VBLANK;
-					vblank_ready = false;
+					set_mode(MODE_VBLANK);
 				}
 			}
-			// // Every scanline takes 456 tclocks
-			// if (cur_scanline_clocks < 80) {
-			// 	// OAM scan
-			// 	IF |= set_mode(OAM_SCAN);
-			// 	if (!oam_scanned) {
-			// 		// Load the 10 sprites for this line
-			// 		cur_scanline_sprites_.clear();
-			// 		for (size_t i = 0; i < (bus_.oam_.size() - 4); i += 4) {
-			// 			if (cur_scanline_sprites_.size() < 10 && is_sprite_eligible(bus_.oam_[i])) {
-			// 				cur_scanline_sprites_.push_back(i);
-			// 			}
-			// 		}
-			// 		// Sprites for this scanline are now scanned
-			// 		oam_scanned = true;
-			// 	}
-			// } else if (cur_scanline_clocks < (80 + 172 + mode3_extend)) {
-
-			// } else {
-
-			// 	oam_scanned = false;
-			// }
 		}
 
 		// if (LCDC & LCDCFlag::LCD_ENABLE) {
@@ -157,9 +159,6 @@ namespace TKPEmu::Gameboy::Devices {
 	}
 	int PPU::set_mode(int mode) {
 		mode &= 0b11;
-		if (get_mode() == mode) {
-			return 0;
-		}
 		STAT &= 0b1111'1100;
 		STAT |= mode;
 		if (mode != 3 && (STAT & (1 << (mode + 3)))) {

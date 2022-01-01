@@ -29,7 +29,6 @@ namespace TKPEmu::Gameboy::Devices {
 		Bus& bus_;
 		std::mutex* draw_mutex_;
 		uint8_t next_stat_mode;
-		bool oam_scanned = false;
 		std::array<float, 4 * 160 * 144> screen_color_data_{};
 		// PPU memory mapped registers
 		uint8_t& LCDC, &STAT, &LYC, &LY, &IF, &SCY, &SCX, &WY, &WX;
@@ -38,7 +37,6 @@ namespace TKPEmu::Gameboy::Devices {
 		std::vector<uint8_t> cur_scanline_sprites_;
 		int clock_ = 0;
 		int clock_target_ = 0;
-		int mode3_extend = 0;
 		int set_mode(int mode);
 		int get_mode();
 		int update_lyc();
