@@ -6,8 +6,15 @@
 #include "gb_addresses.h"
 #include <mutex>
 #include <array>
+#include <queue>
 namespace TKPEmu::Gameboy::Devices {
 	constexpr int FRAME_CYCLES = 70224;
+	struct Pixel {
+		uint8_t Color;
+		uint8_t Palette;
+		uint8_t SpritePriority;
+		uint8_t BackgroundPriority;
+	};
 	class PPU {
 	private:
 		using TKPImage = TKPEmu::Tools::TKPImage;
@@ -21,17 +28,23 @@ namespace TKPEmu::Gameboy::Devices {
 	private:
 		Bus& bus_;
 		std::mutex* draw_mutex_;
-		uint8_t& next_stat_mode;
+		uint8_t next_stat_mode;
+		bool oam_scanned = false;
 		std::array<float, 4 * 160 * 144> screen_color_data_{};
 		// PPU memory mapped registers
 		uint8_t& LCDC, &STAT, &LYC, &LY, &IF, &SCY, &SCX, &WY, &WX;
-
+		std::queue<Pixel> bg_fifo_;
+		std::queue<Pixel> oam_fifo_;
+		std::vector<uint8_t> cur_scanline_sprites_;
 		int clock_ = 0;
 		int clock_target_ = 0;
+		int mode3_extend = 0;
 		int set_mode(int mode);
 		int get_mode();
 		int update_lyc();
+		bool is_sprite_eligible(uint8_t sprite_y);
 		void draw_scanline();
+		void fifo_fetch(uint8_t dots);
 		inline void renderTiles();
 		inline void renderSprites();
 	};

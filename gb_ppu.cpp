@@ -3,7 +3,13 @@
 #include <iostream>
 
 namespace TKPEmu::Gameboy::Devices {
-	PPU::PPU(Bus& bus, std::mutex* draw_mutex) : bus_(bus), draw_mutex_(draw_mutex), next_stat_mode(bus.NextMode), /*TODO: remove bus.NextMode? */
+	enum STATMode {
+		OAM_SCAN = 2,
+		DRAW_PIXELS = 3,
+		HBLANK = 0,
+		VBLANK = 1,
+	};
+	PPU::PPU(Bus& bus, std::mutex* draw_mutex) : bus_(bus), draw_mutex_(draw_mutex),
 		LCDC(bus.GetReference(0xFF40)),
 		STAT(bus.GetReference(0xFF41)),
 		LYC(bus.GetReference(0xFF45)),
@@ -15,57 +21,119 @@ namespace TKPEmu::Gameboy::Devices {
 		WX(bus.GetReference(0xFF4B))
 	{}
 	void PPU::Update(uint8_t cycles) {
-		if (LCDC & LCDCFlag::LCD_ENABLE) {
+		static constexpr int clock_max = 456 * 144 + 456 * 10;
+		static bool vblank_ready = false;
+		bool enabled = LCDC & LCDCFlag::LCD_ENABLE;
+		uint8_t current_mode = STAT & STATFlag::MODE;
+		auto cur_scanline_clocks = clock_ % 456;
+		if (enabled) {
 			clock_ += cycles;
-			if (clock_ >= clock_target_) {
-				if (LY == 153) {
-					next_stat_mode = 2;
-					LY = -1;
-					clock_ = FRAME_CYCLES;
-					clock_target_ = FRAME_CYCLES;
-				}
-				IF |= set_mode(next_stat_mode);
-				int mode = get_mode(); 
-				if (mode == 2) {
-					clock_target_ += 80;
-					next_stat_mode = 3;
-					LY += 1;
-					// possible bug
-					IF |= update_lyc();
-				}
-				else if (mode == 3) {
-					clock_target_ += 168;
-					next_stat_mode = 0;
-				}
-				else if (mode == 0) {
-					clock_target_ += 208;
-					if (LY <= 143) {
-						next_stat_mode = 2;
-						std::lock_guard<std::mutex> lg(*draw_mutex_);
-						draw_scanline();
-					}
-					else {
-						next_stat_mode = 1;
-					}
-				}
-				else if (mode == 1) {
-					clock_target_ += 456;
-					next_stat_mode = 1;
-					if (LY == 144) {
-						IF |= IFInterrupt::VBLANK;
-					}
-					LY += 1;
-					IF |= update_lyc();
+			clock_ %= clock_max;
+			auto true_ly = clock_ / 456;
+			if (LY != true_ly) {
+				LY = true_ly;
+				// TODO: LYC compare
+			}
+			if (LY <= 143) {
+				// Normal scanline
+				vblank_ready = true;
+			} else {
+				// VBlank scanline
+				if (vblank_ready) {
+					// VBlank interrupt triggers when we first enter vblank
+					// and never again during vblank
+					IF |= IFInterrupt::VBLANK;
+					vblank_ready = false;
 				}
 			}
+			// // Every scanline takes 456 tclocks
+			// if (cur_scanline_clocks < 80) {
+			// 	// OAM scan
+			// 	IF |= set_mode(OAM_SCAN);
+			// 	if (!oam_scanned) {
+			// 		// Load the 10 sprites for this line
+			// 		cur_scanline_sprites_.clear();
+			// 		for (size_t i = 0; i < (bus_.oam_.size() - 4); i += 4) {
+			// 			if (cur_scanline_sprites_.size() < 10 && is_sprite_eligible(bus_.oam_[i])) {
+			// 				cur_scanline_sprites_.push_back(i);
+			// 			}
+			// 		}
+			// 		// Sprites for this scanline are now scanned
+			// 		oam_scanned = true;
+			// 	}
+			// } else if (cur_scanline_clocks < (80 + 172 + mode3_extend)) {
+
+			// } else {
+
+			// 	oam_scanned = false;
+			// }
 		}
-		else {
-			LY = 0;
-			clock_ += cycles;
-			if (clock_ >= FRAME_CYCLES) {
-				clock_ %= FRAME_CYCLES;
-			}
+
+		// if (LCDC & LCDCFlag::LCD_ENABLE) {
+		// 	clock_ += cycles;
+		// 	if (clock_ >= clock_target_) {
+		// 		if (LY == 153) {
+		// 			next_stat_mode = 2;
+		// 			LY = -1;
+		// 			clock_ = FRAME_CYCLES;
+		// 			clock_target_ = FRAME_CYCLES;
+		// 		}
+		// 		IF |= set_mode(next_stat_mode);
+		// 		int mode = get_mode(); 
+		// 		if (mode == 2) {
+		// 			clock_target_ += 80;
+		// 			next_stat_mode = 3;
+		// 			LY += 1;
+		// 			// possible bug
+		// 			IF |= update_lyc();
+		// 		}
+		// 		else if (mode == 3) {
+		// 			clock_target_ += 168;
+		// 			next_stat_mode = 0;
+		// 		}
+		// 		else if (mode == 0) {
+		// 			clock_target_ += 208;
+		// 			if (LY <= 143) {
+		// 				next_stat_mode = 2;
+		// 				std::lock_guard<std::mutex> lg(*draw_mutex_);
+		// 				draw_scanline();
+		// 			}
+		// 			else {
+		// 				next_stat_mode = 1;
+		// 			}
+		// 		}
+		// 		else if (mode == 1) {
+		// 			clock_target_ += 456;
+		// 			next_stat_mode = 1;
+		// 			if (LY == 144) {
+		// 				IF |= IFInterrupt::VBLANK;
+		// 			}
+		// 			LY += 1;
+		// 			IF |= update_lyc();
+		// 		}
+		// 	}
+		// }
+		// else {
+		// 	LY = 0;
+		// 	clock_ += cycles;
+		// 	if (clock_ >= FRAME_CYCLES) {
+		// 		clock_ %= FRAME_CYCLES;
+		// 	}
+		// }
+	}
+	bool PPU::is_sprite_eligible(uint8_t sprite_y) {
+		bool use8x16 = LCDC & LCDCFlag::OBJ_SIZE;
+		int y_pos_end = use8x16 ? sprite_y : sprite_y - 8;
+		int y_pos_start = sprite_y - 16;
+		// In order for this sprite to be one of the 10 drawn in this scanline
+		// one of its 8 (or 16) lines need to be equal to LY
+		if (LY >= y_pos_start && LY < y_pos_end) {
+			return true;
 		}
+		return false;
+ 	}
+	void PPU::fifo_fetch(uint8_t dots) {
+
 	}
 	void PPU::Reset() {
 		for (int i = 0; i < (screen_color_data_.size() - 4); i += 4) {
@@ -88,12 +156,13 @@ namespace TKPEmu::Gameboy::Devices {
 		return &screen_color_data_[0];
 	}
 	int PPU::set_mode(int mode) {
+		mode &= 0b11;
 		if (get_mode() == mode) {
 			return 0;
 		}
 		STAT &= 0b1111'1100;
 		STAT |= mode;
-		if (mode != 3 && STAT & (1 << (mode + 3))) {
+		if (mode != 3 && (STAT & (1 << (mode + 3)))) {
 			return IFInterrupt::LCDSTAT;
 		}
 		return 0;
