@@ -69,61 +69,11 @@ namespace TKPEmu::Gameboy::Devices {
 					// and never again during vblank
 					IF |= IFInterrupt::VBLANK;
 					set_mode(MODE_VBLANK);
+					window_internal = 0;
+					window_internal_temp = 0;
 				}
 			}
 		}
-
-		// if (LCDC & LCDCFlag::LCD_ENABLE) {
-		// 	clock_ += cycles;
-		// 	if (clock_ >= clock_target_) {
-		// 		if (LY == 153) {
-		// 			next_stat_mode = 2;
-		// 			LY = -1;
-		// 			clock_ = FRAME_CYCLES;
-		// 			clock_target_ = FRAME_CYCLES;
-		// 		}
-		// 		IF |= set_mode(next_stat_mode);
-		// 		int mode = get_mode(); 
-		// 		if (mode == 2) {
-		// 			clock_target_ += 80;
-		// 			next_stat_mode = 3;
-		// 			LY += 1;
-		// 			// possible bug
-		// 			IF |= update_lyc();
-		// 		}
-		// 		else if (mode == 3) {
-		// 			clock_target_ += 168;
-		// 			next_stat_mode = 0;
-		// 		}
-		// 		else if (mode == 0) {
-		// 			clock_target_ += 208;
-		// 			if (LY <= 143) {
-		// 				next_stat_mode = 2;
-		// 				std::lock_guard<std::mutex> lg(*draw_mutex_);
-		// 				draw_scanline();
-		// 			}
-		// 			else {
-		// 				next_stat_mode = 1;
-		// 			}
-		// 		}
-		// 		else if (mode == 1) {
-		// 			clock_target_ += 456;
-		// 			next_stat_mode = 1;
-		// 			if (LY == 144) {
-		// 				IF |= IFInterrupt::VBLANK;
-		// 			}
-		// 			LY += 1;
-		// 			IF |= update_lyc();
-		// 		}
-		// 	}
-		// }
-		// else {
-		// 	LY = 0;
-		// 	clock_ += cycles;
-		// 	if (clock_ >= FRAME_CYCLES) {
-		// 		clock_ %= FRAME_CYCLES;
-		// 	}
-		// }
 	}
 	bool PPU::is_sprite_eligible(uint8_t sprite_y) {
 		bool use8x16 = LCDC & LCDCFlag::OBJ_SIZE;
@@ -149,7 +99,6 @@ namespace TKPEmu::Gameboy::Devices {
 		LY = 0x0;
 		LCDC = 0b1001'0001;
 		STAT = 0b1000'0000;
-		next_stat_mode = 3;
 		clock_ = 0;
 		clock_target_ = 0;
 	}
@@ -194,185 +143,105 @@ namespace TKPEmu::Gameboy::Devices {
 	}
 
 	inline void PPU::renderTiles() {
-		uint16_t tileData = (LCDC & 0b10000) ? 0x8000 : 0x8800;
-
-		uint8_t scrollY = bus_.Read(0xFF42);
-		uint8_t scrollX = bus_.Read(0xFF43);
-		uint8_t windowY = bus_.Read(0xFF4A);
-		uint8_t windowX = bus_.Read(0xFF4B) - 7;
+		uint16_t tileData = (LCDC & LCDCFlag::BG_TILES) ? 0x8000 : 0x8800;
 		bool unsig = true;
 		if (tileData == 0x8800) {
 			unsig = false;
 		}
-		bool windowEnabled = false;
-
-		// is the window enabled?f
-		if (LCDC & 0b100000) {
-			// there is no point in drawing the window if its located under the current scanline
-			if (windowY <= bus_.Read(0xFF44)) {
-				windowEnabled = true;
-			}
-
-		}
+		bool windowEnabled = (LCDC & LCDCFlag::WND_ENABLE && WY <= LY);
 		uint16_t identifierLocation;
 		uint8_t positionY = 0;
-		// if window is enabled we use the window background memory map per Pan doc gb docs
 		if (windowEnabled) {
-			identifierLocation = (LCDC & 0b1000000) ? 0x9C00 : 0x9800;
-			// if the window is enabled we can get the y-position of the place we need to draw via
-			// window y since window y tells us distance from the area of the first place we need to draw
-			positionY = bus_.Read(0xFF44) - windowY;
+			identifierLocation = (LCDC & LCDCFlag::WND_TILEMAP) ? 0x9C00 : 0x9800;
+			positionY = LY - WY;
+		} else {
+			identifierLocation = (LCDC & LCDCFlag::BG_TILEMAP) ? 0x9C00 : 0x9800;
+			positionY = LY + SCY;
 		}
-		else {
-			identifierLocation = (LCDC & 0b1000) == 1 ? 0x9C00 : 0x9800;
-			// if windows is not enabled we get the edge y-position of the area we need to draw
-			// by adding current scanline and scroll-y
-			positionY = bus_.Read(0xFF44) + scrollY;
-		}
-
 		uint16_t tileRow = (((uint8_t)(positionY / 8)) * 32);
-
-		// draw pixels horizontally
 		for (int pixel = 0; pixel < 160; pixel++) {
-			uint8_t positionX = pixel + scrollX;
-			if (windowEnabled) {
-				if (pixel >= windowX) {
-					positionX = pixel - windowX;
-				}
+			uint8_t positionX = pixel + SCX;
+			if (windowEnabled && pixel >= (WX - 7)) {
+				positionX = pixel - (WX - 7);
 			}
-
 			uint16_t tileCol = (positionX / 8);
-
 			int16_t tileNumber;
-
 			uint16_t tileAddress = identifierLocation + tileRow + tileCol;
-
+			uint16_t tileLocation = tileData;
 			if (unsig) {
 				tileNumber = bus_.Read(tileAddress);
-			}
-			else {
-				tileNumber = static_cast<int8_t>(bus_.Read(tileAddress));
-			}
-
-			uint16_t tileLocation = tileData;
-
-			if (unsig) {
 				tileLocation += tileNumber * 16;
-			}
-			else {
+			} else {
+				tileNumber = static_cast<int8_t>(bus_.Read(tileAddress));
 				tileLocation += (tileNumber + 128) * 16;
 			}
-
-			// which col of tile
-			uint8_t line = (positionY % 8);
-			line *= 2;
-
+			uint8_t line = (positionY % 8) * 2;
 			uint8_t data1 = bus_.Read(tileLocation + line);
 			uint8_t data2 = bus_.Read(tileLocation + line + 1);
-
-			int colorBit = positionX % 8;
-			// pixel 0 is bit 7, so on
-			// 0 - 7 is -7, multiplied by -1 is 7 so we can get the 7th bit of the data
+			int colorBit = (positionX % 8);
 			colorBit -= 7;
 			colorBit *= -1;
-
-			int colorNum = (data2 >> colorBit) & 0x1;
-			colorNum <<= 1;
-			colorNum |= (data1 >> colorBit) & 0x1;
-			int finaly = bus_.Read(0xFF44);
-
-			// safety check to make sure what im about 
-			// to set is int the 160x144 bounds
-			int idx = (pixel * 4) + (finaly * 4 * 160);
-			if (LCDC & 0b01) {
-				screen_color_data_[idx++] = bus_.Palette[bus_.BGPalette[colorNum]][0];
-				screen_color_data_[idx++] = bus_.Palette[bus_.BGPalette[colorNum]][1];
-				screen_color_data_[idx++] = bus_.Palette[bus_.BGPalette[colorNum]][2];
-				screen_color_data_[idx] = 255.0f;
-			}
+			int colorNum = (((data2 >> colorBit) & 0b1) << 1) | ((data1 >> colorBit) & 0b1);
+			int idx = (pixel * 4) + (LY * 4 * 160);
+			screen_color_data_[idx++] = bus_.Palette[bus_.BGPalette[colorNum]][0];
+			screen_color_data_[idx++] = bus_.Palette[bus_.BGPalette[colorNum]][1];
+			screen_color_data_[idx++] = bus_.Palette[bus_.BGPalette[colorNum]][2];
+			screen_color_data_[idx] = 255.0f;
 		}
 	}
-
 	void PPU::renderSprites() {
-		bool use8x16 = false;
-		if (LCDC & 0b100)
-			use8x16 = true;
-
-		for (int sprite = 0; sprite < 40; sprite++) {
-			uint8_t positionY = bus_.oam_[sprite * 4] - 16;
-			uint8_t positionX = bus_.oam_[sprite * 4 + 1] - 8;
-			uint8_t tileLoc = bus_.oam_[sprite * 4 + 2];
-			uint8_t attributes = bus_.oam_[sprite * 4 + 3];
-
+		bool use8x16 = LCDC & LCDCFlag::OBJ_SIZE;
+		// Sort depending on X and reverse iterate to correctly select sprite priority
+		std::sort(cur_scanline_sprites_.begin(), cur_scanline_sprites_.end(), [this](const auto& lhs, const auto& rhs) {
+			return bus_.oam_[lhs + 1] < bus_.oam_[rhs + 1];
+		});
+		for (auto i = cur_scanline_sprites_.rbegin(); i != cur_scanline_sprites_.rend(); ++i) {
+			auto sprite = *i;
+			uint8_t positionY = bus_.oam_[sprite] - 16;
+			uint8_t positionX = bus_.oam_[sprite + 1] - 8;		
+			uint8_t tileLoc = bus_.oam_[sprite + 2];
+			uint8_t attributes = bus_.oam_[sprite + 3];
+			if (use8x16) {
+				// dmg-acid2: Bit 0 of tile index for 8x16 objects should be ignored
+				tileLoc &= 0b1111'1110;
+			}
 			bool yFlip = attributes & 0b1000000;
 			bool xFlip = attributes & 0b100000;
-
-			int scanLine = bus_.Read(0xFF44);
-			int height = 8;
-			if (use8x16) {
-				height = 16;
+			int height = use8x16 ? 16 : 8;
+			int line = LY - positionY;
+			if (yFlip) {
+				line -= height - 1;
+				line *= -1;
 			}
-
-			if ((scanLine >= positionY) && (scanLine < (positionY + height))) {
-				int line = scanLine - positionY;
-
-				// if a sprite is flipped we read data from opposite side of table 
-				if (yFlip) {
-					line -= height - 1;
-					line *= -1;
+			line *= 2;
+			uint16_t address = (0x8000 + (tileLoc * 16) + line);
+			uint8_t data1 = bus_.Read(address);
+			uint8_t data2 = bus_.Read(address + 1);
+			for (int tilePixel = 7; tilePixel >= 0; tilePixel--) {
+				int colorbit = tilePixel;
+				if (xFlip) {
+					colorbit -= 7;
+					colorbit *= -1;
 				}
-
-				line *= 2;
-
-				uint16_t address = (0x8000 + (tileLoc * 16) + line);
-				uint8_t data1 = bus_.Read(address);
-				uint8_t data2 = bus_.Read(address + 1);
-
-
-				for (int tilePixel = 7; tilePixel >= 0; tilePixel--) {
-					int colorbit = tilePixel;
-					if (xFlip) {
-						colorbit -= 7;
-						colorbit *= -1;
-					}
-
-					int colorNum = (data2 >> colorbit) & 0x1;
-					colorNum <<= 1;
-					colorNum |= (data1 >> colorbit) & 0x1;
-
-					bool obp1 = (attributes & 0b10000);
-					uint8_t color = 1;
-					if (obp1) {
-						color = bus_.OBJ1Palette[colorNum];
-					}
-					else {
-						color = bus_.OBJ0Palette[colorNum];
-					}
-
-					if (color == 0) {
-						continue;
-					}
-
-
-					int xPix = 0 - tilePixel;
-					xPix += 7;
-
-					int pixel = positionX + xPix;
-
-
-					if ((scanLine < 0) || (scanLine > 143) || (pixel < 0) || (pixel > 159))
-					{
-						continue;
-					}
-
-					int idx = (pixel * 4) + (scanLine * 4 * 160);
-					if (LCDC & 0b10) {
-						screen_color_data_[idx++] = bus_.Palette[color][0];
-						screen_color_data_[idx++] = bus_.Palette[color][1];
-						screen_color_data_[idx++] = bus_.Palette[color][2];
-						screen_color_data_[idx] = 255;
-					}
+				int colorNum = ((data2 >> colorbit) & 0b1) << 1;
+				colorNum |= (data1 >> colorbit) & 0b1;
+				bool obp1 = (attributes & 0b10000);
+				uint8_t color = 1;
+				if (obp1) {
+					color = bus_.OBJ1Palette[colorNum];
 				}
+				else {
+					color = bus_.OBJ0Palette[colorNum];
+				}
+				int pixel = positionX - tilePixel + 7;
+				if ((LY < 0) || (LY > 143) || (pixel < 0) || (pixel > 159) || (color == 0)) {
+					continue;
+				}
+				int idx = (pixel * 4) + (LY * 4 * 160);
+				screen_color_data_[idx++] = bus_.Palette[color][0];
+				screen_color_data_[idx++] = bus_.Palette[color][1];
+				screen_color_data_[idx++] = bus_.Palette[color][2];
+				screen_color_data_[idx] = 255;
 			}
 		}
 	}

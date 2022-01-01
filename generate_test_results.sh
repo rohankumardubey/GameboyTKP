@@ -26,6 +26,8 @@ echo "" >> $outf
 echo "Testing mooneye directory $mooneye"
 echo "## [Gekkio](https://github.com/Gekkio)'s tests:    " >> $outf
 echo "" >> $outf
+$emu -T "$mooneye/acceptance" -p -g -G $outf
+echo "" >> $outf
 $emu -T "$mooneye/acceptance/bits" -p -g -G $outf
 echo "" >> $outf
 $emu -T "$mooneye/acceptance/instr" -p -g -G $outf

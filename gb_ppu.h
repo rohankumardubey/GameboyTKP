@@ -28,13 +28,14 @@ namespace TKPEmu::Gameboy::Devices {
 	private:
 		Bus& bus_;
 		std::mutex* draw_mutex_;
-		uint8_t next_stat_mode;
 		std::array<float, 4 * 160 * 144> screen_color_data_{};
 		// PPU memory mapped registers
 		uint8_t& LCDC, &STAT, &LYC, &LY, &IF, &SCY, &SCX, &WY, &WX;
 		std::queue<Pixel> bg_fifo_;
 		std::queue<Pixel> oam_fifo_;
 		std::vector<uint8_t> cur_scanline_sprites_;
+		uint8_t window_internal_temp = 0;
+		uint8_t window_internal = 0;
 		int clock_ = 0;
 		int clock_target_ = 0;
 		int set_mode(int mode);
