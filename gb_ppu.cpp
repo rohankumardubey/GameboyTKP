@@ -58,6 +58,8 @@ namespace TKPEmu::Gameboy::Devices {
 				} else {
 					if (get_mode() != MODE_HBLANK) {
 						IF |= set_mode(MODE_HBLANK);
+						std::lock_guard<std::mutex> lg(*draw_mutex_);
+						draw_scanline();
 					}
 				}
 			} else {
