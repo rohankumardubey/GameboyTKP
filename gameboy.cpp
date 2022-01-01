@@ -37,7 +37,6 @@ namespace TKPEmu::Gameboy {
 	void Gameboy::v_log_state() {
 		*ofstream_ptr_ << std::setfill('0');
 		int inst = bus_.Read(cpu_.PC);
-		std::cout << std::hex << (int)cpu_.PC << " " << std::hex << inst << std::endl;
 		for (const auto& t : *log_types_ptr_) {
 			switch (t) {
 				case LogType::InstrName: {
