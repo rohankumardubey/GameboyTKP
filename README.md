@@ -17,7 +17,6 @@ This emulator can be integrated into other projects. Check `example_main.cpp` fo
 ![F-1 Race](./Images/f1.bmp)
 ![Pokemon Red](./Images/red.bmp)
 ![dmg-acid2](./Images/test.bmp)
-![Zelda](./Images/zd.bmp)
 
 ## Resources
 This emulator would not be possible without the use of these resources, as acquiring a DMG Gameboy     
