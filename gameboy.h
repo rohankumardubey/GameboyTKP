@@ -34,6 +34,7 @@ namespace TKPEmu::Gameboy {
 		float* GetScreenData() override;
 		std::string GetEmulatorName() override;
 		std::string GetScreenshotHash() override;
+		bool IsReadyToDraw() override;
 		void SetLogTypes(std::unique_ptr<std::vector<LogType>> types_ptr);
         DisInstr GetInstruction(uint16_t address);
 		bool AddBreakpoint(GBBPArguments bp);

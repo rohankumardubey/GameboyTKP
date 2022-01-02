@@ -116,6 +116,9 @@ namespace TKPEmu::Gameboy {
 		}
 		*ofstream_ptr_ << "\n";
 	}
+	bool Gameboy::IsReadyToDraw() {
+		return ppu_.ReadyToDraw;
+	}
 	void Gameboy::start_normal() { 
 		Reset();
 		auto func = [this]() {

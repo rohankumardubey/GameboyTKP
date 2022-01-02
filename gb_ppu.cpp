@@ -56,6 +56,7 @@ namespace TKPEmu::Gameboy::Devices {
 				} else {
 					if (get_mode() != MODE_HBLANK) {
 						IF |= set_mode(MODE_HBLANK);
+						ReadyToDraw = true;
 						std::lock_guard<std::mutex> lg(*draw_mutex_);
 						draw_scanline();
 					}
@@ -234,7 +235,11 @@ namespace TKPEmu::Gameboy::Devices {
 					color = bus_.OBJ0Palette[colorNum];
 				}
 				int pixel = positionX - tilePixel + 7;
-				if ((LY < 0) || (LY > 143) || (pixel < 0) || (pixel > 159) || (color == 0)) {
+				if ((LY < 0) || (LY > 143) || (pixel < 0) || (pixel > 159) || (colorNum == 0)) {
+					continue;
+				}
+				if ((attributes & 0b1000'0000) && color == 0) {
+					// BG over OBJ applies
 					continue;
 				}
 				int idx = (pixel * 4) + (LY * 4 * 160);
