@@ -240,16 +240,11 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 				int idx = (pixel * 4) + (LY * 4 * 160);
 				if (attributes & 0b1000'0000) {
-					if (screen_color_data_[idx] == bus_.Palette[0][0] &&
+					if (!(screen_color_data_[idx] == bus_.Palette[0][0] &&
 					  	screen_color_data_[idx + 1] == bus_.Palette[0][1] && 
-						screen_color_data_[idx + 2] == bus_.Palette[0][2]) 
-					{
-						screen_color_data_[idx++] = bus_.Palette[color][0];
-						screen_color_data_[idx++] = bus_.Palette[color][1];
-						screen_color_data_[idx++] = bus_.Palette[color][2];
-						screen_color_data_[idx] = 255;
+						screen_color_data_[idx + 2] == bus_.Palette[0][2])) {
+						continue;
 					}
-					continue;
 				}
 				screen_color_data_[idx++] = bus_.Palette[color][0];
 				screen_color_data_[idx++] = bus_.Palette[color][1];
