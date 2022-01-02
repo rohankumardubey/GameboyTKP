@@ -1,7 +1,6 @@
 #include "gb_ppu.h"
 #include "../glad/glad/glad.h"
 #include <iostream>
-
 namespace TKPEmu::Gameboy::Devices {
 	enum STATMode {
 		MODE_OAM_SCAN = 2,
@@ -149,24 +148,36 @@ namespace TKPEmu::Gameboy::Devices {
 			unsig = false;
 		}
 		bool windowEnabled = (LCDC & LCDCFlag::WND_ENABLE && WY <= LY);
-		uint16_t identifierLocation;
-		uint8_t positionY = 0;
-		if (windowEnabled) {
-			identifierLocation = (LCDC & LCDCFlag::WND_TILEMAP) ? 0x9C00 : 0x9800;
-			positionY = LY - WY;
-		} else {
-			identifierLocation = (LCDC & LCDCFlag::BG_TILEMAP) ? 0x9C00 : 0x9800;
-			positionY = LY + SCY;
+		if (WX >= 160 || WX < 7) {
+			windowEnabled = false;
 		}
+		uint16_t identifierLocationW = (LCDC & LCDCFlag::WND_TILEMAP) ? 0x9C00 : 0x9800;
+		uint16_t identifierLocationB = (LCDC & LCDCFlag::BG_TILEMAP) ? 0x9C00 : 0x9800;
+		uint8_t positionY = 0;
+		positionY = LY + SCY;
+		if (windowEnabled) {
+			//identifierLocationW += window_internal;
+			window_internal_temp++;
+		} else {
+			if (window_internal_temp)
+				window_internal = window_internal_temp - 2;
+		}
+		uint16_t identifierLoc = identifierLocationB;
 		uint16_t tileRow = (((uint8_t)(positionY / 8)) * 32);
 		for (int pixel = 0; pixel < 160; pixel++) {
 			uint8_t positionX = pixel + SCX;
-			if (windowEnabled && pixel >= (WX - 7)) {
+			bool test = false;
+			if (windowEnabled && positionX >= (WX - 7)) {
+				identifierLoc = identifierLocationW;
 				positionX = pixel - (WX - 7);
+				positionY = LY - WY - (window_internal * 4);
+				tileRow = (((uint8_t)(positionY / 8)) * 32);
+				if (window_internal != 0)
+					std::cout << std::hex << (identifierLoc + tileRow + (positionX / 8))  << ":" << std::hex << identifierLoc << "+" << std::hex << tileRow << "+" << std::hex << positionX / 8 << std::endl;
 			}
 			uint16_t tileCol = (positionX / 8);
 			int16_t tileNumber;
-			uint16_t tileAddress = identifierLocation + tileRow + tileCol;
+			uint16_t tileAddress = identifierLoc + tileRow + tileCol;
 			uint16_t tileLocation = tileData;
 			if (unsig) {
 				tileNumber = bus_.Read(tileAddress);
