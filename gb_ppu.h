@@ -31,11 +31,9 @@ namespace TKPEmu::Gameboy::Devices {
 		std::array<float, 4 * 160 * 144> screen_color_data_{};
 		// PPU memory mapped registers
 		uint8_t& LCDC, &STAT, &LYC, &LY, &IF, &SCY, &SCX, &WY, &WX;
-		std::queue<Pixel> bg_fifo_;
-		std::queue<Pixel> oam_fifo_;
 		std::vector<uint8_t> cur_scanline_sprites_;
-		uint8_t window_internal_temp = 0;
-		uint8_t window_internal = 0;
+		uint8_t window_internal_temp_ = 0;
+		uint8_t window_internal_ = 0;
 		int clock_ = 0;
 		int clock_target_ = 0;
 		int set_mode(int mode);
@@ -43,9 +41,8 @@ namespace TKPEmu::Gameboy::Devices {
 		int update_lyc();
 		bool is_sprite_eligible(uint8_t sprite_y);
 		void draw_scanline();
-		void fifo_fetch(uint8_t dots);
-		inline void renderTiles();
-		inline void renderSprites();
+		inline void render_tiles();
+		inline void render_sprites();
 	};
 }
 #endif

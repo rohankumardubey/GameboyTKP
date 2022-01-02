@@ -21,7 +21,6 @@ namespace TKPEmu::Gameboy::Devices {
 	{}
 	void PPU::Update(uint8_t cycles) {
 		static constexpr int clock_max = 456 * 144 + 456 * 10;
-		static bool oam_scanned = false;
 		static int  mode3_extend = 0; // unused for now
 		bool enabled = LCDC & LCDCFlag::LCD_ENABLE;
 		uint8_t current_mode = STAT & STATFlag::MODE;
@@ -68,8 +67,8 @@ namespace TKPEmu::Gameboy::Devices {
 					// and never again during vblank
 					IF |= IFInterrupt::VBLANK;
 					set_mode(MODE_VBLANK);
-					window_internal = 0;
-					window_internal_temp = 0;
+					window_internal_ = 0;
+					window_internal_temp_ = 0;
 				}
 			}
 		}
@@ -85,9 +84,6 @@ namespace TKPEmu::Gameboy::Devices {
 		}
 		return false;
  	}
-	void PPU::fifo_fetch(uint8_t dots) {
-
-	}
 	void PPU::Reset() {
 		for (int i = 0; i < (screen_color_data_.size() - 4); i += 4) {
 			screen_color_data_[i + 0] = bus_.Palette[0][0];
@@ -133,15 +129,15 @@ namespace TKPEmu::Gameboy::Devices {
 	}
 
 	void PPU::draw_scanline() {
-		if (LCDC & 0b1) {
-			renderTiles();
+		if (LCDC & LCDCFlag::BG_ENABLE) {
+			render_tiles();
 		}
-		if (LCDC & 0b10) {
-			renderSprites();
+		if (LCDC & LCDCFlag::OBJ_ENABLE) {
+			render_sprites();
 		}
 	}
 
-	inline void PPU::renderTiles() {
+	inline void PPU::render_tiles() {
 		uint16_t tileData = (LCDC & LCDCFlag::BG_TILES) ? 0x8000 : 0x8800;
 		bool unsig = true;
 		if (tileData == 0x8800) {
@@ -153,27 +149,22 @@ namespace TKPEmu::Gameboy::Devices {
 		}
 		uint16_t identifierLocationW = (LCDC & LCDCFlag::WND_TILEMAP) ? 0x9C00 : 0x9800;
 		uint16_t identifierLocationB = (LCDC & LCDCFlag::BG_TILEMAP) ? 0x9C00 : 0x9800;
-		uint8_t positionY = 0;
-		positionY = LY + SCY;
+		uint8_t positionY = LY + SCY;
 		if (windowEnabled) {
-			//identifierLocationW += window_internal;
-			window_internal_temp++;
+			++window_internal_temp_;
 		} else {
-			if (window_internal_temp)
-				window_internal = window_internal_temp - 2;
+			if (window_internal_temp_)
+				window_internal_ = window_internal_temp_ - 2;
 		}
 		uint16_t identifierLoc = identifierLocationB;
 		uint16_t tileRow = (((uint8_t)(positionY / 8)) * 32);
 		for (int pixel = 0; pixel < 160; pixel++) {
 			uint8_t positionX = pixel + SCX;
-			bool test = false;
 			if (windowEnabled && positionX >= (WX - 7)) {
 				identifierLoc = identifierLocationW;
 				positionX = pixel - (WX - 7);
-				positionY = LY - WY - (window_internal * 4);
+				positionY = LY - WY - (window_internal_ * 4);
 				tileRow = (((uint8_t)(positionY / 8)) * 32);
-				if (window_internal != 0)
-					std::cout << std::hex << (identifierLoc + tileRow + (positionX / 8))  << ":" << std::hex << identifierLoc << "+" << std::hex << tileRow << "+" << std::hex << positionX / 8 << std::endl;
 			}
 			uint16_t tileCol = (positionX / 8);
 			int16_t tileNumber;
@@ -189,9 +180,7 @@ namespace TKPEmu::Gameboy::Devices {
 			uint8_t line = (positionY % 8) * 2;
 			uint8_t data1 = bus_.Read(tileLocation + line);
 			uint8_t data2 = bus_.Read(tileLocation + line + 1);
-			int colorBit = (positionX % 8);
-			colorBit -= 7;
-			colorBit *= -1;
+			int colorBit = -((positionX % 8) - 7);
 			int colorNum = (((data2 >> colorBit) & 0b1) << 1) | ((data1 >> colorBit) & 0b1);
 			int idx = (pixel * 4) + (LY * 4 * 160);
 			screen_color_data_[idx++] = bus_.Palette[bus_.BGPalette[colorNum]][0];
@@ -200,7 +189,7 @@ namespace TKPEmu::Gameboy::Devices {
 			screen_color_data_[idx] = 255.0f;
 		}
 	}
-	void PPU::renderSprites() {
+	void PPU::render_sprites() {
 		bool use8x16 = LCDC & LCDCFlag::OBJ_SIZE;
 		// Sort depending on X and reverse iterate to correctly select sprite priority
 		std::sort(cur_scanline_sprites_.begin(), cur_scanline_sprites_.end(), [this](const auto& lhs, const auto& rhs) {
