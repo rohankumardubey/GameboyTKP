@@ -119,11 +119,94 @@ namespace TKPEmu::Gameboy {
 	bool Gameboy::IsReadyToDraw() {
 		return ppu_.ReadyToDraw;
 	}
+	void Gameboy::save_state(std::ofstream& ofstream) {
+		if (!Paused) {
+			Paused = true;
+		}
+		std::lock_guard<std::mutex> lg(DebugUpdateMutex);
+		bus_.TransferDMA(160); // Finish dma transfer just in case
+		ofstream << bus_.selected_ram_bank_;
+		ofstream << bus_.selected_rom_bank_;
+		ofstream << cpu_.A << cpu_.F << cpu_.B << cpu_.C << cpu_.D << cpu_.E << cpu_.H << cpu_.L << (uint8_t)(cpu_.PC >> 8) 
+  	    << (uint8_t)(cpu_.PC & 0xFF) << (uint8_t)(cpu_.SP >> 8) << (uint8_t)(cpu_.SP & 0xFF) << (uint8_t)cpu_.ime_ << (uint8_t)cpu_.halt_;
+		for (uint16_t i = 0x8000; i < 0xA000; ++i) {
+			ofstream << bus_.Read(i);
+		}
+		auto& rambanks = bus_.GetRamBanks();
+		for (int i = 0; i < bus_.GetCartridge()->GetRamSize(); ++i) {
+			auto& cur_bank = rambanks[i];
+			for (uint8_t data : cur_bank) {
+				ofstream << data;
+			}
+		}
+		for (int i = 0xC000; i < 0xF000; ++i) {
+			ofstream << bus_.Read(i);
+		}
+		for (int i = 0xFE00; i <= 0xFFFF; ++i) {
+			ofstream << bus_.Read(i);
+		}
+		ofstream.close();
+		Paused.store(false);
+		Step.store(true);
+		Step.notify_all();
+	}
+	void Gameboy::load_state(std::ifstream& ifstream) {
+		if (!Paused) {
+			Paused = true;
+		}
+		std::lock_guard<std::mutex> lg(DebugUpdateMutex);
+		bus_.TransferDMA(160); // Finish dma transfer just in case
+		uint8_t pc_high, pc_low, sp_high, sp_low;
+		ifstream.read(reinterpret_cast<char*>(&bus_.selected_ram_bank_), 1);
+		ifstream.read(reinterpret_cast<char*>(&bus_.selected_rom_bank_), 1);
+		ifstream.read(reinterpret_cast<char*>(&cpu_.A), 1);
+		ifstream.read(reinterpret_cast<char*>(&cpu_.F), 1);
+		ifstream.read(reinterpret_cast<char*>(&cpu_.B), 1);
+		ifstream.read(reinterpret_cast<char*>(&cpu_.C), 1);
+		ifstream.read(reinterpret_cast<char*>(&cpu_.D), 1);
+		ifstream.read(reinterpret_cast<char*>(&cpu_.E), 1);
+		ifstream.read(reinterpret_cast<char*>(&cpu_.H), 1);
+		ifstream.read(reinterpret_cast<char*>(&cpu_.L), 1);
+		ifstream.read(reinterpret_cast<char*>(&pc_high), 1);
+		ifstream.read(reinterpret_cast<char*>(&pc_low), 1);
+		ifstream.read(reinterpret_cast<char*>(&sp_high), 1);
+		ifstream.read(reinterpret_cast<char*>(&sp_low), 1);
+		cpu_.PC = (pc_high << 8) | pc_low;
+		cpu_.SP = (sp_high << 8) | sp_low;
+		ifstream.read(reinterpret_cast<char*>(&cpu_.ime_), 1);
+		ifstream.read(reinterpret_cast<char*>(&cpu_.halt_), 1);
+		for (uint16_t i = 0x8000; i < 0xA000; ++i) {
+			uint8_t data; ifstream.read(reinterpret_cast<char*>(&data), 1);
+			bus_.Write(i, data);
+		}
+		auto& rambanks = bus_.GetRamBanks();
+		for (int i = 0; i < bus_.GetCartridge()->GetRamSize(); ++i) {
+			auto& cur_bank = rambanks[i];
+			for (uint8_t& data : cur_bank) {
+				ifstream.read(reinterpret_cast<char*>(&data), 1);
+			}
+		}
+		for (uint16_t i = 0xC000; i < 0xF000; ++i) {
+			uint8_t data; ifstream.read(reinterpret_cast<char*>(&data), 1);
+			bus_.Write(i, data);
+		}
+		for (int i = 0xFE00; i <= 0xFFFF; ++i) {
+			uint8_t data; ifstream.read(reinterpret_cast<char*>(&data), 1);
+			bus_.Write(i, data);
+		}
+		bus_.BiosEnabled = false;
+		ifstream.close();
+		Paused.store(false);
+		Step.store(true);
+		Step.notify_all();
+	}
 	void Gameboy::start_normal() { 
 		Reset();
 		auto func = [this]() {
+			std::lock_guard<std::mutex> lguard(ThreadStartedMutex);
 			while (!Stopped.load()) {
 				if (!Paused.load()) {
+					std::lock_guard<std::mutex> lg(DebugUpdateMutex);
 					update();
 				}
 			}

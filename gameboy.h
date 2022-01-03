@@ -61,6 +61,8 @@ namespace TKPEmu::Gameboy {
 		int frame_counter = 0;
 		std::unique_ptr<std::vector<LogType>> log_types_ptr_;
 		void v_log_state() override;
+		void save_state(std::ofstream& ofstream) override;
+		void load_state(std::ifstream& ifstream) override;
 		void start_normal() override;
 		void start_debug() override;
 		void start_console() override;

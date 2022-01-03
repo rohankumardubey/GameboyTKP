@@ -6,6 +6,7 @@
 #include "gb_bus.h"
 #include "gb_addresses.h"
 namespace TKPEmu::Gameboy::Devices {
+    using RamBank = std::array<uint8_t, 0x2000>;
 	Bus::Bus(std::vector<DisInstr>& instrs) : instructions_(instrs) {}
 	void Bus::handle_mbc(uint16_t address, uint8_t data) {
 		auto type = cartridge_->GetCartridgeType();
@@ -274,6 +275,9 @@ namespace TKPEmu::Gameboy::Devices {
 	}
 	uint8_t& Bus::GetReference(uint16_t address) {
 		return redirect_address(address);
+	}
+	std::vector<RamBank>& Bus::GetRamBanks() {
+		return ram_banks_;
 	}
 	std::string Bus::GetVramDump() {
 		std::stringstream s;

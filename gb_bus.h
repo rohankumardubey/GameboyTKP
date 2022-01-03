@@ -57,6 +57,7 @@ namespace TKPEmu::Gameboy::Devices {
         void TransferDMA(uint8_t clk);
         void Reset();
         void SoftReset();
+        std::vector<RamBank>& GetRamBanks();
         Cartridge* GetCartridge() ;
         void LoadCartridge(std::string fileName);
         std::string GetVramDump();
@@ -73,11 +74,11 @@ namespace TKPEmu::Gameboy::Devices {
         uint8_t DirectionKeys = 0b1110'1111;
         uint8_t ActionKeys = 0b1101'1111;
         std::array<uint8_t, 0xA0> oam_{};
+        uint8_t selected_ram_bank_ = 0;
+        uint8_t selected_rom_bank_ = 1;
     private:
         bool ram_enabled_ = false;
         bool rtc_enabled_ = false;
-        uint8_t selected_ram_bank_ = 0;
-        uint8_t selected_rom_bank_ = 1;
         uint8_t rom_banks_size_ = 2;
         bool banking_mode_ = false;
         bool action_key_mode_ = false;
