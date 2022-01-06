@@ -9,7 +9,7 @@ This emulator can be integrated into other projects. Check `example_main.cpp` fo
  - Disassembler/Debugger
  - Advanced breakpoints
  - Tracelogger
- - Save states (WIP)
+ - Save states 
  - Rewind functionality (WIP)
 
 ## Images
