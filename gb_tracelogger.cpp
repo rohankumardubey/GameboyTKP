@@ -79,7 +79,7 @@ namespace TKPEmu::Applications {
             pop_disabled();
         }
 		ImGui::NewLine();
-		ImGui::TextUnformatted("Memory to log:");
+		ImGui::Text("Memory to log:");
 		ImGui::Separator();
 		for (size_t i = 0; i < LogTypeSize; i++) {
 			ImGui::Checkbox(LogTypeNames[i].c_str(), &available_types_[i]);
@@ -91,7 +91,7 @@ namespace TKPEmu::Applications {
         ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
         ImGui::SetNextWindowSize(ImVec2(350, 75));
         if (ImGui::BeginPopupModal("Overwrite?", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::TextUnformatted("This file already exists. Overwrite?");
+            ImGui::Text("This file already exists. Overwrite?");
             if (ImGui::Button("Yes")) {
                 overwrite = true;
                 path_changed = true;

@@ -170,7 +170,7 @@ namespace TKPEmu::Applications {
                         switch (ins.ParamSize) {
                         case 0:
                             ImGui::SameLine();
-                            ImGui::TextUnformatted("     ");
+                            ImGui::Text("     ");
                             break;
                         case 1:
                             ImGui::SameLine();
@@ -183,7 +183,7 @@ namespace TKPEmu::Applications {
                         }
                         ImGui::TableSetColumnIndex(2);
                         if (!is_skipped){
-                            ImGui::TextUnformatted(gameboy->GetCPU().Instructions[ins.Instruction].name.c_str());
+                            ImGui::Text(gameboy->GetCPU().Instructions[ins.Instruction].name.c_str());
                             switch (ins.ParamSize) {
                                 case 1:
                                     ImGui::SameLine();
@@ -196,7 +196,7 @@ namespace TKPEmu::Applications {
                             }
                         } else {
                             ImGui::SameLine();
-                            ImGui::TextUnformatted("(Parameter)");
+                            ImGui::Text("(Parameter)");
                         }
                         ImGui::PopID();
                     }

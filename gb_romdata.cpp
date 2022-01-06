@@ -30,7 +30,7 @@ namespace TKPEmu::Applications {
         glDeleteTextures(1, &texture_);
     }
     void GameboyRomData::v_draw() {
-		//std::lock_guard<std::mutex> lg(emulator_->DebugUpdateMutex);
+		std::lock_guard<std::mutex> lg(emulator_->DebugUpdateMutex);
         if (ImGui::BeginTabBar("RomDataTabs", ImGuiTabBarFlags_None)) {
             if (ImGui::BeginTabItem("Info")) {
                 draw_info();
@@ -53,7 +53,7 @@ namespace TKPEmu::Applications {
     }
     void GameboyRomData::draw_info() {
         Gameboy* gb_ptr = static_cast<Gameboy*>(emulator_);
-        ImGui::TextUnformatted("Filename: "); ImGui::SameLine(); ImGui::TextUnformatted(gb_ptr->CurrentFilename.c_str());
+        ImGui::Text("Filename: "); ImGui::SameLine(); ImGui::Text(gb_ptr->CurrentFilename.c_str());
         ImGui::Text(gb_ptr->GetCartridge()->GetHeaderText());
         ImGui::Checkbox("Red tint for sprites", gb_ptr->DebugSpriteTint());
         ImGui::InputText("Rom hash", gb_ptr->RomHash.data(), gb_ptr->RomHash.length(), ImGuiInputTextFlags_ReadOnly);
@@ -74,7 +74,7 @@ namespace TKPEmu::Applications {
         }
     }
     void GameboyRomData::draw_tilesets() {
-        ImGui::TextUnformatted("0x8000:             0x8800:");
+        ImGui::Text("0x8000:             0x8800:");
         ImGui::Image((void*)(intptr_t)texture_, ImVec2(256, 128));
         if (!texture_cached_) {
             update_tilesets();

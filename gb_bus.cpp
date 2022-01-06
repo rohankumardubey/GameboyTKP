@@ -331,7 +331,6 @@ namespace TKPEmu::Gameboy::Devices {
 					// if (data & 0b1000'0000) {
 					// 	hram_[0x41] &= 0b1111'1100;
 					// 	hram_[0x44] = 0;
-					// 	NextMode = 2;
 					// }
 					break;
 				}
