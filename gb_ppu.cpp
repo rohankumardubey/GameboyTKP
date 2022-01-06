@@ -145,7 +145,7 @@ namespace TKPEmu::Gameboy::Devices {
 			unsig = false;
 		}
 		bool windowEnabled = (LCDC & LCDCFlag::WND_ENABLE && WY <= LY);
-		if (WX >= 160 || WX < 7) {
+		if (WX >= 160 || WX == 0) {
 			windowEnabled = false;
 		}
 		uint16_t identifierLocationW = (LCDC & LCDCFlag::WND_TILEMAP) ? 0x9C00 : 0x9800;
