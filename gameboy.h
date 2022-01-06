@@ -38,6 +38,7 @@ namespace TKPEmu::Gameboy {
 		void SetLogTypes(std::unique_ptr<std::vector<LogType>> types_ptr);
         DisInstr GetInstruction(uint16_t address);
 		bool AddBreakpoint(GBBPArguments bp);
+		bool* DebugSpriteTint();
 		void RemoveBreakpoint(int index);
 		const auto& GetOpcodeDescription(uint8_t opc);
 		GameboyPalettes& GetPalette();

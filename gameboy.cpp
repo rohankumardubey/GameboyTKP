@@ -119,11 +119,14 @@ namespace TKPEmu::Gameboy {
 	bool Gameboy::IsReadyToDraw() {
 		return ppu_.ReadyToDraw;
 	}
+	bool* Gameboy::DebugSpriteTint() {
+		return &ppu_.SpriteDebugColor;
+	}
 	void Gameboy::save_state(std::ofstream& ofstream) {
 		if (!Paused) {
 			Paused = true;
 		}
-		std::lock_guard<std::mutex> lg(DebugUpdateMutex);
+		//std::lock_guard<std::mutex> lg(DebugUpdateMutex);
 		bus_.TransferDMA(160); // Finish dma transfer just in case
 		ofstream << bus_.selected_ram_bank_;
 		ofstream << bus_.selected_rom_bank_;
@@ -154,7 +157,7 @@ namespace TKPEmu::Gameboy {
 		if (!Paused) {
 			Paused = true;
 		}
-		std::lock_guard<std::mutex> lg(DebugUpdateMutex);
+		//std::lock_guard<std::mutex> lg(DebugUpdateMutex);
 		bus_.TransferDMA(160); // Finish dma transfer just in case
 		uint8_t pc_high, pc_low, sp_high, sp_low;
 		ifstream.read(reinterpret_cast<char*>(&bus_.selected_ram_bank_), 1);

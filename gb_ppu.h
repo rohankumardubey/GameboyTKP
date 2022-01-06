@@ -20,6 +20,7 @@ namespace TKPEmu::Gameboy::Devices {
 		using TKPImage = TKPEmu::Tools::TKPImage;
 	public:
 		bool ReadyToDraw = false;
+		bool SpriteDebugColor = false;
 		PPU(Bus& bus, std::mutex* draw_mutex);
 		void Update(uint8_t cycles);
 		void Reset();

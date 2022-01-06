@@ -153,9 +153,8 @@ namespace TKPEmu::Gameboy::Devices {
 		uint8_t positionY = LY + SCY;
 		if (windowEnabled) {
 			++window_internal_temp_;
-		} else {
-			if (window_internal_temp_)
-				window_internal_ = window_internal_temp_ - 2;
+		} else if (window_internal_temp_) {
+			window_internal_ = window_internal_temp_ - 2;
 		}
 		uint16_t identifierLoc = identifierLocationB;
 		uint16_t tileRow = (((uint8_t)(positionY / 8)) * 32);
@@ -246,7 +245,9 @@ namespace TKPEmu::Gameboy::Devices {
 						continue;
 					}
 				}
-				screen_color_data_[idx++] = bus_.Palette[color][0];
+				auto red = bus_.Palette[color][0];
+				red += (255.0f - red) * SpriteDebugColor;
+				screen_color_data_[idx++] = red;
 				screen_color_data_[idx++] = bus_.Palette[color][1];
 				screen_color_data_[idx++] = bus_.Palette[color][2];
 				screen_color_data_[idx] = 255;
