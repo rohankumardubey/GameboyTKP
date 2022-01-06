@@ -33,7 +33,7 @@ namespace TKPEmu::Applications {
         }
     }
     void GameboyDisassembler::v_draw() {
-		std::lock_guard<std::mutex> lg(emulator_->DebugUpdateMutex);
+		//std::lock_guard<std::mutex> lg(emulator_->DebugUpdateMutex);
         static Gameboy* gameboy = static_cast<Gameboy*>(emulator_);
         bool bp_add_popup = false;
         int goto_pc = -1;

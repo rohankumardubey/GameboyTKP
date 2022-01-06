@@ -30,7 +30,7 @@ namespace TKPEmu::Applications {
         glDeleteTextures(1, &texture_);
     }
     void GameboyRomData::v_draw() {
-		std::lock_guard<std::mutex> lg(emulator_->DebugUpdateMutex);
+		//std::lock_guard<std::mutex> lg(emulator_->DebugUpdateMutex);
         if (ImGui::BeginTabBar("RomDataTabs", ImGuiTabBarFlags_None)) {
             if (ImGui::BeginTabItem("Info")) {
                 draw_info();
@@ -45,7 +45,7 @@ namespace TKPEmu::Applications {
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Draw options")) {
-
+                ImGui::Checkbox("Red tint for sprites", gb_ptr->DebugSpriteTint());
                 ImGui::EndTabItem();
             }
             ImGui::EndTabBar();
@@ -55,7 +55,6 @@ namespace TKPEmu::Applications {
         Gameboy* gb_ptr = static_cast<Gameboy*>(emulator_);
         ImGui::Text("Filename: "); ImGui::SameLine(); ImGui::Text(gb_ptr->CurrentFilename.c_str());
         ImGui::Text(gb_ptr->GetCartridge()->GetHeaderText());
-        ImGui::Checkbox("Red tint for sprites", gb_ptr->DebugSpriteTint());
         ImGui::InputText("Rom hash", gb_ptr->RomHash.data(), gb_ptr->RomHash.length(), ImGuiInputTextFlags_ReadOnly);
         static bool hashed = false;
         static std::string hash = "?";

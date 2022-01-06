@@ -196,8 +196,8 @@ namespace TKPEmu::Gameboy::Devices {
 		});
 		for (auto i = cur_scanline_sprites_.rbegin(); i != cur_scanline_sprites_.rend(); ++i) {
 			auto sprite = *i;
-			uint8_t positionY = bus_.oam_[sprite] - 16;
-			uint8_t positionX = bus_.oam_[sprite + 1] - 8;
+			int positionY = bus_.oam_[sprite] - 16;
+			int positionX = bus_.oam_[sprite + 1] - 8;
 			uint8_t tileLoc = bus_.oam_[sprite + 2];
 			uint8_t attributes = bus_.oam_[sprite + 3];
 			if (use8x16) {
