@@ -22,55 +22,52 @@ namespace TKPEmu::Gameboy::Devices {
 	void PPU::Update(uint8_t cycles) {
 		static constexpr int clock_max = 456 * 144 + 456 * 10;
 		static int  mode3_extend = 0; // unused for now
-		bool enabled = LCDC & LCDCFlag::LCD_ENABLE;
 		uint8_t current_mode = STAT & STATFlag::MODE;
-		if (enabled) {
-			clock_ += cycles;
-			clock_ %= clock_max;
-			auto true_ly = clock_ / 456;
-			if (LY != true_ly) {
-				LY = true_ly;
-				IF |= update_lyc();
-			}
-			if (LY <= 143) {
-				// Normal scanline
-				auto cur_scanline_clocks = clock_ % 456;
-				// Every scanline takes 456 tclocks
-				if (cur_scanline_clocks < 80) {
-					// OAM scan
-					if (get_mode() != MODE_OAM_SCAN) {
-						// Load the 10 sprites for this line
-						cur_scanline_sprites_.clear();
-						for (size_t i = 0; i < (bus_.oam_.size() - 4); i += 4) {
-							if (cur_scanline_sprites_.size() < 10 && is_sprite_eligible(bus_.oam_[i])) {
-								cur_scanline_sprites_.push_back(i);
-							}
+		clock_ += cycles;
+		clock_ %= clock_max;
+		auto true_ly = clock_ / 456;
+		if (LY != true_ly) {
+			LY = true_ly;
+			IF |= update_lyc();
+		}
+		if (LY <= 143) {
+			// Normal scanline
+			auto cur_scanline_clocks = clock_ % 456;
+			// Every scanline takes 456 tclocks
+			if (cur_scanline_clocks < 80) {
+				// OAM scan
+				if (get_mode() != MODE_OAM_SCAN) {
+					// Load the 10 sprites for this line
+					cur_scanline_sprites_.clear();
+					for (size_t i = 0; i < (bus_.oam_.size() - 4); i += 4) {
+						if (cur_scanline_sprites_.size() < 10 && is_sprite_eligible(bus_.oam_[i])) {
+							cur_scanline_sprites_.push_back(i);
 						}
-						// Sprites for this scanline are now scanned
-						IF |= set_mode(MODE_OAM_SCAN);
 					}
-				} else if (cur_scanline_clocks < (80 + 172 + mode3_extend)) {
-					if (get_mode() != MODE_DRAW_PIXELS) {
-						IF |= set_mode(MODE_DRAW_PIXELS);
-					}
-				} else {
-					if (get_mode() != MODE_HBLANK) {
-						IF |= set_mode(MODE_HBLANK);
-						ReadyToDraw = true;
-						std::lock_guard<std::mutex> lg(*draw_mutex_);
-						draw_scanline();
-					}
+					// Sprites for this scanline are now scanned
+					IF |= set_mode(MODE_OAM_SCAN);
+				}
+			} else if (cur_scanline_clocks < (80 + 172 + mode3_extend)) {
+				if (get_mode() != MODE_DRAW_PIXELS) {
+					IF |= set_mode(MODE_DRAW_PIXELS);
 				}
 			} else {
-				// VBlank scanline
-				if (get_mode() != MODE_VBLANK) {
-					// VBlank interrupt triggers when we first enter vblank
-					// and never again during vblank
-					IF |= IFInterrupt::VBLANK;
-					set_mode(MODE_VBLANK);
-					window_internal_ = 0;
-					window_internal_temp_ = 0;
+				if (get_mode() != MODE_HBLANK) {
+					IF |= set_mode(MODE_HBLANK);
+					ReadyToDraw = true;
+					std::lock_guard<std::mutex> lg(*draw_mutex_);
+					draw_scanline();
 				}
+			}
+		} else {
+			// VBlank scanline
+			if (get_mode() != MODE_VBLANK) {
+				// VBlank interrupt triggers when we first enter vblank
+				// and never again during vblank
+				IF |= IFInterrupt::VBLANK;
+				set_mode(MODE_VBLANK);
+				window_internal_ = 0;
+				window_internal_temp_ = 0;
 			}
 		}
 	}
@@ -122,19 +119,21 @@ namespace TKPEmu::Gameboy::Devices {
 			STAT |= STATFlag::COINCIDENCE;
 			if (STAT & STATFlag::COINC_INTER)
 				return IFInterrupt::LCDSTAT;
-		}
-		else {
+		} else {
 			STAT &= 0b1111'1011;
 		}
 		return 0;
 	}
 
 	void PPU::draw_scanline() {
-		if (LCDC & LCDCFlag::BG_ENABLE) {
-			render_tiles();
-		}
-		if (LCDC & LCDCFlag::OBJ_ENABLE) {
-			render_sprites();
+		bool enabled = LCDC & LCDCFlag::LCD_ENABLE;
+		if (enabled) {
+			if (LCDC & LCDCFlag::BG_ENABLE) {
+				render_tiles();
+			}
+			if (LCDC & LCDCFlag::OBJ_ENABLE) {
+				render_sprites();
+			}
 		}
 	}
 
@@ -198,7 +197,7 @@ namespace TKPEmu::Gameboy::Devices {
 		for (auto i = cur_scanline_sprites_.rbegin(); i != cur_scanline_sprites_.rend(); ++i) {
 			auto sprite = *i;
 			uint8_t positionY = bus_.oam_[sprite] - 16;
-			uint8_t positionX = bus_.oam_[sprite + 1] - 8;		
+			uint8_t positionX = bus_.oam_[sprite + 1] - 8;
 			uint8_t tileLoc = bus_.oam_[sprite + 2];
 			uint8_t attributes = bus_.oam_[sprite + 3];
 			if (use8x16) {
@@ -229,12 +228,11 @@ namespace TKPEmu::Gameboy::Devices {
 				uint8_t color = 1;
 				if (obp1) {
 					color = bus_.OBJ1Palette[colorNum];
-				}
-				else {
+				} else {
 					color = bus_.OBJ0Palette[colorNum];
 				}
 				int pixel = positionX - tilePixel + 7;
-				if ((LY < 0) || (LY > 143) || (pixel < 0) || (pixel > 159) || (colorNum == 0)) {
+				if ((LY > 143) || (pixel < 0) || (pixel > 159) || (colorNum == 0)) {
 					continue;
 				}
 				int idx = (pixel * 4) + (LY * 4 * 160);
