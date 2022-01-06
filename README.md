@@ -16,7 +16,6 @@ This emulator can be integrated into other projects. Check `example_main.cpp` fo
 ![Super Mario Land](./Images/sml.bmp)
 ![F-1 Race](./Images/f1.bmp)
 ![Pokemon Red](./Images/red.bmp)
-![dmg-acid2](./Images/test.bmp)
 
 ## Resources
 This emulator would not be possible without the use of these resources, as acquiring a DMG Gameboy     
@@ -47,7 +46,7 @@ Always generate new test results before pushing a commit when changing the code.
 **[mattcurie](https://github.com/mattcurrie)'s tests:**
 |Test|GameboyTKP  |
 |--|--|
-| dmg-acid2 | :+1: |
+| dmg-acid2 | ![dmg-acid2](./Images/test.bmp) |
 
 ## License
 TKPEmu is licensed under the MIT license    
