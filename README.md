@@ -35,8 +35,7 @@ Also very good testing suites. Tests some advanced mid-instruction timing, and h
 advanced timer/ppu behavior tests. Also very useful mbc tests.    
 
 **[mattcurie's dmg_acid2 test](https://github.com/mattcurrie/dmg-acid2):**    
-The only test you need for correct video output emulation. A huge milestone for every     
-emulator.
+Best test to get started on correct ppu output
 
 ## Tests
 
