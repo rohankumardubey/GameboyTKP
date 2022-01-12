@@ -45,6 +45,7 @@ namespace TKPEmu::Applications {
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Draw options")) {
+                Gameboy* gb_ptr = static_cast<Gameboy*>(emulator_);
                 ImGui::Checkbox("Red tint for sprites", gb_ptr->DebugSpriteTint());
                 ImGui::EndTabItem();
             }

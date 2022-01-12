@@ -238,7 +238,9 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 				else if (address <= 0xFE9F) {
 					// OAM
-					if (dma_transfer_) {
+					if (dma_transfer_ && dma_index_ == 0 && dma_fresh_bug_) {
+						return oam_[address & 0xFF];
+					} else if (dma_transfer_) {
 						unused_mem_area_ = 0xFF;
 						return unused_mem_area_;
 					}
@@ -322,9 +324,14 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_dma: {
-					dma_transfer_ = true;
-					dma_index_ = 0;
-					dma_offset_ = data << 8;
+					if (!dma_transfer_) {
+						dma_fresh_bug_ = true;
+					} else {
+						dma_fresh_bug_ = false;
+					}
+					dma_setup_ = true;
+					dma_transfer_ = false;
+					dma_new_offset_ = data << 8;
 					break;
 				}
 				case addr_lcd: {
@@ -450,15 +457,22 @@ namespace TKPEmu::Gameboy::Devices {
 			int times = clk / 4;
 			for (int i = 0; i < times; ++i) {
 				auto index = dma_index_ + i;
-				if (index < oam_.size() + 1) {
+				if (index < oam_.size()) {
 					uint16_t source = dma_offset_ | index;
 					oam_[index] = Read(source);	
 				} else {
 					dma_transfer_ = false;
+					dma_fresh_bug_ = false;
 					return;
 				}
 			}
 			dma_index_ += times;
+		}
+		if (dma_setup_) {
+			dma_transfer_ = true;
+			dma_setup_ = false;
+			dma_index_ = 0;
+			dma_offset_ = dma_new_offset_;
 		}
 	}
 }

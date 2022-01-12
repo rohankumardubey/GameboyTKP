@@ -83,8 +83,10 @@ namespace TKPEmu::Gameboy::Devices {
         bool action_key_mode_ = false;
         bool dma_transfer_ = false;
         bool dma_setup_ = false;
+        bool dma_fresh_bug_ = false;
         size_t dma_index_ = 0;
         uint16_t dma_offset_ = 0;
+        uint16_t dma_new_offset_ = 0;
         uint8_t unused_mem_area_ = 0;
         std::vector<RamBank> ram_banks_;
         std::vector<RomBank> rom_banks_;
