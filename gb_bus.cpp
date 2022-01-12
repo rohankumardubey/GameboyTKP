@@ -65,7 +65,8 @@ namespace TKPEmu::Gameboy::Devices {
 			}
 			case CartridgeType::MBC3:
 			case CartridgeType::MBC3_RAM:
-			case CartridgeType::MBC3_RAM_BATTERY: {
+			case CartridgeType::MBC3_RAM_BATTERY: 
+			case CartridgeType::MBC3_TIMER_RAM_BATTERY: {
 				if (address <= 0x1FFF) {
 					if ((data & 0b1111) == 0b1010) {
 						ram_enabled_ = true;
@@ -194,7 +195,8 @@ namespace TKPEmu::Gameboy::Devices {
 					}
 					case CartridgeType::MBC3:
 					case CartridgeType::MBC3_RAM:
-					case CartridgeType::MBC3_RAM_BATTERY: {
+					case CartridgeType::MBC3_RAM_BATTERY:
+					case CartridgeType::MBC3_TIMER_RAM_BATTERY: {
 						if (address <= 0x3FFF) {
 							auto sel = (banking_mode_ ? selected_rom_bank_ & 0b1100000 : 0) % cartridge_->GetRomSize();
 							return (rom_banks_[sel])[address % 0x4000];
