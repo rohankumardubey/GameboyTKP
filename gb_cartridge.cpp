@@ -47,6 +47,7 @@ namespace TKPEmu::Gameboy::Devices {
 				case CartridgeType::MBC3_RAM_BATTERY:
 				case CartridgeType::MBC5:
 				case CartridgeType::MBC5_RAM: 
+				case CartridgeType::MBC5_RAM_BATTERY:
 				case CartridgeType::MBC5_RUMBLE:
 				case CartridgeType::MBC5_RUMBLE_RAM:
 				case CartridgeType::MBC5_RUMBLE_RAM_BATTERY: {

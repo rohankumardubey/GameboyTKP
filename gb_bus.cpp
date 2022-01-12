@@ -95,6 +95,7 @@ namespace TKPEmu::Gameboy::Devices {
 			}
 			case CartridgeType::MBC5:
 			case CartridgeType::MBC5_RAM: 
+			case CartridgeType::MBC5_RAM_BATTERY:
 			case CartridgeType::MBC5_RUMBLE:
 			case CartridgeType::MBC5_RUMBLE_RAM:
 			case CartridgeType::MBC5_RUMBLE_RAM_BATTERY: {
@@ -205,6 +206,7 @@ namespace TKPEmu::Gameboy::Devices {
 					}
 					case CartridgeType::MBC5:
 					case CartridgeType::MBC5_RAM: 
+					case CartridgeType::MBC5_RAM_BATTERY:
 					case CartridgeType::MBC5_RUMBLE:
 					case CartridgeType::MBC5_RUMBLE_RAM:
 					case CartridgeType::MBC5_RUMBLE_RAM_BATTERY: {
@@ -467,14 +469,6 @@ namespace TKPEmu::Gameboy::Devices {
 		}	
 	}
 	void Bus::SoftReset() {
-		bool first = true;
-		for (auto& ram : ram_banks_) {
-			if (first) {
-				first = false;
-				continue;
-			}
-			ram.fill(0);
-		}
 		hram_.fill(0);
 		oam_.fill(0);
 		vram_.fill(0);
@@ -503,7 +497,9 @@ namespace TKPEmu::Gameboy::Devices {
 				std::ifstream is;
 				is.open(path_save, std::ios::binary);
 				if (is.is_open() && ram_banks_.size() > 0) {
-					is.read(reinterpret_cast<char*>(&ram_banks_[0]), sizeof(uint8_t) * 0x2000);
+					for (int i = 0; i < ram_banks_.size(); ++i) {
+						is.read(reinterpret_cast<char*>(&ram_banks_[i]), sizeof(uint8_t) * 0x2000);
+					}
 				}
 				is.close();
 			}
@@ -535,7 +531,13 @@ namespace TKPEmu::Gameboy::Devices {
 	void Bus::battery_save() {
 		if (cartridge_->UsingBattery()) {
 			std::ofstream of(curr_save_file_, std::ios::binary);
-			of.write(reinterpret_cast<char*>(&ram_banks_[0]), sizeof(uint8_t) * 0x2000);
+			if (cartridge_->GetRamSize() != 0) {
+				for (int i = 0; i < cartridge_->GetRamSize(); ++i) {
+					of.write(reinterpret_cast<char*>(&ram_banks_[i]), sizeof(uint8_t) * 0x2000);
+				}
+			} else {
+				of.write(reinterpret_cast<char*>(&ram_banks_[0]), sizeof(uint8_t) * 0x2000);
+			}
 		}
 	}
 }
