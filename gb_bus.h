@@ -49,6 +49,7 @@ namespace TKPEmu::Gameboy::Devices {
             0xF5, 0x06, 0x19, 0x78, 0x86, 0x23, 0x05, 0x20, 0xFB, 0x86, 0x20, 0xFE, 0x3E, 0x01, 0xE0, 0x50,
         };
         Bus(std::vector<DisInstr>& instrs);
+        ~Bus();
         uint8_t Read(uint16_t address);
         uint16_t ReadL(uint16_t address);
         uint8_t& GetReference(uint16_t address);
@@ -84,6 +85,7 @@ namespace TKPEmu::Gameboy::Devices {
         bool dma_transfer_ = false;
         bool dma_setup_ = false;
         bool dma_fresh_bug_ = false;
+        std::string curr_save_file_;
         size_t dma_index_ = 0;
         uint16_t dma_offset_ = 0;
         uint16_t dma_new_offset_ = 0;
@@ -98,6 +100,7 @@ namespace TKPEmu::Gameboy::Devices {
         std::vector<DisInstr>& instructions_;
         uint8_t& redirect_address(uint16_t address);
         void handle_mbc(uint16_t address, uint8_t data);
+        void battery_save();
     };
 }
 #endif

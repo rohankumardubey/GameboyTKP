@@ -9,6 +9,9 @@
 namespace TKPEmu::Gameboy::Devices {
     using RamBank = std::array<uint8_t, 0x2000>;
 	Bus::Bus(std::vector<DisInstr>& instrs) : instructions_(instrs) {}
+	Bus::~Bus() {
+		battery_save();
+	}
 	void Bus::handle_mbc(uint16_t address, uint8_t data) {
 		auto type = cartridge_->GetCartridgeType();
 		switch (type) {
@@ -432,6 +435,15 @@ namespace TKPEmu::Gameboy::Devices {
 		}	
 	}
 	void Bus::SoftReset() {
+		//battery_save();
+		bool first = true;
+		for (auto& ram : ram_banks_) {
+			if (first) {
+				first = false;
+				continue;
+			}
+			ram.fill(0);
+		}
 		hram_.fill(0);
 		oam_.fill(0);
 		vram_.fill(0);
@@ -455,6 +467,7 @@ namespace TKPEmu::Gameboy::Devices {
 			path_save += "/";
 			path_save += path.stem();
 			path_save += ".sav";
+			curr_save_file_ = path_save;
 			if (std::filesystem::exists(path_save)) {
 				std::ifstream is;
 				is.open(path_save, std::ios::binary);
@@ -489,6 +502,13 @@ namespace TKPEmu::Gameboy::Devices {
 			dma_setup_ = false;
 			dma_index_ = 0;
 			dma_offset_ = dma_new_offset_;
+		}
+	}
+	void Bus::battery_save() {
+		if (cartridge_->UsingBattery()) {
+			std::cout << "Writing to " << curr_save_file_ << std::endl;
+			std::ofstream of(curr_save_file_, std::ios::binary);
+			of.write(reinterpret_cast<char*>(&ram_banks_[0]), sizeof(uint8_t) * 0x2000);
 		}
 	}
 }
