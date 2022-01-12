@@ -44,7 +44,12 @@ namespace TKPEmu::Gameboy::Devices {
 				case CartridgeType::MBC1_RAM_BATTERY:
 				case CartridgeType::MBC3:
 				case CartridgeType::MBC3_RAM:
-				case CartridgeType::MBC3_RAM_BATTERY: {
+				case CartridgeType::MBC3_RAM_BATTERY:
+				case CartridgeType::MBC5:
+				case CartridgeType::MBC5_RAM: 
+				case CartridgeType::MBC5_RUMBLE:
+				case CartridgeType::MBC5_RUMBLE_RAM:
+				case CartridgeType::MBC5_RUMBLE_RAM_BATTERY: {
 					auto sz = GetRomSize();
 					romBanks.resize(sz);
 					for (int i = 0; i < sz; i++) {
@@ -113,6 +118,24 @@ namespace TKPEmu::Gameboy::Devices {
 			}
 			case CartridgeType::MBC3_TIMER_RAM_BATTERY: {
 				return "MBC3 w/ RAM, BATTERY, TIMER";
+			}
+			case CartridgeType::MBC5: {
+				return "MBC5";
+			}
+			case CartridgeType::MBC5_RAM: {
+				return "MBC5 w/ RAM";
+			}
+			case CartridgeType::MBC5_RAM_BATTERY: {
+				return "MBC5 w/ RAM, BATTERY";
+			}
+			case CartridgeType::MBC5_RUMBLE: {
+				return "MBC5 w/ RUMBLE";
+			}
+			case CartridgeType::MBC5_RUMBLE_RAM: {
+				return "MBC5 w/ RAM, RUMBLE";
+			}
+			case CartridgeType::MBC5_RUMBLE_RAM_BATTERY: {
+				return "MBC5 w/ RAM, BATTERY, RUMBLE";
 			}
 			default: {
 				return  std::to_string(static_cast<int>(ct)).c_str();

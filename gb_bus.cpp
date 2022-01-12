@@ -21,8 +21,7 @@ namespace TKPEmu::Gameboy::Devices {
 				if (address <= 0x1FFF) {
 					if ((data & 0b1111) == 0b1010) {
 						ram_enabled_ = true;
-					}
-					else {
+					} else {
 						ram_enabled_ = false;
 					}
 				}
@@ -71,8 +70,7 @@ namespace TKPEmu::Gameboy::Devices {
 					if ((data & 0b1111) == 0b1010) {
 						ram_enabled_ = true;
 						// TODO: enable writing to RTC mbc3 registers
-					}
-					else {
+					} else {
 						ram_enabled_ = false;
 					}
 				}
@@ -92,6 +90,28 @@ namespace TKPEmu::Gameboy::Devices {
 				else {
 					// MODE register
 					banking_mode_ = data & 0b1;
+				}
+				break;
+			}
+			case CartridgeType::MBC5:
+			case CartridgeType::MBC5_RAM: 
+			case CartridgeType::MBC5_RUMBLE:
+			case CartridgeType::MBC5_RUMBLE_RAM:
+			case CartridgeType::MBC5_RUMBLE_RAM_BATTERY: {
+				if (address <= 0x1FFF) {
+					if ((data & 0b1111) == 0b1010) {
+						ram_enabled_ = true;
+					} else {
+						ram_enabled_ = false;
+					}
+				} else if (address <= 0x2FFF) {
+					selected_rom_bank_ = data;
+				} else if (address <= 0x3FFF) {
+					selected_rom_bank_high_ = data & 0b1;
+				} else if (address <= 0x5FFF) {
+					if (data <= 0xF) {
+						selected_ram_bank_ = data;
+					}
 				}
 				break;
 			}
@@ -147,8 +167,7 @@ namespace TKPEmu::Gameboy::Devices {
 						if (address <= 0x3FFF) {
 							auto sel = (banking_mode_ ? selected_rom_bank_ & 0b1100000 : 0) % cartridge_->GetRomSize();
 							return (rom_banks_[sel])[address % 0x4000];
-						}
-						else {
+						} else {
 							auto sel = selected_rom_bank_ % cartridge_->GetRomSize();
 							if ((sel & 0b11111) == 0) {
 								// In 4000-7FFF, automatically maps to next addr if addr chosen is 00/20/40/60
@@ -163,8 +182,7 @@ namespace TKPEmu::Gameboy::Devices {
 					case CartridgeType::MBC2_BATTERY: {
 						if (address <= 0x3FFF) {
 							return (rom_banks_[0])[address % 0x4000];
-						}
-						else {
+						} else {
 							if ((selected_rom_bank_ & 0b1111) == 0) {
 								selected_rom_bank_ |= 0b1;
 							}
@@ -179,9 +197,23 @@ namespace TKPEmu::Gameboy::Devices {
 						if (address <= 0x3FFF) {
 							auto sel = (banking_mode_ ? selected_rom_bank_ & 0b1100000 : 0) % cartridge_->GetRomSize();
 							return (rom_banks_[sel])[address % 0x4000];
-						}
-						else {
+						} else {
 							auto sel = selected_rom_bank_ % cartridge_->GetRomSize();
+							return (rom_banks_[sel])[address % 0x4000];
+						}
+						break;
+					}
+					case CartridgeType::MBC5:
+					case CartridgeType::MBC5_RAM: 
+					case CartridgeType::MBC5_RUMBLE:
+					case CartridgeType::MBC5_RUMBLE_RAM:
+					case CartridgeType::MBC5_RUMBLE_RAM_BATTERY: {
+						if (address <= 0x3FFF) {
+							auto sel = (banking_mode_ ? selected_rom_bank_ & 0b1100000 : 0) % cartridge_->GetRomSize();
+							return (rom_banks_[sel])[address % 0x4000];
+						} else {
+							auto sel = selected_rom_bank_ % cartridge_->GetRomSize();
+							sel = sel | (selected_rom_bank_high_ << 8);
 							return (rom_banks_[sel])[address % 0x4000];
 						}
 						break;
@@ -435,7 +467,6 @@ namespace TKPEmu::Gameboy::Devices {
 		}	
 	}
 	void Bus::SoftReset() {
-		//battery_save();
 		bool first = true;
 		for (auto& ram : ram_banks_) {
 			if (first) {
@@ -471,11 +502,8 @@ namespace TKPEmu::Gameboy::Devices {
 			if (std::filesystem::exists(path_save)) {
 				std::ifstream is;
 				is.open(path_save, std::ios::binary);
-				if (is.is_open()) {
-					if (ram_banks_.size() > 0) {
-						is.read(reinterpret_cast<char*>(&ram_banks_[0]), sizeof(uint8_t) * 0x2000);
-						std::cout << "Read to ram" << std::endl;
-					}
+				if (is.is_open() && ram_banks_.size() > 0) {
+					is.read(reinterpret_cast<char*>(&ram_banks_[0]), sizeof(uint8_t) * 0x2000);
 				}
 				is.close();
 			}
@@ -506,7 +534,6 @@ namespace TKPEmu::Gameboy::Devices {
 	}
 	void Bus::battery_save() {
 		if (cartridge_->UsingBattery()) {
-			std::cout << "Writing to " << curr_save_file_ << std::endl;
 			std::ofstream of(curr_save_file_, std::ios::binary);
 			of.write(reinterpret_cast<char*>(&ram_banks_[0]), sizeof(uint8_t) * 0x2000);
 		}

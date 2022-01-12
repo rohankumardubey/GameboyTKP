@@ -76,6 +76,7 @@ namespace TKPEmu::Gameboy::Devices {
         std::array<uint8_t, 0xA0> oam_{};
         uint8_t selected_ram_bank_ = 0;
         uint8_t selected_rom_bank_ = 1;
+        uint8_t selected_rom_bank_high_ = 0;
     private:
         bool ram_enabled_ = false;
         bool rtc_enabled_ = false;
