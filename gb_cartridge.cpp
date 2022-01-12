@@ -6,15 +6,31 @@
 #include "gb_cartridge.h"
 
 namespace TKPEmu::Gameboy::Devices {
-	void Cartridge::Load(const std::string& fileName, std::vector<std::array<uint8_t, 0x4000>>& romBanks, std::vector<std::array<uint8_t, 0x2000>>& ramBanks) {
+	void Cartridge::Load(const std::string& filename, std::vector<std::array<uint8_t, 0x4000>>& romBanks, std::vector<std::array<uint8_t, 0x2000>>& ramBanks) {
 		std::ifstream is;
-		is.open(fileName, std::ios::binary);
+		is.open(filename, std::ios::binary);
 		if (is.is_open()) {
 			text_cached_ = false;
 			is.seekg(ENTRY_POINT, std::ios_base::beg);
 			is.read(reinterpret_cast<char*>(&header_), sizeof(Header));
 			is.seekg(0, std::ios_base::beg);
 			auto ct = GetCartridgeType();
+			switch (ct) {
+				case CartridgeType::ROM_RAM_BATTERY:
+				case CartridgeType::MBC1_RAM_BATTERY:
+				case CartridgeType::MBC2_BATTERY:
+				case CartridgeType::MBC3_RAM_BATTERY:
+				case CartridgeType::MBC3_TIMER_RAM_BATTERY:
+				case CartridgeType::MBC5_RAM_BATTERY:
+				case CartridgeType::MBC5_RUMBLE_RAM_BATTERY:
+				case CartridgeType::MBC6_RAM_BATTERY:
+				case CartridgeType::MBC7_RAM_BATTERY_ACCELEROMETER:
+				case CartridgeType::MMM01_RAM_BATTERY:
+				case CartridgeType::HuC1_RAM_BATTERY: {
+					using_battery_ = true;
+					break;
+				}
+			}
 			switch (ct) {
 				case CartridgeType::MBC2:
 				case CartridgeType::MBC2_BATTERY: {
@@ -43,6 +59,9 @@ namespace TKPEmu::Gameboy::Devices {
 		} else {
 			std::cerr << "Error: Could not open file" << std::endl;
 		}
+	}
+	bool Cartridge::UsingBattery() {
+		return using_battery_;
 	}
 	CartridgeType Cartridge::GetCartridgeType() {
 		return static_cast<CartridgeType>(header_.cartridgeType);

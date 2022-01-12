@@ -3,6 +3,7 @@
 #include <sstream>
 #include <iomanip>
 #include <iostream>
+#include <filesystem>
 #include "gb_bus.h"
 #include "gb_addresses.h"
 namespace TKPEmu::Gameboy::Devices {
@@ -431,9 +432,6 @@ namespace TKPEmu::Gameboy::Devices {
 		}	
 	}
 	void Bus::SoftReset() {
-		for (auto& ram : ram_banks_) {
-			ram.fill(0);
-		}
 		hram_.fill(0);
 		oam_.fill(0);
 		vram_.fill(0);
@@ -446,11 +444,29 @@ namespace TKPEmu::Gameboy::Devices {
 	Cartridge* Bus::GetCartridge() {
 		return cartridge_.get();
 	}
-	void Bus::LoadCartridge(std::string fileName) {
+	void Bus::LoadCartridge(std::string filename) {
 		Reset();
 		cartridge_ = std::make_unique<Cartridge>();
-		cartridge_->Load(fileName, rom_banks_, ram_banks_);
+		cartridge_->Load(filename, rom_banks_, ram_banks_);
 		rom_banks_size_ = cartridge_->GetRomSize();
+		if (cartridge_->UsingBattery()) {
+			auto path = static_cast<std::filesystem::path>(filename);
+			std::string path_save = path.parent_path();
+			path_save += "/";
+			path_save += path.stem();
+			path_save += ".sav";
+			if (std::filesystem::exists(path_save)) {
+				std::ifstream is;
+				is.open(path_save, std::ios::binary);
+				if (is.is_open()) {
+					if (ram_banks_.size() > 0) {
+						is.read(reinterpret_cast<char*>(&ram_banks_[0]), sizeof(uint8_t) * 0x2000);
+						std::cout << "Read to ram" << std::endl;
+					}
+				}
+				is.close();
+			}
+		}
 	}
 	void Bus::TransferDMA(uint8_t clk) {
 		if (dma_transfer_) {

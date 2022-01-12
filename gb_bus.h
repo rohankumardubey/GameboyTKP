@@ -59,7 +59,7 @@ namespace TKPEmu::Gameboy::Devices {
         void SoftReset();
         std::vector<RamBank>& GetRamBanks();
         Cartridge* GetCartridge() ;
-        void LoadCartridge(std::string fileName);
+        void LoadCartridge(std::string filename);
         std::string GetVramDump();
         std::array<std::array<float, 3>, 4> Palette;
         std::array<uint8_t, 4> BGPalette{};

@@ -60,11 +60,13 @@ namespace TKPEmu::Gameboy::Devices {
 		int k = sizeof(header_);
 		static constexpr std::array<int, 6> ram_sizes_ { 0, 0, 1, 4, 16, 8 };
 		bool text_cached_ = false;
+		bool using_battery_ = false;
 	public:
-		void Load(const std::string& fileName, std::vector<std::array<uint8_t, 0x4000>>& romBanks, std::vector<std::array<uint8_t, 0x2000>>& ramBanks);
+		void Load(const std::string& filename, std::vector<std::array<uint8_t, 0x4000>>& romBanks, std::vector<std::array<uint8_t, 0x2000>>& ramBanks);
 		CartridgeType GetCartridgeType();
 		int GetRamSize();
 		int GetRomSize();
+		bool UsingBattery();
 		const char* GetCartridgeTypeName();
 		const char* GetHeaderText();
 		std::string GetLicenseeNew();
