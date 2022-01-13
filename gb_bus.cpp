@@ -13,7 +13,7 @@ namespace TKPEmu::Gameboy::Devices {
 		battery_save();
 	}
 	void Bus::handle_mbc(uint16_t address, uint8_t data) {
-		auto type = cartridge_->GetCartridgeType();
+		auto type = cartridge_.GetCartridgeType();
 		switch (type) {
 			case CartridgeType::MBC1:
 			case CartridgeType::MBC1_RAM:
@@ -157,7 +157,7 @@ namespace TKPEmu::Gameboy::Devices {
 			case 0x5000:
 			case 0x6000:
 			case 0x7000: {
-				auto ct = cartridge_->GetCartridgeType();
+				auto ct = cartridge_.GetCartridgeType();
 				switch (ct) {
 					case CartridgeType::ROM_ONLY: {
 						int index = address / 0x4000;
@@ -167,10 +167,10 @@ namespace TKPEmu::Gameboy::Devices {
 					case CartridgeType::MBC1_RAM:
 					case CartridgeType::MBC1_RAM_BATTERY: {
 						if (address <= 0x3FFF) {
-							auto sel = (banking_mode_ ? selected_rom_bank_ & 0b1100000 : 0) % cartridge_->GetRomSize();
+							auto sel = (banking_mode_ ? selected_rom_bank_ & 0b1100000 : 0) % cartridge_.GetRomSize();
 							return (rom_banks_[sel])[address % 0x4000];
 						} else {
-							auto sel = selected_rom_bank_ % cartridge_->GetRomSize();
+							auto sel = selected_rom_bank_ % cartridge_.GetRomSize();
 							if ((sel & 0b11111) == 0) {
 								// In 4000-7FFF, automatically maps to next addr if addr chosen is 00/20/40/60
 								// TODO: fix multicart roms
@@ -188,7 +188,7 @@ namespace TKPEmu::Gameboy::Devices {
 							if ((selected_rom_bank_ & 0b1111) == 0) {
 								selected_rom_bank_ |= 0b1;
 							}
-							auto sel = selected_rom_bank_ % cartridge_->GetRomSize();
+							auto sel = selected_rom_bank_ % cartridge_.GetRomSize();
 							return (rom_banks_[sel])[address % 0x4000];
 						}
 						break;
@@ -198,10 +198,10 @@ namespace TKPEmu::Gameboy::Devices {
 					case CartridgeType::MBC3_RAM_BATTERY:
 					case CartridgeType::MBC3_TIMER_RAM_BATTERY: {
 						if (address <= 0x3FFF) {
-							auto sel = (banking_mode_ ? selected_rom_bank_ & 0b1100000 : 0) % cartridge_->GetRomSize();
+							auto sel = (banking_mode_ ? selected_rom_bank_ & 0b1100000 : 0) % cartridge_.GetRomSize();
 							return (rom_banks_[sel])[address % 0x4000];
 						} else {
-							auto sel = selected_rom_bank_ % cartridge_->GetRomSize();
+							auto sel = selected_rom_bank_ % cartridge_.GetRomSize();
 							return (rom_banks_[sel])[address % 0x4000];
 						}
 						break;
@@ -213,10 +213,10 @@ namespace TKPEmu::Gameboy::Devices {
 					case CartridgeType::MBC5_RUMBLE_RAM:
 					case CartridgeType::MBC5_RUMBLE_RAM_BATTERY: {
 						if (address <= 0x3FFF) {
-							auto sel = (banking_mode_ ? selected_rom_bank_ & 0b1100000 : 0) % cartridge_->GetRomSize();
+							auto sel = (banking_mode_ ? selected_rom_bank_ & 0b1100000 : 0) % cartridge_.GetRomSize();
 							return (rom_banks_[sel])[address % 0x4000];
 						} else {
-							auto sel = selected_rom_bank_ % cartridge_->GetRomSize();
+							auto sel = selected_rom_bank_ % cartridge_.GetRomSize();
 							sel = sel | (selected_rom_bank_high_ << 8);
 							return (rom_banks_[sel])[address % 0x4000];
 						}
@@ -237,12 +237,12 @@ namespace TKPEmu::Gameboy::Devices {
 			}
 			case 0xA000:
 			case 0xB000: {
-				auto ct = cartridge_->GetCartridgeType();
+				auto ct = cartridge_.GetCartridgeType();
 				switch(ct) {
 					case CartridgeType::MBC2:
 					case CartridgeType::MBC2_BATTERY: {
 						if (ram_enabled_) {
-							auto sel = (banking_mode_ ? selected_ram_bank_ : 0) % cartridge_->GetRamSize();
+							auto sel = (banking_mode_ ? selected_ram_bank_ : 0) % cartridge_.GetRamSize();
 							(ram_banks_[sel])[address % 0x200] |= 0b1111'0000;
 							return (ram_banks_[sel])[address % 0x200];
 						} else {
@@ -253,9 +253,9 @@ namespace TKPEmu::Gameboy::Devices {
 					}
 					default: {
 						if (ram_enabled_) {
-							if (cartridge_->GetRamSize() == 0)
+							if (cartridge_.GetRamSize() == 0)
 								return eram_default_[address % 0x2000];
-							auto sel = (banking_mode_ ? selected_ram_bank_ : 0) % cartridge_->GetRamSize();
+							auto sel = (banking_mode_ ? selected_ram_bank_ : 0) % cartridge_.GetRamSize();
 							return (ram_banks_[sel])[address % 0x2000];
 						} else {
 							unused_mem_area_ = 0xFF;
@@ -480,15 +480,14 @@ namespace TKPEmu::Gameboy::Devices {
 		selected_ram_bank_ = 0;
 		BiosEnabled = true;
 	}
-	Cartridge* Bus::GetCartridge() {
-		return cartridge_.get();
+	Cartridge& Bus::GetCartridge() {
+		return cartridge_;
 	}
 	void Bus::LoadCartridge(std::string filename) {
 		Reset();
-		cartridge_ = std::make_unique<Cartridge>();
-		cartridge_->Load(filename, rom_banks_, ram_banks_);
-		rom_banks_size_ = cartridge_->GetRomSize();
-		if (cartridge_->UsingBattery()) {
+		cartridge_.Load(filename, rom_banks_, ram_banks_);
+		rom_banks_size_ = cartridge_.GetRomSize();
+		if (cartridge_.UsingBattery()) {
 			auto path = static_cast<std::filesystem::path>(filename);
 			std::string path_save = path.parent_path();
 			path_save += "/";
@@ -531,10 +530,10 @@ namespace TKPEmu::Gameboy::Devices {
 		}
 	}
 	void Bus::battery_save() {
-		if (cartridge_->UsingBattery()) {
+		if (cartridge_.UsingBattery()) {
 			std::ofstream of(curr_save_file_, std::ios::binary);
-			if (cartridge_->GetRamSize() != 0) {
-				for (int i = 0; i < cartridge_->GetRamSize(); ++i) {
+			if (cartridge_.GetRamSize() != 0) {
+				for (int i = 0; i < cartridge_.GetRamSize(); ++i) {
 					of.write(reinterpret_cast<char*>(&ram_banks_[i]), sizeof(uint8_t) * 0x2000);
 				}
 			} else {

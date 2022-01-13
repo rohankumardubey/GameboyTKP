@@ -42,7 +42,7 @@ namespace TKPEmu::Gameboy {
 		void RemoveBreakpoint(int index);
 		const auto& GetOpcodeDescription(uint8_t opc);
 		GameboyPalettes& GetPalette();
-		Cartridge* GetCartridge();
+		Cartridge& GetCartridge();
 		CPU& GetCPU() { return cpu_; }
 		PPU& GetPPU() { return ppu_; }
 		std::vector<GameboyBreakpoint> Breakpoints{};

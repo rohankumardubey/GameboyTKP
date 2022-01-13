@@ -136,7 +136,7 @@ namespace TKPEmu::Gameboy {
 			ofstream << bus_.Read(i);
 		}
 		auto& rambanks = bus_.GetRamBanks();
-		for (int i = 0; i < bus_.GetCartridge()->GetRamSize(); ++i) {
+		for (int i = 0; i < bus_.GetCartridge().GetRamSize(); ++i) {
 			auto& cur_bank = rambanks[i];
 			for (uint8_t data : cur_bank) {
 				ofstream << data;
@@ -183,7 +183,7 @@ namespace TKPEmu::Gameboy {
 			bus_.Write(i, data);
 		}
 		auto& rambanks = bus_.GetRamBanks();
-		for (int i = 0; i < bus_.GetCartridge()->GetRamSize(); ++i) {
+		for (int i = 0; i < bus_.GetCartridge().GetRamSize(); ++i) {
 			auto& cur_bank = rambanks[i];
 			for (uint8_t& data : cur_bank) {
 				ifstream.read(reinterpret_cast<char*>(&data), 1);
@@ -422,7 +422,7 @@ namespace TKPEmu::Gameboy {
 	std::string Gameboy::GetEmulatorName() {
 		return "GameboyTKP";
 	}
-	Devices::Cartridge* Gameboy::GetCartridge() {
+	Devices::Cartridge& Gameboy::GetCartridge() {
 		return bus_.GetCartridge();
 	}
 	const auto& Gameboy::GetOpcodeDescription(uint8_t opc) {

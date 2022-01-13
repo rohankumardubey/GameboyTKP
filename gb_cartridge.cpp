@@ -7,12 +7,22 @@
 
 namespace TKPEmu::Gameboy::Devices {
 	void Cartridge::Load(const std::string& filename, std::vector<std::array<uint8_t, 0x4000>>& romBanks, std::vector<std::array<uint8_t, 0x2000>>& ramBanks) {
+		romBanks.clear();
+		ramBanks.clear();
 		std::ifstream is;
 		is.open(filename, std::ios::binary);
 		if (is.is_open()) {
 			text_cached_ = false;
 			is.seekg(ENTRY_POINT, std::ios_base::beg);
 			is.read(reinterpret_cast<char*>(&header_), sizeof(Header));
+			if (header_.gameboyColor & 0x80) {
+				// TODO: implement gbc
+				if (header_.gameboyColor & 0x40) {
+					// must be gbc
+				} else {
+					// check if force gbc
+				}
+			}
 			is.seekg(0, std::ios_base::beg);
 			auto ct = GetCartridgeType();
 			switch (ct) {

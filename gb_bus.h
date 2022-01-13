@@ -59,7 +59,7 @@ namespace TKPEmu::Gameboy::Devices {
         void Reset();
         void SoftReset();
         std::vector<RamBank>& GetRamBanks();
-        Cartridge* GetCartridge() ;
+        Cartridge& GetCartridge();
         void LoadCartridge(std::string filename);
         std::string GetVramDump();
         std::array<std::array<float, 3>, 4> Palette;
@@ -93,7 +93,7 @@ namespace TKPEmu::Gameboy::Devices {
         uint8_t unused_mem_area_ = 0;
         std::vector<RamBank> ram_banks_;
         std::vector<RomBank> rom_banks_;
-        std::unique_ptr<Cartridge> cartridge_;
+        Cartridge cartridge_;
         std::array<uint8_t, 0x100> hram_{};
         std::array<uint8_t, 0x2000> eram_default_{};
         std::array<uint8_t, 0x2000> wram_{};
