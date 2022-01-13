@@ -280,7 +280,7 @@ namespace TKPEmu::Gameboy::Devices {
 					// OAM
 					if (dma_transfer_ && dma_index_ == 0 && dma_fresh_bug_) {
 						return oam_[address & 0xFF];
-					} else if (dma_transfer_) {
+					} else if (dma_transfer_ || !OAMAccessible) {
 						unused_mem_area_ = 0xFF;
 						return unused_mem_area_;
 					}
@@ -379,6 +379,10 @@ namespace TKPEmu::Gameboy::Devices {
 					// 	hram_[0x41] &= 0b1111'1100;
 					// 	hram_[0x44] = 0;
 					// }
+					bool enabled = data & LCDCFlag::LCD_ENABLE;
+					if (!enabled) {
+						OAMAccessible = true;
+					}
 					break;
 				}
 				case addr_div: {
@@ -513,7 +517,10 @@ namespace TKPEmu::Gameboy::Devices {
 				auto index = dma_index_ + i;
 				if (index < oam_.size()) {
 					uint16_t source = dma_offset_ | index;
+					bool old = OAMAccessible;
+					OAMAccessible = true;
 					oam_[index] = Read(source);	
+					OAMAccessible = old;
 				} else {
 					dma_transfer_ = false;
 					dma_fresh_bug_ = false;

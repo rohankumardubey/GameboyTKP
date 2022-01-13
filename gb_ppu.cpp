@@ -30,6 +30,7 @@ namespace TKPEmu::Gameboy::Devices {
 			LY = true_ly;
 			IF |= update_lyc();
 		}
+		bool enabled = LCDC & LCDCFlag::LCD_ENABLE;
 		if (LY <= 143) {
 			// Normal scanline
 			auto cur_scanline_clocks = clock_ % 456;
@@ -37,6 +38,8 @@ namespace TKPEmu::Gameboy::Devices {
 			if (cur_scanline_clocks < 80) {
 				// OAM scan
 				if (get_mode() != MODE_OAM_SCAN) {
+					if (enabled)
+						bus_.OAMAccessible = false;
 					// Load the 10 sprites for this line
 					cur_scanline_sprites_.clear();
 					for (size_t i = 0; i < (bus_.oam_.size() - 4); i += 4) {
@@ -53,6 +56,16 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 			} else {
 				if (get_mode() != MODE_HBLANK) {
+					if (enabled)
+						bus_.OAMAccessible = true;
+					auto mod = SCX % 8;
+					if (mod == 0) {
+
+					} else if (mod <= 4) {
+						clock_ += 4;
+					} else {
+						clock_ += 8;
+					}
 					IF |= set_mode(MODE_HBLANK);
 					ReadyToDraw = true;
 					std::lock_guard<std::mutex> lg(*draw_mutex_);
@@ -65,6 +78,10 @@ namespace TKPEmu::Gameboy::Devices {
 				// VBlank interrupt triggers when we first enter vblank
 				// and never again during vblank
 				IF |= IFInterrupt::VBLANK;
+				if (STAT & STATFlag::MODE2_INTER) {
+					// Only in DMG
+					IF |= IFInterrupt::LCDSTAT;
+				}
 				set_mode(MODE_VBLANK);
 				window_internal_ = 0;
 				window_internal_temp_ = 0;
@@ -113,7 +130,6 @@ namespace TKPEmu::Gameboy::Devices {
 	int PPU::get_mode() {
 		return STAT & STATFlag::MODE;
 	}
-
 	int PPU::update_lyc() {
 		if (LYC == LY) {
 			STAT |= STATFlag::COINCIDENCE;

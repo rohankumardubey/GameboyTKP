@@ -71,6 +71,7 @@ namespace TKPEmu::Gameboy::Devices {
         bool TMAChanged = false;
         bool TIMAChanged = false;
         bool WriteToVram = false;
+        bool OAMAccessible = true;
         uint8_t DirectionKeys = 0b1110'1111;
         uint8_t ActionKeys = 0b1101'1111;
         std::array<uint8_t, 0xA0> oam_{};
