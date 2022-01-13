@@ -119,6 +119,9 @@ constexpr auto addr_bgp = 0xFF47;
 constexpr auto addr_ob0 = 0xFF48;
 constexpr auto addr_ob1 = 0xFF49;
 
+constexpr auto addr_bcps = 0xFF68;
+constexpr auto addr_bcpd = 0xFF69;
+
 constexpr auto addr_if = 0xFF0F;
 constexpr auto addr_ie = 0xFFFF;
 

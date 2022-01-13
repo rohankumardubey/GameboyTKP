@@ -71,6 +71,7 @@ namespace TKPEmu::Gameboy::Devices {
 		const char* GetHeaderText();
 		std::string GetLicenseeNew();
 		std::string GetLicenseeOld();
+		bool UseCGB = false;
 	};
 }
 #endif

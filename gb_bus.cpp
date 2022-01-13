@@ -385,6 +385,31 @@ namespace TKPEmu::Gameboy::Devices {
 					}
 					break;
 				}
+				case addr_bcps: {
+					if (UseCGB) {
+						if (data & 0b1000'0000) {
+							palette_auto_increment_ = true;
+						} else {
+							palette_auto_increment_ = false;
+						}
+						palette_index_ = data & 0b111111;
+					} else {
+						data |= 0b1111'1111;
+					}
+					break;
+				}
+				case addr_bcpd: {
+					if (UseCGB) {
+						std::cout << "Write to pal" << std::endl;
+						CGBPalette[palette_index_] = data;
+						if (palette_auto_increment_) {
+							palette_index_++;
+						}
+					} else {
+						data |= 0b1111'1111;
+					}
+					break;
+				}
 				case addr_div: {
 					DIVReset = true;
 					break;
@@ -452,7 +477,7 @@ namespace TKPEmu::Gameboy::Devices {
 				case 0xFF58: case 0xFF59: case 0xFF5A: case 0xFF5B: case 0xFF5C:
 				case 0xFF5D: case 0xFF5E: case 0xFF5F: case 0xFF60: case 0xFF61:
 				case 0xFF62: case 0xFF63: case 0xFF64: case 0xFF65: case 0xFF66:
-				case 0xFF67: case 0xFF68: case 0xFF69: case 0xFF6A: case 0xFF6B:
+				case 0xFF67: case 0xFF6A: case 0xFF6B:
 				case 0xFF6C: case 0xFF6D: case 0xFF6E: case 0xFF6F: case 0xFF70:
 				case 0xFF71: case 0xFF72: case 0xFF73: case 0xFF74: case 0xFF75:
 				case 0xFF76: case 0xFF77: case 0xFF78: case 0xFF79: case 0xFF7A:
@@ -509,6 +534,7 @@ namespace TKPEmu::Gameboy::Devices {
 				is.close();
 			}
 		}
+		UseCGB = cartridge_.UseCGB;
 	}
 	void Bus::TransferDMA(uint8_t clk) {
 		if (dma_transfer_) {

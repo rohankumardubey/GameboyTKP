@@ -66,12 +66,14 @@ namespace TKPEmu::Gameboy::Devices {
         std::array<uint8_t, 4> BGPalette{};
         std::array<uint8_t, 4> OBJ0Palette{};
         std::array<uint8_t, 4> OBJ1Palette{};
+        std::array<uint8_t, 64> CGBPalette{};
         bool DIVReset = false;
         bool TACChanged = false;
         bool TMAChanged = false;
         bool TIMAChanged = false;
         bool WriteToVram = false;
         bool OAMAccessible = true;
+        bool UseCGB = false;
         uint8_t DirectionKeys = 0b1110'1111;
         uint8_t ActionKeys = 0b1101'1111;
         std::array<uint8_t, 0xA0> oam_{};
@@ -81,12 +83,14 @@ namespace TKPEmu::Gameboy::Devices {
     private:
         bool ram_enabled_ = false;
         bool rtc_enabled_ = false;
-        uint8_t rom_banks_size_ = 2;
         bool banking_mode_ = false;
         bool action_key_mode_ = false;
         bool dma_transfer_ = false;
         bool dma_setup_ = false;
         bool dma_fresh_bug_ = false;
+        bool palette_auto_increment_ = false;
+        uint8_t palette_index_ = 0;
+        uint8_t rom_banks_size_ = 2;
         std::string curr_save_file_;
         size_t dma_index_ = 0;
         uint16_t dma_offset_ = 0;

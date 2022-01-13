@@ -18,7 +18,7 @@ namespace TKPEmu::Gameboy::Devices {
 			if (header_.gameboyColor & 0x80) {
 				// TODO: implement gbc
 				if (header_.gameboyColor & 0x40) {
-					// must be gbc
+					UseCGB = true;
 				} else {
 					// check if force gbc
 				}
