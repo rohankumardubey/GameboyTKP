@@ -14,7 +14,6 @@ This emulator can be integrated into other projects. Check `example_main.cpp` fo
 
 ## Images
 ![Legend of Zelda](./Images/zd.bmp)
-![Bubble Bobble](./Images/bb.bmp)
 ![Kirby](./Images/krb.bmp)
 ![Frogger](./Images/frg.bmp)
 ![Donkey Kong](./Images/dk.bmp)
