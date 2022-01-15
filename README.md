@@ -13,7 +13,11 @@ This emulator can be integrated into other projects. Check `example_main.cpp` fo
  - Rewind functionality (WIP)
 
 ## Images
-![Super Mario Land](./Images/sml.bmp)
+![Legend of Zelda](./Images/zd.bmp)
+![Bubble Bobble](./Images/bb.bmp)
+![Kirby](./Images/krb.bmp)
+![Frogger](./Images/frg.bmp)
+![Donkey Kong](./Images/dk.bmp)
 ![F-1 Race](./Images/f1.bmp)
 ![Pokemon Red](./Images/red.bmp)
 
@@ -45,7 +49,7 @@ Always generate new test results before pushing a commit when changing the code.
 **[mattcurie](https://github.com/mattcurrie)'s tests:**
 |Test|GameboyTKP  |
 |--|--|
-| dmg-acid2 | ![dmg-acid2](./Images/test.bmp) |
+| dmg-acid2 | ![dmg-acid2](./Images/dmg-acid2_result.bmp) |
 
 ## License
 TKPEmu is licensed under the MIT license    
