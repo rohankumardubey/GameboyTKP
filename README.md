@@ -45,10 +45,11 @@ Best test to get started on correct ppu output
 See generated test results [here](./TEST_RESULTS.md).    
 Always generate new test results before pushing a commit when changing the code.
 
-**[mattcurie](https://github.com/mattcurrie)'s tests:**
+**Graphics tests:**
 |Test|GameboyTKP  |
 |--|--|
 | dmg-acid2 | ![dmg-acid2](./Images/dmg-acid2_result.bmp) |
+| sprite_priority | ![sprite_priority](./Images/sprite_priority_result.bmp) |
 
 ## License
 TKPEmu is licensed under the MIT license    
