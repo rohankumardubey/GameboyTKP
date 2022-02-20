@@ -8,8 +8,8 @@
 #include "../include/console_colors.h"
 namespace TKPEmu::Gameboy {
 	Gameboy::Gameboy() : 
-		bus_(Instructions),
-		apu_(bus_),
+		apu_(),
+		bus_(apu_, Instructions),
 		ppu_(bus_, &DrawMutex),
 		timer_(bus_, apu_),
 		cpu_(bus_, ppu_, timer_),

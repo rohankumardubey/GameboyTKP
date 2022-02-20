@@ -8,7 +8,7 @@
 #include "gb_addresses.h"
 namespace TKPEmu::Gameboy::Devices {
     using RamBank = std::array<uint8_t, 0x2000>;
-	Bus::Bus(std::vector<DisInstr>& instrs) : instructions_(instrs) {}
+	Bus::Bus(APU& apu, std::vector<DisInstr>& instrs) : apu_(apu), instructions_(instrs) {}
 	Bus::~Bus() {
 		battery_save();
 	}
@@ -447,6 +447,24 @@ namespace TKPEmu::Gameboy::Devices {
 					data |= 0b1000'0000;
 					break;
 				}
+				case addr_NR11: {
+					std::cout << "written" << (int)data << std::endl;
+					if (data & 0b0011'1111 == 0) {
+						std::cout << "0 written" << std::endl;
+					}
+				}
+				case addr_NR21: {
+					if (data & 0b0011'1111 == 0) {
+						std::cout << "written" << data << std::endl;
+						std::cout << "0 written" << std::endl;
+					}
+				}
+				case addr_NR31: {
+					if (data == 0) {
+						std::cout << "written" << data << std::endl;
+						std::cout << "0 written" << std::endl;
+					}
+				}
 				case addr_NR30: {
 					data |= 0b0111'1111;
 					break;
@@ -456,7 +474,10 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR41: {
-					data |= 0b1110'0000;
+					data |= 0b1100'0000;
+					if (data & 0b0011'1111 == 0) {
+						std::cout << "0 written" << std::endl;
+					}
 					break;
 				}
 				case addr_NR44: {

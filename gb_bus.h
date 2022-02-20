@@ -10,6 +10,7 @@
 #include <memory>
 #include "gb_cartridge.h"
 #include "gb_addresses.h"
+#include "gb_apu.h"
 namespace TKPEmu::Gameboy::Devices {
     class Bus {
     private:
@@ -48,7 +49,7 @@ namespace TKPEmu::Gameboy::Devices {
             0x21, 0x04, 0x01, 0x11, 0xA8, 0x00, 0x1A, 0x13, 0xBE, 0x20, 0xFE, 0x23, 0x7D, 0xFE, 0x34, 0x20,
             0xF5, 0x06, 0x19, 0x78, 0x86, 0x23, 0x05, 0x20, 0xFB, 0x86, 0x20, 0xFE, 0x3E, 0x01, 0xE0, 0x50,
         };
-        Bus(std::vector<DisInstr>& instrs);
+        Bus(APU& apu, std::vector<DisInstr>& instrs);
         ~Bus();
         uint8_t Read(uint16_t address);
         uint16_t ReadL(uint16_t address);
@@ -81,6 +82,7 @@ namespace TKPEmu::Gameboy::Devices {
         uint8_t selected_rom_bank_ = 1;
         uint8_t selected_rom_bank_high_ = 0;
     private:
+        APU& apu_;
         bool ram_enabled_ = false;
         bool rtc_enabled_ = false;
         bool banking_mode_ = false;

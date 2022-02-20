@@ -48,8 +48,8 @@ namespace TKPEmu::Gameboy {
 		std::vector<GameboyBreakpoint> Breakpoints{};
 		std::vector<DisInstr> Instructions{};
 	private:
-		Bus bus_;
 		APU apu_;
+		Bus bus_;
 		PPU ppu_;
 		Timer timer_;
 		CPU cpu_;
