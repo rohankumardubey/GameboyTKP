@@ -9,9 +9,16 @@ namespace TKPEmu::Gameboy::Devices {
         int WaveDutyPattern = 0;
         int WaveDutyPosition = 0;
         int FrameSequencer = 0; // TODO: unimplemented
+        bool LengthCtrEnabled = false;
+        bool VolEnvEnabled = false;
+        bool SweepEnabled = false;
 
         void StepWaveGeneration(int cycles);
+        void StepFrameSequencer();
         bool GetAmplitude();
+        void ClockLengthCtr();
+        void ClockVolEnv();
+        void ClockSweep();
     }
 }
 #endif
