@@ -19,6 +19,6 @@ namespace TKPEmu::Gameboy::Devices {
         void ClockLengthCtr();
         void ClockVolEnv();
         void ClockSweep();
-    }
+    };
 }
 #endif
