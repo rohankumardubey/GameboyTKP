@@ -12,6 +12,9 @@ namespace TKPEmu::Gameboy::Devices {
         bool LengthCtrEnabled = false;
         bool VolEnvEnabled = false;
         bool SweepEnabled = false;
+        int EnvelopeCurrentVolume = 0;
+        bool EnvelopeIncrease = false;
+        int EnvelopeNumSweep = 0;
 
         void StepWaveGeneration(int cycles);
         void StepFrameSequencer();

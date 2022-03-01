@@ -452,18 +452,29 @@ namespace TKPEmu::Gameboy::Devices {
 					if (data & 0b0011'1111 == 0) {
 						std::cout << "0 written" << std::endl;
 					}
+					break;
+				}
+				case addr_NR12: {
+					channels_[0].EnvelopeCurrentVolume = data >> 4;
+					channels_[0].EnvelopeIncrease = data & 0b0000'1000;
+					int sweep = data & 0b0000'0111;
+					channels_[0].EnvelopeNumSweep = sweep;
+					channels_[0].VolEnvEnabled = sweep != 0;
+					break;
 				}
 				case addr_NR21: {
 					if (data & 0b0011'1111 == 0) {
 						std::cout << "written" << data << std::endl;
 						std::cout << "0 written" << std::endl;
 					}
+					break;
 				}
 				case addr_NR31: {
 					if (data == 0) {
 						std::cout << "written" << data << std::endl;
 						std::cout << "0 written" << std::endl;
 					}
+					break;
 				}
 				case addr_NR30: {
 					data |= 0b0111'1111;

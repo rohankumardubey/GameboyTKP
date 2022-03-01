@@ -11,6 +11,7 @@
 #include "gb_cartridge.h"
 #include "gb_addresses.h"
 #include "gb_apu.h"
+#include "gb_apu_ch.h"
 namespace TKPEmu::Gameboy::Devices {
     class Bus {
     private:
@@ -83,6 +84,7 @@ namespace TKPEmu::Gameboy::Devices {
         uint8_t selected_rom_bank_high_ = 0;
     private:
         APU& apu_;
+        std::array<APUChannel, 4> channels_;
         bool ram_enabled_ = false;
         bool rtc_enabled_ = false;
         bool banking_mode_ = false;

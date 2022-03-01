@@ -6,7 +6,7 @@
 #define AUDIO_BUFFER_SIZE 512
 namespace TKPEmu::Gameboy::Devices {
     // This class is solely for sound output and is not needed to pass sound emulation tests.
-    // All computation for this class happens in gb_bus
+    // All computation for this class happens in gb_bus and gb_apu_ch
     class APU {
     public:
         APU();
