@@ -64,9 +64,19 @@ namespace TKPEmu::Gameboy::Devices {
 			oscillator_ = 0;
 			timer_counter_ = 0;
 		}
+		RegisterType old_div = oscillator_ >> 8;
 		oscillator_ += cycles;
 		// Divider always equals the top 8 bits of the oscillator
 		DIV = oscillator_ >> 8;
+		if (old_div & 0b0010'0000) {
+			if (!(DIV & 0b0010'0000)) {
+				// Falling edge of bit 5, step frame sequencer
+				// TODO: cgb double speed makes it bit 6
+				for (int i = 0; i < 4; i++) {
+					bus_.Channels[i].StepFrameSequencer();
+				}
+			}
+		}
 		if (enabled) {
 			timer_counter_ += cycles;
 			while (timer_counter_ >= freq) {

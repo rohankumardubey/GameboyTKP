@@ -69,6 +69,8 @@ namespace TKPEmu::Gameboy::Devices {
         std::array<uint8_t, 4> OBJ0Palette{};
         std::array<uint8_t, 4> OBJ1Palette{};
         std::array<uint8_t, 64> CGBPalette{};
+        std::array<APUChannel, 4> Channels;
+        bool SoundEnabled = false;
         bool DIVReset = false;
         bool TACChanged = false;
         bool TMAChanged = false;
@@ -84,7 +86,6 @@ namespace TKPEmu::Gameboy::Devices {
         uint8_t selected_rom_bank_high_ = 0;
     private:
         APU& apu_;
-        std::array<APUChannel, 4> channels_;
         bool ram_enabled_ = false;
         bool rtc_enabled_ = false;
         bool banking_mode_ = false;

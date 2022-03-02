@@ -8,7 +8,9 @@
 #include "gb_addresses.h"
 namespace TKPEmu::Gameboy::Devices {
     using RamBank = std::array<uint8_t, 0x2000>;
-	Bus::Bus(APU& apu, std::vector<DisInstr>& instrs) : apu_(apu), instructions_(instrs) {}
+	Bus::Bus(APU& apu, std::vector<DisInstr>& instrs) : apu_(apu), instructions_(instrs) {
+		Channels[2].LengthInit = 256;
+	}
 	Bus::~Bus() {
 		battery_save();
 	}
@@ -340,6 +342,12 @@ namespace TKPEmu::Gameboy::Devices {
 		else {
 			TIMAChanged = false;
 			TMAChanged = false;
+			if (!SoundEnabled) {
+				if (address >= addr_NR10 && address <= addr_NR51) {
+					// When sound is disabled, ignore writes
+					return;
+				} 
+			}
 			switch (address) {
 				case addr_std: {
 					// TODO: implement serial
@@ -375,10 +383,6 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_lcd: {
-					// if (data & 0b1000'0000) {
-					// 	hram_[0x41] &= 0b1111'1100;
-					// 	hram_[0x44] = 0;
-					// }
 					bool enabled = data & LCDCFlag::LCD_ENABLE;
 					if (!enabled) {
 						OAMAccessible = true;
@@ -445,39 +449,65 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 				case addr_NR10: {
 					data |= 0b1000'0000;
-					channels_[0].SweepPeriod = (data >> 4) & 0b111;
-					channels_[0].SweepIncrease = data & 0b1000;
-					channels_[0].SweepStep = data & 0b111;
+					Channels[0].SweepPeriod = (data >> 4) & 0b111;
+					Channels[0].SweepIncrease = data & 0b1000;
+					Channels[0].SweepShift = data & 0b111;
 					break;
 				}
 				case addr_NR11: {
-					std::cout << "written" << (int)data << std::endl;
-					if (data & 0b0011'1111 == 0) {
-						std::cout << "0 written" << std::endl;
-					}
+					Channels[0].LengthData = data & 0b0011'1111;
+					data |= 0b0011'1111; 
 					break;
 				}
 				case addr_NR12: {
-					channels_[0].EnvelopeCurrentVolume = data >> 4;
-					channels_[0].EnvelopeIncrease = data & 0b0000'1000;
+					Channels[0].EnvelopeCurrentVolume = data >> 4;
+					Channels[0].EnvelopeIncrease = data & 0b0000'1000;
 					int sweep = data & 0b0000'0111;
-					channels_[0].EnvelopePeriod = sweep;
-					channels_[0].VolEnvEnabled = sweep != 0;
+					Channels[0].EnvelopePeriod = sweep;
+					Channels[0].VolEnvEnabled = sweep != 0;
+					break;
+				}
+				case addr_NR13: {
+					Channels[0].WaveFrequency &= 0b0111'0000'0000;
+					Channels[0].WaveFrequency |= data;
+					data |= 0b1111'1111;
+					break;
+				}
+				case addr_NR14: {
+					Channels[0].LengthDecOne = data & 0b0100'0000;
+					Channels[0].WaveFrequency &= 0b0000'1111'1111;
+					Channels[0].WaveFrequency |= (data & 0b111) << 8;
+					data |= 0b1011'1111;
+					break;
+				}
+				case addr_NR20: {
+					data |= 0b1111'1111;
 					break;
 				}
 				case addr_NR21: {
-					if (data & 0b0011'1111 == 0) {
-						std::cout << "written" << data << std::endl;
-						std::cout << "0 written" << std::endl;
-					}
+					Channels[1].LengthData = data & 0b0011'1111;
+					data |= 0b0011'1111;
 					break;
 				}
 				case addr_NR22: {
-					channels_[1].EnvelopeCurrentVolume = data >> 4;
-					channels_[1].EnvelopeIncrease = data & 0b0000'1000;
+					Channels[1].EnvelopeCurrentVolume = data >> 4;
+						Channels[1].EnvelopeIncrease = data & 0b0000'1000;
 					int sweep = data & 0b0000'0111;
-					channels_[1].EnvelopePeriod = sweep;
-					channels_[1].VolEnvEnabled = sweep != 0; // TODO: This might not be needed as we already check this inside the function. If removed, remove from others too.
+					Channels[1].EnvelopePeriod = sweep;
+					Channels[1].VolEnvEnabled = sweep != 0; // TODO: This might not be needed as we already check this inside the function. If removed, remove from others too.
+					break;
+				}
+				case addr_NR23: {
+					Channels[1].WaveFrequency &= 0b0111'0000'0000;
+					Channels[1].WaveFrequency |= data;
+					data |= 0b1111'1111;
+					break;
+				}
+				case addr_NR24: {
+					Channels[1].LengthDecOne = data & 0b0100'0000;
+					Channels[1].WaveFrequency &= 0b0000'1111'1111;
+					Channels[1].WaveFrequency |= (data & 0b111) << 8;
+					data |= 0b1011'1111;
 					break;
 				}
 				case addr_NR30: {
@@ -485,44 +515,71 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR31: {
-					if (data == 0) {
-						std::cout << "written" << data << std::endl;
-						std::cout << "0 written" << std::endl;
-					}
+					Channels[2].LengthData = data;
+					data |= 0b1111'1111;
 					break;
 				}
 				case addr_NR32: {
 					data |= 0b1001'1111;
 					break;
 				}
+				case addr_NR33: {
+					Channels[2].WaveFrequency &= 0b0111'0000'0000;
+					Channels[2].WaveFrequency |= data;
+					data |= 0b1111'1111;
+					break;
+				}
+				case addr_NR34: {
+					Channels[2].LengthDecOne = data & 0b0100'0000;
+					Channels[2].WaveFrequency &= 0b0000'1111'1111;
+					Channels[2].WaveFrequency |= (data & 0b111) << 8;
+					data |= 0b1011'1111;
+					break;
+				}
+				case addr_NR40: {
+					data |= 0b1111'1111;
+					break;
+				}
 				case addr_NR41: {
-					data |= 0b1100'0000;
-					if (data & 0b0011'1111 == 0) {
-						std::cout << "0 written" << std::endl;
-					}
+					Channels[3].LengthData = data & 0b0011'1111;
+					data |= 0b1111'1111;
 					break;
 				}
 				case addr_NR42: {
-					channels_[3].EnvelopeCurrentVolume = data >> 4;
-					channels_[3].EnvelopeIncrease = data & 0b0000'1000;
+					Channels[3].EnvelopeCurrentVolume = data >> 4;
+					Channels[3].EnvelopeIncrease = data & 0b0000'1000;
 					int sweep = data & 0b0000'0111;
-					channels_[3].EnvelopePeriod = sweep;
-					channels_[3].VolEnvEnabled = sweep != 0;
+					Channels[3].EnvelopePeriod = sweep;
+					Channels[3].VolEnvEnabled = sweep != 0;
 					break;
 				}
+				
 				case addr_NR44: {
-					data |= 0b0011'1111;
+					Channels[3].LengthDecOne = data & 0b0100'0000;
+					data |= 0b1011'1111;
 					break;
 				}
 				case addr_NR52: {
+					data &= 0b1111'0000;
+					bool enabled = data & 0b1000'0000;
+					if (!enabled) {
+						// When sound is disabled, clear all registers
+						for (int i = addr_NR10; i <= addr_NR51; i++) {
+							Write(i, 0);
+						}
+						data = 0;
+					}
+					SoundEnabled = enabled;
 					data |= 0b0111'0000;
 					break;
 				}
 				// Unused HWIO registers
 				// Writing to these sets all the bits
 				case 0xFF03: case 0xFF08: case 0xFF09: case 0xFF0A: case 0xFF0B:
-				case 0xFF0C: case 0xFF0D: case 0xFF0E: case 0xFF15: case 0xFF1F:
-				case 0xFF27: case 0xFF28: case 0xFF29: case 0xFF4C: case 0xFF4D:
+				case 0xFF0C: case 0xFF0D: case 0xFF0E:
+				case 0xFF27: case 0xFF28: case 0xFF29:
+				case 0xFF2A: case 0xFF2B: case 0xFF2C: case 0xFF2D: case 0xFF2E: 
+				case 0xFF2F: case 0xFF4C: case 0xFF4D:
 				case 0xFF4E: case 0xFF4F: case 0xFF50: case 0xFF51: case 0xFF52:
 				case 0xFF53: case 0xFF54: case 0xFF55: case 0xFF56: case 0xFF57:
 				case 0xFF58: case 0xFF59: case 0xFF5A: case 0xFF5B: case 0xFF5C:

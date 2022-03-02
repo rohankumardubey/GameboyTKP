@@ -4,7 +4,7 @@ namespace TKPEmu::Gameboy::Devices {
     void APUChannel::StepWaveGeneration(int cycles) {
         FrequencyTimer -= cycles;
         if (FrequencyTimer <= 0) {
-            FrequencyTimer += (2048 - Frequency) * 4;
+            FrequencyTimer += (2048 - WaveFrequency) * 4;
             // WaveDutyPosition stays in range 0-7
             WaveDutyPosition = (WaveDutyPosition + 1) & 0b111;
         }
@@ -24,8 +24,14 @@ namespace TKPEmu::Gameboy::Devices {
         }
     }
     void APUChannel::ClockLengthCtr() {
-        if (LengthCtrEnabled) {
-
+        if (LengthTimer == 0) {
+            LengthTimer = LengthInit - LengthData;
+        }
+        if (LengthCtrEnabled && LengthTimer > 0 && LengthDecOne) {
+            --LengthTimer;
+        }
+        if (LengthTimer == 0) {
+            LengthCtrEnabled = false;
         }
     }
     void APUChannel::ClockVolEnv() {
@@ -53,10 +59,10 @@ namespace TKPEmu::Gameboy::Devices {
             --SweepTimer;
             if (SweepTimer == 0) {
                 SweepTimer = (SweepPeriod == 0) ? 8 : SweepPeriod;
-                SweepEnabled = SweepPeriod != 0 || SweepStep != 0;
+                SweepEnabled = SweepPeriod != 0 || SweepShift != 0;
                 if (SweepEnabled) {
                     calculate_frequency();
-                    if (new_frequency <= 2047 && SweepStep > 0) {
+                    if (new_frequency <= 2047 && SweepShift > 0) {
                         Frequency = new_frequency;
                         ShadowFrequency = new_frequency;
                         calculate_frequency();
@@ -65,8 +71,8 @@ namespace TKPEmu::Gameboy::Devices {
             } 
         }
     }
-    int APUChannel::calculate_frequency() {
-        new_frequency = ShadowFrequency >> SweepStep;
+    void APUChannel::calculate_frequency() {
+        new_frequency = ShadowFrequency >> SweepShift;
         if (!SweepIncrease) {
             new_frequency = ShadowFrequency - new_frequency;
         } else {
