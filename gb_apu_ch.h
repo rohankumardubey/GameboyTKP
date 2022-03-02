@@ -15,6 +15,9 @@ namespace TKPEmu::Gameboy::Devices {
         int EnvelopeCurrentVolume = 0;
         bool EnvelopeIncrease = false;
         int EnvelopeNumSweep = 0;
+        int PeriodTimer = 0;
+        int DACInput = 0;
+        float DACOutput = 0;
 
         void StepWaveGeneration(int cycles);
         void StepFrameSequencer();

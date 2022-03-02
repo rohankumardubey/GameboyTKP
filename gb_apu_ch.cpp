@@ -30,7 +30,22 @@ namespace TKPEmu::Gameboy::Devices {
     }
     void APUChannel::ClockVolEnv() {
         if (VolEnvEnabled) {
-
+            if (EnvelopeNumSweep != 0) {
+                if (PeriodTimer > 0) {
+                    --PeriodTimer;
+                }
+                if (PeriodTimer == 0) {
+                    PeriodTimer = EnvelopeNumSweep;
+                    if (EnvelopeCurrentVolume > 0 && !EnvelopeIncrease) {
+                        --EnvelopeCurrentVolume;
+                    }
+                    if (EnvelopeCurrentVolume < 0xF && EnvelopeIncrease) {
+                        ++EnvelopeCurrentVolume;
+                    }
+                }
+                DACInput = GetAmplitude() * EnvelopeCurrentVolume;
+                DACOutput = (DACInput / 7.5f) - 1.0f; 
+            }
         }
     }
     void APUChannel::ClockSweep() {
