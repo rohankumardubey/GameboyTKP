@@ -30,12 +30,12 @@ namespace TKPEmu::Gameboy::Devices {
     }
     void APUChannel::ClockVolEnv() {
         if (VolEnvEnabled) {
-            if (EnvelopeNumSweep != 0) {
+            if (EnvelopePeriod != 0) {
                 if (PeriodTimer > 0) {
                     --PeriodTimer;
                 }
                 if (PeriodTimer == 0) {
-                    PeriodTimer = EnvelopeNumSweep;
+                    PeriodTimer = EnvelopePeriod;
                     if (EnvelopeCurrentVolume > 0 && !EnvelopeIncrease) {
                         --EnvelopeCurrentVolume;
                     }
@@ -49,8 +49,31 @@ namespace TKPEmu::Gameboy::Devices {
         }
     }
     void APUChannel::ClockSweep() {
-        if (SweepEnabled) {
-            
+        if (SweepTimer > 0) {
+            --SweepTimer;
+            if (SweepTimer == 0) {
+                SweepTimer = (SweepPeriod == 0) ? 8 : SweepPeriod;
+                SweepEnabled = SweepPeriod != 0 || SweepStep != 0;
+                if (SweepEnabled) {
+                    calculate_frequency();
+                    if (new_frequency <= 2047 && SweepStep > 0) {
+                        Frequency = new_frequency;
+                        ShadowFrequency = new_frequency;
+                        calculate_frequency();
+                    }
+                }
+            } 
+        }
+    }
+    int APUChannel::calculate_frequency() {
+        new_frequency = ShadowFrequency >> SweepStep;
+        if (!SweepIncrease) {
+            new_frequency = ShadowFrequency - new_frequency;
+        } else {
+            new_frequency = ShadowFrequency + new_frequency;
+        }
+        if (new_frequency > 2047) {
+            SweepEnabled = false;
         }
     }
 }

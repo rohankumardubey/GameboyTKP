@@ -445,6 +445,9 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 				case addr_NR10: {
 					data |= 0b1000'0000;
+					channels_[0].SweepPeriod = (data >> 4) & 0b111;
+					channels_[0].SweepIncrease = data & 0b1000;
+					channels_[0].SweepStep = data & 0b111;
 					break;
 				}
 				case addr_NR11: {
@@ -458,7 +461,7 @@ namespace TKPEmu::Gameboy::Devices {
 					channels_[0].EnvelopeCurrentVolume = data >> 4;
 					channels_[0].EnvelopeIncrease = data & 0b0000'1000;
 					int sweep = data & 0b0000'0111;
-					channels_[0].EnvelopeNumSweep = sweep;
+					channels_[0].EnvelopePeriod = sweep;
 					channels_[0].VolEnvEnabled = sweep != 0;
 					break;
 				}
@@ -469,15 +472,23 @@ namespace TKPEmu::Gameboy::Devices {
 					}
 					break;
 				}
+				case addr_NR22: {
+					channels_[1].EnvelopeCurrentVolume = data >> 4;
+					channels_[1].EnvelopeIncrease = data & 0b0000'1000;
+					int sweep = data & 0b0000'0111;
+					channels_[1].EnvelopePeriod = sweep;
+					channels_[1].VolEnvEnabled = sweep != 0; // TODO: This might not be needed as we already check this inside the function. If removed, remove from others too.
+					break;
+				}
+				case addr_NR30: {
+					data |= 0b0111'1111;
+					break;
+				}
 				case addr_NR31: {
 					if (data == 0) {
 						std::cout << "written" << data << std::endl;
 						std::cout << "0 written" << std::endl;
 					}
-					break;
-				}
-				case addr_NR30: {
-					data |= 0b0111'1111;
 					break;
 				}
 				case addr_NR32: {
@@ -489,6 +500,14 @@ namespace TKPEmu::Gameboy::Devices {
 					if (data & 0b0011'1111 == 0) {
 						std::cout << "0 written" << std::endl;
 					}
+					break;
+				}
+				case addr_NR42: {
+					channels_[3].EnvelopeCurrentVolume = data >> 4;
+					channels_[3].EnvelopeIncrease = data & 0b0000'1000;
+					int sweep = data & 0b0000'0111;
+					channels_[3].EnvelopePeriod = sweep;
+					channels_[3].VolEnvEnabled = sweep != 0;
 					break;
 				}
 				case addr_NR44: {
