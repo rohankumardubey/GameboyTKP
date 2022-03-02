@@ -1,4 +1,5 @@
 #include "gb_apu_ch.h"
+#include <iostream>
 
 namespace TKPEmu::Gameboy::Devices {
     void APUChannel::StepWaveGeneration(int cycles) {
@@ -24,7 +25,7 @@ namespace TKPEmu::Gameboy::Devices {
         }
     }
     void APUChannel::ClockLengthCtr() {
-        if (LengthCtrEnabled && LengthTimer > 0 && LengthDecOne) {
+        if (LengthTimer > 0 && LengthDecOne) {
             --LengthTimer;
         }
         if (LengthTimer == 0) {

@@ -460,11 +460,7 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR12: {
-					Channels[0].EnvelopeCurrentVolume = data >> 4;
-					Channels[0].EnvelopeIncrease = data & 0b0000'1000;
-					int sweep = data & 0b0000'0111;
-					Channels[0].EnvelopePeriod = sweep;
-					Channels[0].VolEnvEnabled = sweep != 0;
+					handle_nrx2(1, data);
 					break;
 				}
 				case addr_NR13: {
@@ -474,16 +470,7 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR14: {
-					// TODO: Move all these to functions inside channels
-					if (data & 0b1000'0000 && !Channels[0].LengthCtrEnabled) {
-						Channels[0].LengthCtrEnabled = true;
-            			Channels[0].LengthTimer = Channels[0].LengthInit - Channels[0].LengthData;
-						redirect_address(addr_NR52) |= 0b0000'0001;
-					}
-					Channels[0].LengthDecOne = data & 0b0100'0000;
-					Channels[0].WaveFrequency &= 0b0000'1111'1111;
-					Channels[0].WaveFrequency |= (data & 0b111) << 8;
-					data |= 0b1011'1111;
+					handle_nrx4(1, data);
 					break;
 				}
 				case addr_NR20: {
@@ -497,11 +484,7 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR22: {
-					Channels[1].EnvelopeCurrentVolume = data >> 4;
-						Channels[1].EnvelopeIncrease = data & 0b0000'1000;
-					int sweep = data & 0b0000'0111;
-					Channels[1].EnvelopePeriod = sweep;
-					Channels[1].VolEnvEnabled = sweep != 0; // TODO: This might not be needed as we already check this inside the function. If removed, remove from others too.
+					handle_nrx2(2, data);
 					break;
 				}
 				case addr_NR23: {
@@ -511,18 +494,15 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR24: {
-					if (data & 0b1000'0000 && !Channels[1].LengthCtrEnabled) {
-						Channels[1].LengthCtrEnabled = true;
-            			Channels[1].LengthTimer = Channels[1].LengthInit - Channels[1].LengthData;
-						redirect_address(addr_NR52) |= 0b0000'0010;
-					}
-					Channels[1].LengthDecOne = data & 0b0100'0000;
-					Channels[1].WaveFrequency &= 0b0000'1111'1111;
-					Channels[1].WaveFrequency |= (data & 0b111) << 8;
-					data |= 0b1011'1111;
+					handle_nrx4(2, data);
 					break;
 				}
 				case addr_NR30: {
+					if (!(data & 0b1000'0000)) {
+						disable_dac(2);
+					} else {
+						Channels[2].DACEnabled = true;
+					}
 					data |= 0b0111'1111;
 					break;
 				}
@@ -543,15 +523,7 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR34: {
-					if (data & 0b1000'0000 && !Channels[2].LengthCtrEnabled) {
-						Channels[2].LengthCtrEnabled = true;
-            			Channels[2].LengthTimer = Channels[2].LengthInit - Channels[2].LengthData;
-						redirect_address(addr_NR52) |= 0b0000'0100;
-					}
-					Channels[2].LengthDecOne = data & 0b0100'0000;
-					Channels[2].WaveFrequency &= 0b0000'1111'1111;
-					Channels[2].WaveFrequency |= (data & 0b111) << 8;
-					data |= 0b1011'1111;
+					handle_nrx4(3, data);
 					break;
 				}
 				case addr_NR40: {
@@ -565,22 +537,12 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR42: {
-					Channels[3].EnvelopeCurrentVolume = data >> 4;
-					Channels[3].EnvelopeIncrease = data & 0b0000'1000;
-					int sweep = data & 0b0000'0111;
-					Channels[3].EnvelopePeriod = sweep;
-					Channels[3].VolEnvEnabled = sweep != 0;
+					handle_nrx2(4, data);
 					break;
 				}
 				
 				case addr_NR44: {
-					if (data & 0b1000'0000 && !Channels[3].LengthCtrEnabled) {
-						Channels[3].LengthCtrEnabled = true;
-            			Channels[3].LengthTimer = Channels[3].LengthInit - Channels[3].LengthData;
-						redirect_address(addr_NR52) |= 0b0000'1000;
-					}
-					Channels[3].LengthDecOne = data & 0b0100'0000;
-					data |= 0b1011'1111;
+					handle_nrx4(4, data);
 					break;
 				}
 				case addr_NR52: {
@@ -708,5 +670,43 @@ namespace TKPEmu::Gameboy::Devices {
 				of.write(reinterpret_cast<char*>(&ram_banks_[0]), sizeof(uint8_t) * 0x2000);
 			}
 		}
+	}
+	void Bus::handle_nrx4(int channel_no, uint8_t& data) {
+		// Take channel input with 1-based index to match the register names (eg. NR14)
+		--channel_no;
+		auto& chan = Channels[channel_no];
+		if (data & 0b1000'0000 && !chan.LengthCtrEnabled) {
+			chan.LengthCtrEnabled = true;
+			if (chan.LengthTimer == 0) {
+				chan.LengthTimer = chan.LengthInit;
+			}
+			if (chan.DACEnabled)
+				redirect_address(addr_NR52) |= 1 << channel_no;
+		}
+		chan.LengthDecOne = data & 0b0100'0000;
+		chan.WaveFrequency &= 0b0000'1111'1111;
+		chan.WaveFrequency |= (data & 0b111) << 8;
+		data |= 0b1011'1111;
+	}
+    void Bus::handle_nrx2(int channel_no, uint8_t& data) {
+		--channel_no;
+		auto& chan = Channels[channel_no];
+		chan.EnvelopeCurrentVolume = data >> 4;
+		chan.EnvelopeIncrease = data & 0b0000'1000;
+		int sweep = data & 0b0000'0111;
+		chan.EnvelopePeriod = sweep;
+		chan.VolEnvEnabled = sweep != 0;
+		if ((data >> 3) == 0) {
+			disable_dac(channel_no);
+		} else {
+			chan.DACEnabled = true;
+		}
+	}
+	void Bus::disable_dac(int channel_no) {
+		auto& chan = Channels[channel_no];
+		//chan.LengthCtrEnabled = false;
+		//chan.LengthTimer = 0;
+		ClearNR52Bit(channel_no);
+		chan.DACEnabled = false;
 	}
 }
