@@ -14,8 +14,7 @@ namespace TKPEmu::Gameboy::Devices {
         Bus& bus_;
         APU& apu_;
         RegisterType &DIV, &TIMA, &TAC, &TMA, &IF;
-        // TODO: Reduce these temporaries to oscillator_ and timer_counter_ only
-        int oscillator_, timer_counter_, old_tac_;
+        int oscillator_, timer_counter_;
         bool tima_overflow_, just_overflown_;
         const std::array<const unsigned, 4> interr_times_ { 1024, 16, 64, 256 };
     };

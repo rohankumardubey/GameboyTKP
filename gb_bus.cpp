@@ -289,7 +289,6 @@ namespace TKPEmu::Gameboy::Devices {
 					return oam_[address & 0xFF];
 				}
 				else if (address <= 0xFEFF) {
-					// TODO: check if this is actually unused area
 					return unused_mem_area_;
 				}
 				else {
