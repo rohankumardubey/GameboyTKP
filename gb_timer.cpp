@@ -74,6 +74,10 @@ namespace TKPEmu::Gameboy::Devices {
 				// TODO: cgb double speed makes it bit 6
 				for (int i = 0; i < 4; i++) {
 					bus_.Channels[i].StepFrameSequencer();
+					bool active = (bus_.Read(addr_NR52) >> i) & 0b1;
+					if (active && bus_.Channels[i].LengthTimer == 0) {
+						bus_.ClearNR52Bit(i);
+					}
 				}
 			}
 		}

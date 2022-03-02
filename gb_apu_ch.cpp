@@ -24,9 +24,6 @@ namespace TKPEmu::Gameboy::Devices {
         }
     }
     void APUChannel::ClockLengthCtr() {
-        if (LengthTimer == 0) {
-            LengthTimer = LengthInit - LengthData;
-        }
         if (LengthCtrEnabled && LengthTimer > 0 && LengthDecOne) {
             --LengthTimer;
         }

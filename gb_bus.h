@@ -55,6 +55,7 @@ namespace TKPEmu::Gameboy::Devices {
         uint8_t Read(uint16_t address);
         uint16_t ReadL(uint16_t address);
         uint8_t& GetReference(uint16_t address);
+        void ClearNR52Bit(uint8_t bit);
         void Write(uint16_t address, uint8_t data);
         void WriteL(uint16_t address, uint16_t data);
         void TransferDMA(uint8_t clk);

@@ -474,6 +474,12 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR14: {
+					// TODO: Move all these to functions inside channels
+					if (data & 0b1000'0000) {
+						Channels[0].LengthCtrEnabled = true;
+            			Channels[0].LengthTimer = Channels[0].LengthInit - Channels[0].LengthData;
+						redirect_address(addr_NR52) |= 0b0000'0001;
+					}
 					Channels[0].LengthDecOne = data & 0b0100'0000;
 					Channels[0].WaveFrequency &= 0b0000'1111'1111;
 					Channels[0].WaveFrequency |= (data & 0b111) << 8;
@@ -504,6 +510,11 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR24: {
+					if (data & 0b1000'0000) {
+						Channels[1].LengthCtrEnabled = true;
+            			Channels[1].LengthTimer = Channels[1].LengthInit - Channels[1].LengthData;
+						redirect_address(addr_NR52) |= 0b0000'0010;
+					}
 					Channels[1].LengthDecOne = data & 0b0100'0000;
 					Channels[1].WaveFrequency &= 0b0000'1111'1111;
 					Channels[1].WaveFrequency |= (data & 0b111) << 8;
@@ -530,6 +541,11 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR34: {
+					if (data & 0b1000'0000) {
+						Channels[2].LengthCtrEnabled = true;
+            			Channels[2].LengthTimer = Channels[2].LengthInit - Channels[2].LengthData;
+						redirect_address(addr_NR52) |= 0b0000'0100;
+					}
 					Channels[2].LengthDecOne = data & 0b0100'0000;
 					Channels[2].WaveFrequency &= 0b0000'1111'1111;
 					Channels[2].WaveFrequency |= (data & 0b111) << 8;
@@ -555,6 +571,11 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 				
 				case addr_NR44: {
+					if (data & 0b1000'0000) {
+						Channels[3].LengthCtrEnabled = true;
+            			Channels[3].LengthTimer = Channels[3].LengthInit - Channels[3].LengthData;
+						redirect_address(addr_NR52) |= 0b0000'1000;
+					}
 					Channels[3].LengthDecOne = data & 0b0100'0000;
 					data |= 0b1011'1111;
 					break;
@@ -600,6 +621,9 @@ namespace TKPEmu::Gameboy::Devices {
 	void Bus::WriteL(uint16_t address, uint16_t data) {
 		Write(address, data & 0xFF);
 		Write(address + 1, data >> 8);
+	}
+	void Bus::ClearNR52Bit(uint8_t bit) {
+		redirect_address(addr_NR52) &= ~(1 << bit);
 	}
 	void Bus::Reset() {
 		SoftReset();
