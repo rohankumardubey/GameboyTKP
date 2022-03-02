@@ -455,6 +455,7 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 				case addr_NR11: {
 					Channels[0].LengthData = data & 0b0011'1111;
+					Channels[0].LengthTimer = Channels[0].LengthInit - Channels[0].LengthData;
 					data |= 0b0011'1111; 
 					break;
 				}
@@ -474,7 +475,7 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 				case addr_NR14: {
 					// TODO: Move all these to functions inside channels
-					if (data & 0b1000'0000) {
+					if (data & 0b1000'0000 && !Channels[0].LengthCtrEnabled) {
 						Channels[0].LengthCtrEnabled = true;
             			Channels[0].LengthTimer = Channels[0].LengthInit - Channels[0].LengthData;
 						redirect_address(addr_NR52) |= 0b0000'0001;
@@ -491,6 +492,7 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 				case addr_NR21: {
 					Channels[1].LengthData = data & 0b0011'1111;
+					Channels[1].LengthTimer = Channels[1].LengthInit - Channels[1].LengthData;
 					data |= 0b0011'1111;
 					break;
 				}
@@ -509,7 +511,7 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR24: {
-					if (data & 0b1000'0000) {
+					if (data & 0b1000'0000 && !Channels[1].LengthCtrEnabled) {
 						Channels[1].LengthCtrEnabled = true;
             			Channels[1].LengthTimer = Channels[1].LengthInit - Channels[1].LengthData;
 						redirect_address(addr_NR52) |= 0b0000'0010;
@@ -526,6 +528,7 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 				case addr_NR31: {
 					Channels[2].LengthData = data;
+					Channels[2].LengthTimer = Channels[2].LengthInit - Channels[2].LengthData;
 					data |= 0b1111'1111;
 					break;
 				}
@@ -540,7 +543,7 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR34: {
-					if (data & 0b1000'0000) {
+					if (data & 0b1000'0000 && !Channels[2].LengthCtrEnabled) {
 						Channels[2].LengthCtrEnabled = true;
             			Channels[2].LengthTimer = Channels[2].LengthInit - Channels[2].LengthData;
 						redirect_address(addr_NR52) |= 0b0000'0100;
@@ -556,6 +559,7 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR41: {
+					Channels[3].LengthTimer = Channels[3].LengthInit - Channels[3].LengthData;
 					Channels[3].LengthData = data & 0b0011'1111;
 					data |= 0b1111'1111;
 					break;
@@ -570,7 +574,7 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 				
 				case addr_NR44: {
-					if (data & 0b1000'0000) {
+					if (data & 0b1000'0000 && !Channels[3].LengthCtrEnabled) {
 						Channels[3].LengthCtrEnabled = true;
             			Channels[3].LengthTimer = Channels[3].LengthInit - Channels[3].LengthData;
 						redirect_address(addr_NR52) |= 0b0000'1000;
