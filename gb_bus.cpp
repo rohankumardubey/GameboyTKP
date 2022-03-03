@@ -454,8 +454,7 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR11: {
-					Channels[0].LengthData = data & 0b0011'1111;
-					Channels[0].LengthTimer = Channels[0].LengthInit - Channels[0].LengthData;
+					handle_nrx1(1, data);
 					data |= 0b0011'1111; 
 					break;
 				}
@@ -478,9 +477,8 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR21: {
-					Channels[1].LengthData = data & 0b0011'1111;
-					Channels[1].LengthTimer = Channels[1].LengthInit - Channels[1].LengthData;
-					data |= 0b0011'1111;
+					handle_nrx1(2, data);
+					data |= 0b0011'1111; 
 					break;
 				}
 				case addr_NR22: {
@@ -507,9 +505,8 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR31: {
-					Channels[2].LengthData = data;
-					Channels[2].LengthTimer = Channels[2].LengthInit - Channels[2].LengthData;
-					data |= 0b1111'1111;
+					handle_nrx1(3, data);
+					data |= 0b1111'1111; 
 					break;
 				}
 				case addr_NR32: {
@@ -531,9 +528,8 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR41: {
-					Channels[3].LengthData = data & 0b0011'1111;
-					Channels[3].LengthTimer = Channels[3].LengthInit - Channels[3].LengthData;
-					data |= 0b1111'1111;
+					handle_nrx1(4, data);
+					data |= 0b1111'1111; 
 					break;
 				}
 				case addr_NR42: {
@@ -684,7 +680,12 @@ namespace TKPEmu::Gameboy::Devices {
 				redirect_address(addr_NR52) |= 1 << channel_no;
 			}
 		}
+		bool old = chan.LengthDecOne;
 		chan.LengthDecOne = data & 0b0100'0000;
+		if (!old && chan.LengthDecOne) {
+			std::cout << "Secret clock" << chan.LengthTimer << " " << chan.LengthHalf << std::endl;
+			//chan.ClockLengthCtr();
+		}
 		chan.WaveFrequency &= 0b0000'1111'1111;
 		chan.WaveFrequency |= (data & 0b111) << 8;
 		data |= 0b1011'1111;
@@ -702,6 +703,13 @@ namespace TKPEmu::Gameboy::Devices {
 		} else {
 			chan.DACEnabled = true;
 		}
+	}
+	void Bus::handle_nrx1(int channel_no, uint8_t& data) {
+		--channel_no;
+		Channels[channel_no].LengthData = data & (Channels[channel_no].LengthInit - 1); // and with highest value
+		Channels[channel_no].LengthTimer = Channels[channel_no].LengthInit - Channels[channel_no].LengthData;
+		Channels[channel_no].LengthHalf = Channels[channel_no].LengthTimer / 2;
+		//data |= 0b1111'1111;
 	}
 	void Bus::disable_dac(int channel_no) {
 		auto& chan = Channels[channel_no];

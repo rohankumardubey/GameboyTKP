@@ -114,6 +114,7 @@ namespace TKPEmu::Gameboy::Devices {
         void handle_mbc(uint16_t address, uint8_t data);
         void handle_nrx4(int channel_no, uint8_t& data);
         void handle_nrx2(int channel_no, uint8_t& data);
+        void handle_nrx1(int channel_no, uint8_t& data);
         void disable_dac(int channel_no);
         void battery_save();
     };

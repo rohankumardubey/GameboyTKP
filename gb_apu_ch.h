@@ -23,6 +23,7 @@ namespace TKPEmu::Gameboy::Devices {
         int ShadowFrequency = 0;
         int Frequency = 0;
         int LengthTimer = 0;
+        int LengthHalf = 0;
         int LengthData = 0;
         bool LengthDecOne = false;
         int LengthInit = 64;
