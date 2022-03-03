@@ -1,5 +1,6 @@
 #include "gb_timer.h"
 #include <iostream>
+#include <bitset>
 namespace TKPEmu::Gameboy::Devices {
     Timer::Timer(Bus& bus, APU& apu) : 
         bus_(bus), 

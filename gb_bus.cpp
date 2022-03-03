@@ -531,8 +531,8 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR41: {
-					Channels[3].LengthTimer = Channels[3].LengthInit - Channels[3].LengthData;
 					Channels[3].LengthData = data & 0b0011'1111;
+					Channels[3].LengthTimer = Channels[3].LengthInit - Channels[3].LengthData;
 					data |= 0b1111'1111;
 					break;
 				}
@@ -680,8 +680,9 @@ namespace TKPEmu::Gameboy::Devices {
 			if (chan.LengthTimer == 0) {
 				chan.LengthTimer = chan.LengthInit;
 			}
-			if (chan.DACEnabled)
+			if (chan.DACEnabled) {
 				redirect_address(addr_NR52) |= 1 << channel_no;
+			}
 		}
 		chan.LengthDecOne = data & 0b0100'0000;
 		chan.WaveFrequency &= 0b0000'1111'1111;
@@ -708,5 +709,6 @@ namespace TKPEmu::Gameboy::Devices {
 		//chan.LengthTimer = 0;
 		ClearNR52Bit(channel_no);
 		chan.DACEnabled = false;
+		chan.LengthTimer = 0;
 	}
 }
