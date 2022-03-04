@@ -449,7 +449,6 @@ namespace TKPEmu::Gameboy::Devices {
 					Channels[0].SweepPeriod = (data >> 4) & 0b111;
 					Channels[0].SweepIncrease = !(data & 0b1000);
 					Channels[0].SweepShift = data & 0b111;
-					std::cout << "Set Data:" << std::bitset<8>(data) << " Period:" << Channels[0].SweepPeriod << " Shift:" << Channels[0].SweepShift << std::endl;
 					data |= 0b1000'0000;
 					break;
 				}
@@ -470,7 +469,6 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR14: {
-					std::cout << "nr14 " << std::hex << (int)data << std::endl;
 					handle_nrx4(1, data);
 					if (Channels[0].SweepShift & 0b111) {
 						// From 04-sweep: If shift>0, calculates on trigger
@@ -600,6 +598,11 @@ namespace TKPEmu::Gameboy::Devices {
 	}
 	void Bus::SoftReset() {
 		hram_.fill(0);
+		SoundEnabled = true;
+		for (int i = 0xFF10; i < 0xFF25; i++) {
+			Write(i, 0);
+		}
+		SoundEnabled = false;
 		oam_.fill(0);
 		vram_.fill(0);
 		DirectionKeys = 0b1110'1111;
@@ -699,7 +702,6 @@ namespace TKPEmu::Gameboy::Devices {
 					--chan.LengthTimer;
 				}
 			}
-			std::cout << "Channel enabled" << std::endl;
 			redirect_address(addr_NR52) |= 1 << channel_no;
 		}
 		if (channel_no == 0) {

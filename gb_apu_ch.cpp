@@ -62,7 +62,6 @@ namespace TKPEmu::Gameboy::Devices {
             if (SweepEnabled && SweepPeriod > 0) {
                 calculate_frequency();
                 if (new_frequency <= 2047 && SweepShift > 0) {
-                    //std::cout << "Clock sweep" << std::endl;    
                     Frequency = new_frequency;
                     ShadowFrequency = new_frequency;
                     calculate_frequency();
@@ -71,18 +70,15 @@ namespace TKPEmu::Gameboy::Devices {
         }
     }
     void APUChannel::calculate_frequency() {
-        std::cout << "Calculate frequency. Old:" << new_frequency;
         new_frequency = ShadowFrequency >> SweepShift;
         if (!SweepIncrease) {
             new_frequency = ShadowFrequency - new_frequency;
         } else {
             new_frequency = ShadowFrequency + new_frequency;
         }
-        std::cout << " new:" << new_frequency << std::endl;
         if (new_frequency > 2047) {
             SweepEnabled = false;
             DisableChannelFlag = true;
-            std::cout << "Disable channel freq overflow" << std::endl;
         }
     }
 }
