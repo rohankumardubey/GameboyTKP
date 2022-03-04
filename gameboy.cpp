@@ -119,6 +119,7 @@ namespace TKPEmu::Gameboy {
 		return &ppu_.SpriteDebugColor;
 	}
 	void Gameboy::save_state(std::ofstream& ofstream) {
+		// TODO: After finishing apu, add all apu settings to save_state and load
 		if (!Paused) {
 			Paused = true;
 		}

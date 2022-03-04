@@ -21,6 +21,8 @@ $emu -T "$blargg/instr_timing" -p -g -G $outf
 echo "" >> $outf
 $emu -T "$blargg/mem_timing/individual" -p -g -G $outf
 echo "" >> $outf
+$emu -T "$blargg/dmg_sound/rom_singles" -p -g -G $outf
+echo "" >> $outf
 $emu -T "$blargg" -p -g -G $outf
 echo "" >> $outf
 echo "Testing mooneye directory $mooneye"
