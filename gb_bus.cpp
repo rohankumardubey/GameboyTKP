@@ -671,7 +671,22 @@ namespace TKPEmu::Gameboy::Devices {
 		// Take channel input with 1-based index to match the register names (eg. NR14)
 		--channel_no;
 		auto& chan = Channels[channel_no];
-		bool already_dec = false;
+		bool old = chan.LengthDecOne;
+		chan.LengthDecOne = data & 0b0100'0000;
+		int div = redirect_address(addr_div);
+		if (!old && chan.LengthDecOne) {
+			// From 03-trigger blargg test:
+			// Enabling in first half of length period should clock length
+			// Because length clocks every 2 frame sequencer steps, first half is every time its even
+			if ((chan.FrameSequencer % 2 == 0)) {
+				chan.ClockLengthCtr();
+				std::cout << "Secret clock! " << std::bitset<8>(div) << " " << chan.LengthTimer << " " << old << " " << chan.LengthDecOne << std::endl;
+			}
+			// If clock makes length zero, should disable chan
+			if (chan.LengthTimer == 0) {
+				ClearNR52Bit(channel_no);
+			}
+		}
 		if ((data & 0b1000'0000) && !chan.LengthCtrEnabled) {
 			chan.LengthCtrEnabled = true;
 			if (chan.LengthTimer == 0) {
@@ -682,31 +697,20 @@ namespace TKPEmu::Gameboy::Devices {
 					// Trigger that un-freezes enabled length should clock it
 					--chan.LengthTimer;
 					std::cout << "Supersecret decrease " << chan.LengthTimer << std::endl;
-					already_dec = true;
 				}
 			}
-			if (chan.DACEnabled) {
+			//if (chan.DACEnabled) {
 				redirect_address(addr_NR52) |= 1 << channel_no;
-			}
-		}
-		bool old = chan.LengthDecOne;
-		chan.LengthDecOne = data & 0b0100'0000;
-		int div = redirect_address(addr_div);
-		if (!old && chan.LengthDecOne) {
-			// From 03-trigger blargg test:
-			// Enabling in first half of length period should clock length
-			// Because length clocks every 2 frame sequencer steps, first half is every time its even
-			if ((chan.FrameSequencer % 2 == 0) && !already_dec) {
-				chan.ClockLengthCtr();
-				std::cout << "Secret clock! " << std::bitset<8>(div) << " " << chan.LengthTimer << " " << old << " " << chan.LengthDecOne << std::endl;
-			}
-			// If clock makes length zero, should disable chan
-			if (chan.LengthTimer == 0) {
-				ClearNR52Bit(channel_no);
-			}
+			//}
 		}
 		chan.WaveFrequency &= 0b0000'1111'1111;
 		chan.WaveFrequency |= (data & 0b111) << 8;
+		if (data == 0x80) {
+			std::cout << "data 0x80 " << chan.LengthTimer << std::endl;
+		}
+		if (data == 0xC0) {
+			std::cout << "data 0xc0 " << chan.LengthTimer << std::endl;
+		}
 		data |= 0b1011'1111;
 	}
     void Bus::handle_nrx2(int channel_no, uint8_t& data) {
@@ -718,11 +722,11 @@ namespace TKPEmu::Gameboy::Devices {
 		chan.EnvelopePeriod = sweep;
 		chan.VolEnvEnabled = sweep != 0;
 		if ((data >> 3) == 0) {
-			//std::cout << "Disable dac " << chan.LengthTimer << std::endl;
+			std::cout << "Disable dac " << chan.LengthTimer << std::endl;
 			disable_dac(channel_no);
 		} else {
 			chan.DACEnabled = true;
-			//std::cout << "Enable dac " << chan.LengthTimer << std::endl;
+			std::cout << "Enable dac " << chan.LengthTimer << std::endl;
 		}
 	}
 	void Bus::handle_nrx1(int channel_no, uint8_t& data) {
@@ -738,6 +742,6 @@ namespace TKPEmu::Gameboy::Devices {
 		//chan.LengthTimer = 0;
 		ClearNR52Bit(channel_no);
 		chan.DACEnabled = false;
-		chan.LengthTimer = 0;
+		//chan.LengthTimer = 0;
 	}
 }
