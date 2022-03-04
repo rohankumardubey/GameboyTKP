@@ -702,8 +702,11 @@ namespace TKPEmu::Gameboy::Devices {
 			std::cout << "Channel enabled" << std::endl;
 			redirect_address(addr_NR52) |= 1 << channel_no;
 		}
-		chan.WaveFrequency &= 0b0000'1111'1111;
-		chan.WaveFrequency |= (data & 0b111) << 8;
+		if (channel_no == 0) {
+			chan.WaveFrequency &= 0b0000'1111'1111;
+			chan.WaveFrequency |= (data & 0b111) << 8;
+			chan.ShadowFrequency = chan.WaveFrequency;
+		}
 		data |= 0b1011'1111;
 	}
     void Bus::handle_nrx2(int channel_no, uint8_t& data) {

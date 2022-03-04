@@ -76,9 +76,13 @@ namespace TKPEmu::Gameboy::Devices {
 				for (int i = 0; i < 4; i++) {
 					auto& chan = bus_.Channels[i];
 					chan.StepFrameSequencer();
-					if (chan.LengthTimer == 0 || chan.DisableChannelFlag) {
+					if (chan.LengthTimer == 0) {
+						bus_.ClearNR52Bit(i);
+					}
+					if (chan.DisableChannelFlag) {
 						bus_.ClearNR52Bit(i);
 						chan.DisableChannelFlag = false;
+						std::cout << "Disable channel" << std::endl;
 					}
 				}
 			}
