@@ -39,6 +39,9 @@ namespace TKPEmu::Gameboy {
         DisInstr GetInstruction(uint16_t address);
 		bool AddBreakpoint(GBBPArguments bp);
 		bool* DebugSpriteTint();
+		bool* GetDrawSprites();
+		bool* GetDrawWindow();
+		bool* GetDrawBackground();
 		void RemoveBreakpoint(int index);
 		const auto& GetOpcodeDescription(uint8_t opc);
 		GameboyPalettes& GetPalette();

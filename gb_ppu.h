@@ -21,6 +21,9 @@ namespace TKPEmu::Gameboy::Devices {
 	public:
 		bool ReadyToDraw = false;
 		bool SpriteDebugColor = false;
+		bool DrawBackground = true;
+		bool DrawWindow = true;
+		bool DrawSprites = true;
 		PPU(Bus& bus, std::mutex* draw_mutex);
 		void Update(uint8_t cycles);
 		void Reset();

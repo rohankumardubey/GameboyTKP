@@ -453,4 +453,13 @@ namespace TKPEmu::Gameboy {
 	Gameboy::GameboyPalettes& Gameboy::GetPalette() {
 		return bus_.Palette;
 	}
+	bool* Gameboy::GetDrawBackground() {
+		return &ppu_.DrawBackground;
+	}
+	bool* Gameboy::GetDrawSprites() {
+		return &ppu_.DrawSprites;
+	}
+	bool* Gameboy::GetDrawWindow() {
+		return &ppu_.DrawWindow;
+	}
 }

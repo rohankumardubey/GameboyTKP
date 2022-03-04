@@ -147,7 +147,7 @@ namespace TKPEmu::Gameboy::Devices {
 			if (LCDC & LCDCFlag::BG_ENABLE) {
 				render_tiles();
 			}
-			if (LCDC & LCDCFlag::OBJ_ENABLE) {
+			if (LCDC & LCDCFlag::OBJ_ENABLE && DrawSprites) {
 				render_sprites();
 			}
 		}
@@ -198,6 +198,21 @@ namespace TKPEmu::Gameboy::Devices {
 			int colorBit = -((positionX % 8) - 7);
 			int colorNum = (((data2 >> colorBit) & 0b1) << 1) | ((data1 >> colorBit) & 0b1);
 			int idx = (pixel * 4) + (LY * 4 * 160);
+			if (windowEnabled && identifierLoc == identifierLocationW) {
+				if (!DrawWindow) {
+					screen_color_data_[idx++] = bus_.Palette[0][0];
+					screen_color_data_[idx++] = bus_.Palette[0][1];
+					screen_color_data_[idx++] = bus_.Palette[0][2];
+					screen_color_data_[idx] = 255.0f;	
+					continue;
+				}
+			} else if (!DrawBackground) {
+				screen_color_data_[idx++] = bus_.Palette[0][0];
+				screen_color_data_[idx++] = bus_.Palette[0][1];
+				screen_color_data_[idx++] = bus_.Palette[0][2];
+				screen_color_data_[idx] = 255.0f;
+				continue;
+			}
 			screen_color_data_[idx++] = bus_.Palette[bus_.BGPalette[colorNum]][0];
 			screen_color_data_[idx++] = bus_.Palette[bus_.BGPalette[colorNum]][1];
 			screen_color_data_[idx++] = bus_.Palette[bus_.BGPalette[colorNum]][2];
