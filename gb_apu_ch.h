@@ -31,6 +31,7 @@ namespace TKPEmu::Gameboy::Devices {
         int DACInput = 0;
         float DACOutput = 0;
         bool DACEnabled = true;
+        bool DisableChannelFlag = false;
 
         void StepWaveGeneration(int cycles);
         void StepFrameSequencer();

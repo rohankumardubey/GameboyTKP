@@ -446,10 +446,11 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR10: {
-					data |= 0b1000'0000;
 					Channels[0].SweepPeriod = (data >> 4) & 0b111;
-					Channels[0].SweepIncrease = data & 0b1000;
+					Channels[0].SweepIncrease = !(data & 0b1000);
 					Channels[0].SweepShift = data & 0b111;
+					std::cout << "Set Data:" << std::bitset<8>(data) << " Period:" << Channels[0].SweepPeriod << " Shift:" << Channels[0].SweepShift << std::endl;
+					data |= 0b1000'0000;
 					break;
 				}
 				case addr_NR11: {
@@ -464,11 +465,17 @@ namespace TKPEmu::Gameboy::Devices {
 				case addr_NR13: {
 					Channels[0].WaveFrequency &= 0b0111'0000'0000;
 					Channels[0].WaveFrequency |= data;
+					Channels[0].ShadowFrequency = Channels[0].WaveFrequency;
 					data |= 0b1111'1111;
 					break;
 				}
 				case addr_NR14: {
+					std::cout << "nr14 " << std::hex << (int)data << std::endl;
 					handle_nrx4(1, data);
+					if (Channels[0].SweepShift & 0b111) {
+						// From 04-sweep: If shift>0, calculates on trigger
+
+					}
 					break;
 				}
 				case addr_NR20: {
@@ -692,6 +699,7 @@ namespace TKPEmu::Gameboy::Devices {
 					--chan.LengthTimer;
 				}
 			}
+			std::cout << "Channel enabled" << std::endl;
 			redirect_address(addr_NR52) |= 1 << channel_no;
 		}
 		chan.WaveFrequency &= 0b0000'1111'1111;
