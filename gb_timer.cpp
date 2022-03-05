@@ -82,7 +82,6 @@ namespace TKPEmu::Gameboy::Devices {
 					if (chan.DisableChannelFlag) {
 						bus_.ClearNR52Bit(i);
 						chan.DisableChannelFlag = false;
-						std::cout << "Disable channel" << std::endl;
 					}
 				}
 			}

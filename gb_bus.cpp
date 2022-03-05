@@ -470,9 +470,13 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 				case addr_NR14: {
 					handle_nrx4(1, data);
-					if (Channels[0].SweepShift & 0b111) {
-						// From 04-sweep: If shift>0, calculates on trigger
-
+					auto& chan = Channels[0];
+					if (chan.SweepShift > 0) {
+						chan.CalculateSweepFreq();
+						if (chan.DisableChannelFlag) {
+							ClearNR52Bit(0);
+							chan.DisableChannelFlag = false;
+						}
 					}
 					break;
 				}
@@ -693,7 +697,12 @@ namespace TKPEmu::Gameboy::Devices {
 				ClearNR52Bit(channel_no);
 			}
 		}
-		if ((data & 0b1000'0000) && !chan.LengthCtrEnabled) {
+		if (channel_no == 0) {
+			chan.WaveFrequency &= 0b0000'1111'1111;
+			chan.WaveFrequency |= (data & 0b111) << 8;
+			chan.ShadowFrequency = chan.WaveFrequency;
+		}
+		if ((data & 0b1000'0000)) {
 			chan.LengthCtrEnabled = true;
 			if (chan.LengthTimer == 0) {
 				chan.LengthTimer = chan.LengthInit;
@@ -702,12 +711,9 @@ namespace TKPEmu::Gameboy::Devices {
 					--chan.LengthTimer;
 				}
 			}
-			redirect_address(addr_NR52) |= 1 << channel_no;
-		}
-		if (channel_no == 0) {
-			chan.WaveFrequency &= 0b0000'1111'1111;
-			chan.WaveFrequency |= (data & 0b111) << 8;
-			chan.ShadowFrequency = chan.WaveFrequency;
+			if (chan.DACEnabled) {
+				redirect_address(addr_NR52) |= 1 << channel_no;
+			}
 		}
 		data |= 0b1011'1111;
 	}

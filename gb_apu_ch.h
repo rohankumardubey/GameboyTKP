@@ -39,9 +39,10 @@ namespace TKPEmu::Gameboy::Devices {
         void ClockLengthCtr();
         void ClockVolEnv();
         void ClockSweep();
-    private:
+        void CalculateSweepFreq();
         int new_frequency = 0;
-        void calculate_frequency();
+
+    private:
     };
 }
 #endif
