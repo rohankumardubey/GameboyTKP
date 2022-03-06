@@ -449,6 +449,7 @@ namespace TKPEmu::Gameboy::Devices {
 					Channels[0].SweepPeriod = (data >> 4) & 0b111;
 					Channels[0].SweepIncrease = !(data & 0b1000);
 					Channels[0].SweepShift = data & 0b111;
+					std::cout << "nr10 " << std::hex << (int)data << std::endl;
 					data |= 0b1000'0000;
 					break;
 				}
@@ -472,6 +473,7 @@ namespace TKPEmu::Gameboy::Devices {
 					handle_nrx4(1, data);
 					auto& chan = Channels[0];
 					if (chan.SweepShift > 0) {
+						std::cout << "Sneaky calc VVV" << std::endl;
 						chan.CalculateSweepFreq();
 						if (chan.DisableChannelFlag) {
 							ClearNR52Bit(0);
