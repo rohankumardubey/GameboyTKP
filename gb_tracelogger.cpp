@@ -2,7 +2,7 @@
 #include <iostream>
 #include "gb_tracelogger.h"
 #include "gb_addresses.h"
-#include "../lib/imgui.h"
+#include "../imgui/imgui.h"
 
 namespace TKPEmu::Applications {
 	GameboyTracelogger::GameboyTracelogger(std::string menu_title, std::string window_title)
