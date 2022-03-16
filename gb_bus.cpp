@@ -472,7 +472,6 @@ namespace TKPEmu::Gameboy::Devices {
 					handle_nrx4(1, data);
 					auto& chan = Channels[0];
 					if (chan.SweepShift > 0) {
-						std::cout << "Sneaky calc VVV" << std::endl;
 						chan.CalculateSweepFreq();
 						if (chan.DisableChannelFlag) {
 							ClearNR52Bit(0);
@@ -604,7 +603,7 @@ namespace TKPEmu::Gameboy::Devices {
 	void Bus::SoftReset() {
 		hram_.fill(0);
 		SoundEnabled = true;
-		for (int i = 0xFF00; i < 0xFF25; i++) {
+		for (int i = 0xFF10; i < 0xFF25; i++) {
 			Write(i, 0);
 		}
 		SoundEnabled = false;
