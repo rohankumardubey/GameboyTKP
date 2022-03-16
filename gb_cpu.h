@@ -21,10 +21,6 @@ namespace TKPEmu::Gameboy::Devices {
 		bool halt_bug_ = false;
 		int tTemp = 0;
 		int tRemove = 0;
-		int div_reset_index_ = -1;
-		int old_tac_ = 0;
-		int tac_index_ = 0x1000;
-		int tima_overflow_ = false;
 		bool stop_ = false;
 
 		// Instruction functions

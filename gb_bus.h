@@ -73,7 +73,6 @@ namespace TKPEmu::Gameboy::Devices {
         std::array<APUChannel, 4> Channels;
         bool SoundEnabled = false;
         bool DIVReset = false;
-        bool TACChanged = false;
         bool TMAChanged = false;
         bool TIMAChanged = false;
         bool WriteToVram = false;

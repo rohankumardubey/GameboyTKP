@@ -417,7 +417,6 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_tac: {
-					TACChanged = true;
 					data |= 0b1111'1000;
 					break;
 				}

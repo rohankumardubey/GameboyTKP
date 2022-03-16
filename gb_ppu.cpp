@@ -42,10 +42,19 @@ namespace TKPEmu::Gameboy::Devices {
 						bus_.OAMAccessible = false;
 					// Load the 10 sprites for this line
 					cur_scanline_sprites_.clear();
+					mode3_extend = 0;
 					for (size_t i = 0; i < (bus_.oam_.size() - 4); i += 4) {
-						if (cur_scanline_sprites_.size() < 10 && is_sprite_eligible(bus_.oam_[i])) {
-							cur_scanline_sprites_.push_back(i);
+						//SCX & 7 > 0
+						if (is_sprite_eligible(bus_.oam_[i])) {
+							if (cur_scanline_sprites_.size() < 10) {
+								cur_scanline_sprites_.push_back(i);
+							}
+							// Special behavior for x = 0, lengthens mode 2
+							if (bus_.oam_[i + 1] == 0) {
+								mode3_extend += SCX & 7;
+							}
 						}
+						
 					}
 					// Sprites for this scanline are now scanned
 					IF |= set_mode(MODE_OAM_SCAN);
@@ -82,7 +91,7 @@ namespace TKPEmu::Gameboy::Devices {
 					// Only in DMG
 					IF |= IFInterrupt::LCDSTAT;
 				}
-				set_mode(MODE_VBLANK);
+				IF |= set_mode(MODE_VBLANK);
 				window_internal_ = 0;
 				window_internal_temp_ = 0;
 			}
