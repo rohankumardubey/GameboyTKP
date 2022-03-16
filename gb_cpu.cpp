@@ -1173,9 +1173,12 @@ namespace TKPEmu::Gameboy::Devices {
 	}
 	void CPU::CALL16() {
 		SP -= 2;
-		bus_.Write(SP, (PC + 2) & 0xFF);
+		auto temp2 = bus_.Read(PC);
+		auto temp = read(PC + 1) << 8;
+		delay();
 		write(SP + 1, (PC + 2) >> 8);
-		PC = bus_.ReadL(PC);
+		write(SP, (PC + 2) & 0xFF);
+		PC = temp + temp2;
 		tTemp = 24;
 	}
 	void CPU::CALLNZ16() {
