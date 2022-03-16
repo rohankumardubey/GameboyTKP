@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.19)
 project(GameboyTKP)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/expected_results.csv ~/.config/tkpemu/expected_results.csv COPYONLY)
 file(GLOB SRC_FILES "*.cpp")
 file(GLOB HDR_FILES "*.h")
 add_library(GameboyTKP ${HDR_FILES} ${SRC_FILES})

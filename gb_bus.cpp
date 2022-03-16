@@ -604,7 +604,7 @@ namespace TKPEmu::Gameboy::Devices {
 	void Bus::SoftReset() {
 		hram_.fill(0);
 		SoundEnabled = true;
-		for (int i = 0xFF10; i < 0xFF25; i++) {
+		for (int i = 0xFF00; i < 0xFF25; i++) {
 			Write(i, 0);
 		}
 		SoundEnabled = false;
