@@ -30,12 +30,10 @@ namespace TKPEmu::Gameboy::Devices {
 			LY = true_ly;
 			IF |= update_lyc();
 		}
-		bool enabled = LCDC & LCDCFlag::LCD_ENABLE;
-		if (!enabled) {
-			clock_ = 0;
-			STAT &= 0b1111'1100;
-			LY = 0;
+		if (LYC == LY) {
+			STAT |= STATFlag::COINCIDENCE;
 		}
+		bool enabled = LCDC & LCDCFlag::LCD_ENABLE;
 		if (LY <= 143) {
 			// Normal scanline
 			auto cur_scanline_clocks = clock_ % 456;
@@ -101,6 +99,11 @@ namespace TKPEmu::Gameboy::Devices {
 				window_internal_temp_ = 0;
 			}
 		}
+		if (!enabled) {
+			clock_ = 0;
+			STAT &= 0b1111'1100;
+			LY = 0;
+		}
 	}
 	bool PPU::is_sprite_eligible(uint8_t sprite_y) {
 		bool use8x16 = LCDC & LCDCFlag::OBJ_SIZE;
@@ -147,8 +150,9 @@ namespace TKPEmu::Gameboy::Devices {
 	int PPU::update_lyc() {
 		if (LYC == LY) {
 			STAT |= STATFlag::COINCIDENCE;
-			if (STAT & STATFlag::COINC_INTER)
+			if (STAT & STATFlag::COINC_INTER) {
 				return IFInterrupt::LCDSTAT;
+			}
 		} else {
 			STAT &= 0b1111'1011;
 		}

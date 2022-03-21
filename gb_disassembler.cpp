@@ -281,7 +281,9 @@ namespace TKPEmu::Applications {
                 ImGui::Text("DE: %d,%d", t.D, t.E); ImGui::SameLine(); ImGui::Text("IE: %d", t.IE);
                 ImGui::Text("HL: %d,%d", t.H, t.L); ImGui::SameLine(); ImGui::Text("IF: %d", t.IF);
             }
-            ImGui::Text("HALT: %lu", t.halt_); ImGui::SameLine(); ImGui::Text("IME: %lu", t.ime_);
+            ImGui::Text("HALT: %d", t.halt_); ImGui::SameLine(); ImGui::Text("IME: %d", t.ime_);
+            ImGui::Text("LY: 0x%02x", t.LY);
+            ImGui::Text("STAT: 0x%02x", t.STAT);
             ImGui::Text("Clocks: %lu", t.TotalClocks);
             ImGui::Checkbox("Hex", &use_hex);
             ImGui::EndChild();

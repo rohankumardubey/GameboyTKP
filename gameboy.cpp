@@ -292,7 +292,7 @@ namespace TKPEmu::Gameboy {
 			std::lock_guard<std::mutex> lguard(ThreadStartedMutex);
 			Loaded = true;
 			Loaded.notify_all();
-			//Paused = true;
+			Paused = true;
 			Stopped = false;
 			Step = false;
 			Reset();

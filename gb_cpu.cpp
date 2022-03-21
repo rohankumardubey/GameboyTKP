@@ -7,7 +7,8 @@ namespace TKPEmu::Gameboy::Devices {
 		timer_(timer),
 		IF(bus_.GetReference(0xFF0F)),
 		IE(bus_.GetReference(0xFFFF)),
-		LY(bus_.GetReference(0xFF44))
+		LY(bus_.GetReference(0xFF44)),
+		STAT(bus_.GetReference(addr_sta))
 	{
 		A = 0; B = 0; C = 0; D = 0; E = 0; H = 0; L = 0;
 		F = 0; SP = 0; PC = 0; ime_ = true;

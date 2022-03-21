@@ -152,7 +152,7 @@ namespace TKPEmu::Gameboy::Devices {
 		RegisterType A, B, C, D, E, H, L, F;
 		BigRegisterType PC, SP;
 		// Memory mapped registers, they are a reference to a position in memory
-		RegisterType &IF, &IE, &LY;
+		RegisterType &IF, &IE, &LY, &STAT;
 		const int ClockSpeed = 4194304;
 		const int MaxCycles = ClockSpeed / 60;
 		int TClock = 0;
