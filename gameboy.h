@@ -43,6 +43,7 @@ namespace TKPEmu::Gameboy {
 		bool* GetDrawWindow();
 		bool* GetDrawBackground();
 		void RemoveBreakpoint(int index);
+		void SetKeysLate(GameboyKeys dirkeys, GameboyKeys actionkeys);
 		const auto& GetOpcodeDescription(uint8_t opc);
 		GameboyPalettes& GetPalette();
 		Cartridge& GetCartridge();

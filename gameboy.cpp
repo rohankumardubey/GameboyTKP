@@ -15,17 +15,23 @@ namespace TKPEmu::Gameboy {
 		cpu_(bus_, ppu_, timer_),
 		joypad_(bus_.GetReference(addr_joy)),
 		interrupt_flag_(bus_.GetReference(addr_if))
-	{}
+	{
+		EmulatorImage.width = 160;
+		EmulatorImage.height = 144;
+	}
 	Gameboy::Gameboy(GameboyKeys dirkeys, GameboyKeys actionkeys) :
 		Gameboy()
 	{
-		direction_keys_ = std::move(dirkeys);
-		action_keys_ = std::move(actionkeys);
+		SetKeysLate(dirkeys, actionkeys);
 		init_image();
 	}
 	Gameboy::~Gameboy() {
 		Stopped.store(true);
 		glDeleteTextures(1, &EmulatorImage.texture);
+	}
+	void Gameboy::SetKeysLate(GameboyKeys dirkeys, GameboyKeys actionkeys) {
+		direction_keys_ = dirkeys;
+		action_keys_ = actionkeys;
 	}
 	void Gameboy::SetLogTypes(std::unique_ptr<std::vector<LogType>> types_ptr) {
 		log_types_ptr_ = std::move(types_ptr);
@@ -215,17 +221,13 @@ namespace TKPEmu::Gameboy {
 		UpdateThread.detach();
 	}
 	void Gameboy::start_console() {
-		if (ScreenshotClocks == 0) {
-			// Unknown rom
-			return;
-		}
 		Paused = false;
 		Stopped = false;
 		Reset();
 		while (!Stopped.load()) {
 			if (!Paused.load()) {
 				update();
-				if (cpu_.TotalClocks == ScreenshotClocks) {
+				if (cpu_.TotalClocks == ScreenshotClocks - 1) {
 					std::osyncstream scout(std::cout);
 					if (ScreenshotHash == GetScreenshotHash()) {
 						scout << "[" << color_success << CurrentFilename << color_reset "]: Passed" << std::endl;
@@ -236,8 +238,54 @@ namespace TKPEmu::Gameboy {
 					}
 					Stopped = true;
 				}
+				if (action_ptr_ && *action_ptr_ != 0) {
+                    SDL_Keycode key = SDLK_UNKNOWN;
+                    switch (*action_ptr_) {
+                        case 1: {
+                            key = SDLK_UP;
+                            break;
+                        }
+                        case 2: {
+                            key = SDLK_RIGHT;
+                            break;
+                        }
+                        case 3: {
+                            key = SDLK_DOWN;
+                            break;
+                        }
+                        case 4: {
+                            key = SDLK_LEFT;
+                            break;
+                        }
+                        case 5: {
+                            key = SDLK_z;
+                            break;
+                        }
+                        case 6: {
+                            key = SDLK_x;
+                            break;
+                        }
+                        case 7: {
+                            key = SDLK_RETURN;
+                            break;
+                        }
+                    }
+                    if (key != SDLK_UNKNOWN) {
+						std::cout << "Key down" << std::endl;
+                        HandleKeyDown(key);
+                        std::thread th([this, &key]() {
+                            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+                            HandleKeyUp(key);
+                            Screenshot("image.bmp");
+                        });
+                        th.detach();
+                    }
+                    *action_ptr_ = 0;
+
+                }
 			}
 		}
+		std::cout << "Stopped emulator" << std::endl;
 	}
 	void Gameboy::start_debug() {
 		auto func = [this]() {
@@ -446,8 +494,6 @@ namespace TKPEmu::Gameboy {
 		);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		EmulatorImage.texture = image_texture;
-		EmulatorImage.width = 160;
-		EmulatorImage.height = 144;
 	}
 	Gameboy::GameboyPalettes& Gameboy::GetPalette() {
 		return bus_.Palette;
