@@ -25,8 +25,7 @@ namespace TKPEmu::Gameboy {
 	}
 	Gameboy::~Gameboy() {
 		Stopped.store(true);
-		if (start_options != EmuStartOptions::Console)
-			glDeleteTextures(1, &EmulatorImage.texture);
+		glDeleteTextures(1, &EmulatorImage.texture);
 	}
 	void Gameboy::SetLogTypes(std::unique_ptr<std::vector<LogType>> types_ptr) {
 		log_types_ptr_ = std::move(types_ptr);
@@ -245,7 +244,7 @@ namespace TKPEmu::Gameboy {
 			std::lock_guard<std::mutex> lguard(ThreadStartedMutex);
 			Loaded = true;
 			Loaded.notify_all();
-			Paused = true;
+			//Paused = true;
 			Stopped = false;
 			Step = false;
 			Reset();
