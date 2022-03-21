@@ -31,6 +31,11 @@ namespace TKPEmu::Gameboy::Devices {
 			IF |= update_lyc();
 		}
 		bool enabled = LCDC & LCDCFlag::LCD_ENABLE;
+		if (!enabled) {
+			clock_ = 0;
+			STAT &= 0b1111'1100;
+			LY = 0;
+		}
 		if (LY <= 143) {
 			// Normal scanline
 			auto cur_scanline_clocks = clock_ % 456;

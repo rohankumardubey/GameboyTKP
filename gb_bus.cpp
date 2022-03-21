@@ -385,6 +385,7 @@ namespace TKPEmu::Gameboy::Devices {
 					bool enabled = data & LCDCFlag::LCD_ENABLE;
 					if (!enabled) {
 						OAMAccessible = true;
+						redirect_address(addr_sta) &= 0b1111'1100;
 					}
 					break;
 				}
@@ -442,6 +443,7 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 				case addr_sta: {
 					data |= 0b1000'0000;
+					data |= Read(addr_sta) & 0b11;
 					break;
 				}
 				case addr_NR10: {

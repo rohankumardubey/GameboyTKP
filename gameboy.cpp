@@ -27,7 +27,8 @@ namespace TKPEmu::Gameboy {
 	}
 	Gameboy::~Gameboy() {
 		Stopped.store(true);
-		glDeleteTextures(1, &EmulatorImage.texture);
+		if (start_options != EmuStartOptions::Console)
+			glDeleteTextures(1, &EmulatorImage.texture);
 	}
 	void Gameboy::SetKeysLate(GameboyKeys dirkeys, GameboyKeys actionkeys) {
 		direction_keys_ = dirkeys;
@@ -285,7 +286,6 @@ namespace TKPEmu::Gameboy {
                 }
 			}
 		}
-		std::cout << "Stopped emulator" << std::endl;
 	}
 	void Gameboy::start_debug() {
 		auto func = [this]() {
