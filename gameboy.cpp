@@ -274,7 +274,7 @@ namespace TKPEmu::Gameboy {
 						std::cout << "Key down" << std::endl;
                         HandleKeyDown(key);
                         std::thread th([this, &key]() {
-                            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+                            std::this_thread::sleep_for(std::chrono::milliseconds(400));
                             HandleKeyUp(key);
                             Screenshot("image.bmp");
                         });
