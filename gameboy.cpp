@@ -274,9 +274,9 @@ namespace TKPEmu::Gameboy {
                     if (key != SDLK_UNKNOWN) {
                         HandleKeyDown(key);
                         std::thread th([this, &key]() {
-                            std::this_thread::sleep_for(std::chrono::milliseconds(200));
-                            HandleKeyUp(key);
                             std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                            HandleKeyUp(key);
+                            std::this_thread::sleep_for(std::chrono::milliseconds(400));
                             Screenshot("image.bmp");
                         });
                         th.detach();
