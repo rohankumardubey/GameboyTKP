@@ -53,4 +53,4 @@ Always generate new test results before pushing a commit when changing the code.
 
 ## License
 TKPEmu is licensed under the MIT license    
-Copyright (C) 2021-2021 Paris Oplopoios
+Copyright (C) 2021-2022 Paris Oplopoios
