@@ -40,6 +40,7 @@ namespace TKPEmu::Gameboy::Devices {
 			// Every scanline takes 456 tclocks
 			if (cur_scanline_clocks < 80) {
 				// OAM scan
+				bus_.CurScanlineX = -1;
 				if (get_mode() != MODE_OAM_SCAN) {
 					if (enabled)
 						bus_.OAMAccessible = false;
@@ -62,7 +63,10 @@ namespace TKPEmu::Gameboy::Devices {
 					// Sprites for this scanline are now scanned
 					IF |= set_mode(MODE_OAM_SCAN);
 				}
+				// Scanline changes only matter during pixel draw
+				bus_.ScanlineChanges.clear();
 			} else if (cur_scanline_clocks < (80 + 172 + mode3_extend)) {
+				bus_.CurScanlineX = cur_scanline_clocks - 80;
 				if (get_mode() != MODE_DRAW_PIXELS) {
 					IF |= set_mode(MODE_DRAW_PIXELS);
 				}
@@ -82,6 +86,7 @@ namespace TKPEmu::Gameboy::Devices {
 					ReadyToDraw = true;
 					std::lock_guard<std::mutex> lg(*draw_mutex_);
 					draw_scanline();
+					bus_.ScanlineChanges.clear();
 				}
 			}
 		} else {
@@ -231,9 +236,14 @@ namespace TKPEmu::Gameboy::Devices {
 				screen_color_data_[idx] = 255.0f;
 				continue;
 			}
-			screen_color_data_[idx++] = bus_.Palette[bus_.BGPalette[colorNum]][0];
-			screen_color_data_[idx++] = bus_.Palette[bus_.BGPalette[colorNum]][1];
-			screen_color_data_[idx++] = bus_.Palette[bus_.BGPalette[colorNum]][2];
+			std::array<uint8_t, 4>& pal_ref = bus_.BGPalette;
+			if (bus_.ScanlineChanges.size() > 0 && pixel == bus_.ScanlineChanges.back().change_x) {
+				pal_ref = bus_.ScanlineChanges.back().new_p;
+				bus_.ScanlineChanges.pop_back();
+			}
+			screen_color_data_[idx++] = bus_.Palette[pal_ref[colorNum]][0];
+			screen_color_data_[idx++] = bus_.Palette[pal_ref[colorNum]][1];
+			screen_color_data_[idx++] = bus_.Palette[pal_ref[colorNum]][2];
 			screen_color_data_[idx] = 255.0f;
 		}
 	}

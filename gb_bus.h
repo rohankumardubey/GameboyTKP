@@ -8,11 +8,19 @@
 #include <fstream>
 #include <iterator>
 #include <memory>
+#include <deque>
 #include "gb_cartridge.h"
 #include "gb_addresses.h"
 #include "gb_apu.h"
 #include "gb_apu_ch.h"
+
 namespace TKPEmu::Gameboy::Devices {
+    struct Change {
+		int type = 0;
+        int change_x = 0;
+		std::array<uint8_t, 4> old_p;
+		std::array<uint8_t, 4> new_p;
+	};
     class Bus {
     private:
         using RamBank = std::array<uint8_t, 0x2000>;
@@ -66,6 +74,7 @@ namespace TKPEmu::Gameboy::Devices {
         void LoadCartridge(std::string filename);
         std::string GetVramDump();
         std::array<std::array<float, 3>, 4> Palette;
+        std::deque<Change> ScanlineChanges;
         std::array<uint8_t, 4> BGPalette{};
         std::array<uint8_t, 4> OBJ0Palette{};
         std::array<uint8_t, 4> OBJ1Palette{};
@@ -80,6 +89,7 @@ namespace TKPEmu::Gameboy::Devices {
         bool UseCGB = false;
         uint8_t DirectionKeys = 0b1110'1111;
         uint8_t ActionKeys = 0b1101'1111;
+        uint8_t CurScanlineX = 0;
         std::array<uint8_t, 0xA0> oam_{};
         uint8_t selected_ram_bank_ = 0;
         uint8_t selected_rom_bank_ = 1;

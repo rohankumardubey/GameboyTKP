@@ -7,14 +7,9 @@
 #include <mutex>
 #include <array>
 #include <queue>
+
 namespace TKPEmu::Gameboy::Devices {
 	constexpr int FRAME_CYCLES = 70224;
-	struct Pixel {
-		uint8_t Color;
-		uint8_t Palette;
-		uint8_t SpritePriority;
-		uint8_t BackgroundPriority;
-	};
 	class PPU {
 	private:
 		using TKPImage = TKPEmu::Tools::TKPImage;
