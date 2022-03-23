@@ -1,4 +1,6 @@
 #include "gb_romdata.h"
+#include <GL/glew.h>
+
 namespace TKPEmu::Applications {
     GameboyRomData::GameboyRomData(std::string menu_title, std::string window_title) 
         : IMApplication(menu_title, window_title) 

@@ -6,7 +6,7 @@
 #include "../include/base_application.h"
 #include "gameboy.h"
 #include "gb_cartridge.h"
-#include "../glad/glad/glad.h"
+#include <GL/glew.h>
 namespace TKPEmu::Applications {
     using Gameboy = TKPEmu::Gameboy::Gameboy;
     class GameboyRomData : public IMApplication {

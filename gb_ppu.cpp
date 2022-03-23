@@ -1,5 +1,5 @@
 #include "gb_ppu.h"
-#include "../glad/glad/glad.h"
+#include <GL/glew.h>
 #include <iostream>
 namespace TKPEmu::Gameboy::Devices {
 	enum STATMode {

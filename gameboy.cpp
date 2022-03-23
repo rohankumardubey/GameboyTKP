@@ -2,7 +2,7 @@
 #include <atomic>
 #include <chrono>
 #include <syncstream>
-#include "../glad/glad/glad.h"
+#include <GL/glew.h>
 #include "gameboy.h"
 #include "../lib/md5.h"
 #include "../include/console_colors.h"
