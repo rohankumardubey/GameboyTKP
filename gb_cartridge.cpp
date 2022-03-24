@@ -69,6 +69,10 @@ namespace TKPEmu::Gameboy::Devices {
 					}
 					break;
 				}
+				default: {
+					std::cerr << "This cartridge type is not implemented yet." << std::endl;
+					exit(1);
+				}
 			}
 			is.close();
 			// Empty init the rambanks
