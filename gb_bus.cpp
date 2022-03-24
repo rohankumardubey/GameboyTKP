@@ -353,9 +353,15 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_bgp: {
+					Change ch;
+					ch.old_p = BGPalette;
 					for (int i = 0; i < 4; i++) {
 						BGPalette[i] = (data >> (i * 2)) & 0b11;
 					}
+					ch.new_p = BGPalette;
+					ch.change_x = CurScanlineX;
+					if (CurScanlineX != -1)
+						ScanlineChanges.push_front(ch);
 					break;
 				}
 				case addr_ob0: {
