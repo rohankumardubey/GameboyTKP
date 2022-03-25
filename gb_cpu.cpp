@@ -1,4 +1,4 @@
-#include "GameboyTKP/gb_cpu.h"
+#include "gb_cpu.h"
 #include <cmath>
 
 namespace TKPEmu::Gameboy::Devices {
