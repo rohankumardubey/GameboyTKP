@@ -3,6 +3,7 @@
 #include <chrono>
 #include <syncstream>
 #include <GL/glew.h>
+#include <filesystem>
 #include "gameboy.h"
 #include "../lib/md5.h"
 #include "../include/console_colors.h"
@@ -225,17 +226,33 @@ namespace TKPEmu::Gameboy {
 		Paused = false;
 		Stopped = false;
 		Reset();
+		auto& pal = GetPalette();
+		for (int i = 0; i < 3; i++) {
+			pal[0][i] = 0xFF;
+		}
+		for (int i = 0; i < 3; i++) {
+			pal[1][i] = 0xA9;
+		}
+		for (int i = 0; i < 3; i++) {
+			pal[2][i] = 0x54;
+		}
 		while (!Stopped.load()) {
 			if (!Paused.load()) {
 				update();
 				if (cpu_.TotalClocks == ScreenshotClocks - 1) {
 					std::osyncstream scout(std::cout);
-					if (ScreenshotHash == GetScreenshotHash()) {
-						scout << "[" << color_success << CurrentFilename << color_reset "]: Passed" << std::endl;
-						Result = TKPEmu::Testing::TestResult::Passed;
+					if (TakeScreenshot) {
+						std::string name = CurrentDirectory + "/" + CurrentFilename + "_result.bmp";
+						scout << "Screenshot saved: " << name << std::endl;
+						Screenshot(name);
 					} else {
-						scout << "[" << color_error << CurrentFilename << color_reset "]: Failed" << std::endl;
-						Result = TKPEmu::Testing::TestResult::Failed;
+						if (ScreenshotHash == GetScreenshotHash()) {
+							scout << "[" << color_success << CurrentFilename << color_reset "]: Passed" << std::endl;
+							Result = TKPEmu::Testing::TestResult::Passed;
+						} else {
+							scout << "[" << color_error << CurrentFilename << color_reset "]: Failed" << std::endl;
+							Result = TKPEmu::Testing::TestResult::Failed;
+						}
 					}
 					Stopped = true;
 				}
