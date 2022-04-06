@@ -6,7 +6,7 @@
 #include "gb_cartridge.h"
 
 namespace TKPEmu::Gameboy::Devices {
-	void Cartridge::Load(const std::string& filename, std::vector<std::array<uint8_t, 0x4000>>& romBanks, std::vector<std::array<uint8_t, 0x2000>>& ramBanks) {
+	bool Cartridge::Load(const std::string& filename, std::vector<std::array<uint8_t, 0x4000>>& romBanks, std::vector<std::array<uint8_t, 0x2000>>& ramBanks) {
 		romBanks.clear();
 		ramBanks.clear();
 		std::ifstream is;
@@ -70,8 +70,8 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				default: {
-					std::cerr << "This cartridge type is not implemented yet." << std::endl;
-					exit(1);
+					std::cerr << "This cartridge type is not implemented yet - " << (int)ct << std::endl;
+					return false;
 				}
 			}
 			is.close();
@@ -80,6 +80,7 @@ namespace TKPEmu::Gameboy::Devices {
 		} else {
 			std::cerr << "Error: Could not open file" << std::endl;
 		}
+		return true;
 	}
 	bool Cartridge::UsingBattery() {
 		return using_battery_;

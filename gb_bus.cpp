@@ -625,9 +625,9 @@ namespace TKPEmu::Gameboy::Devices {
 	Cartridge& Bus::GetCartridge() {
 		return cartridge_;
 	}
-	void Bus::LoadCartridge(std::string filename) {
+	bool Bus::LoadCartridge(std::string filename) {
 		Reset();
-		cartridge_.Load(filename, rom_banks_, ram_banks_);
+		bool ret = cartridge_.Load(filename, rom_banks_, ram_banks_);
 		rom_banks_size_ = cartridge_.GetRomSize();
 		if (cartridge_.UsingBattery()) {
 			auto path = static_cast<std::filesystem::path>(filename);
@@ -648,6 +648,7 @@ namespace TKPEmu::Gameboy::Devices {
 			}
 		}
 		UseCGB = cartridge_.UseCGB;
+		return ret;
 	}
 	void Bus::TransferDMA(uint8_t clk) {
 		if (dma_transfer_) {

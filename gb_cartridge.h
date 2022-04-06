@@ -62,7 +62,7 @@ namespace TKPEmu::Gameboy::Devices {
 		bool text_cached_ = false;
 		bool using_battery_ = false;
 	public:
-		void Load(const std::string& filename, std::vector<std::array<uint8_t, 0x4000>>& romBanks, std::vector<std::array<uint8_t, 0x2000>>& ramBanks);
+		bool Load(const std::string& filename, std::vector<std::array<uint8_t, 0x4000>>& romBanks, std::vector<std::array<uint8_t, 0x2000>>& ramBanks);
 		CartridgeType GetCartridgeType();
 		int GetRamSize();
 		int GetRomSize();

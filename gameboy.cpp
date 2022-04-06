@@ -410,8 +410,8 @@ namespace TKPEmu::Gameboy {
 			bus_.ActionKeys |= (1UL << index);
 		}
 	}
-	void Gameboy::load_file(std::string path) {
-		bus_.LoadCartridge(std::forward<std::string>(path));
+	bool Gameboy::load_file(std::string path) {
+		return bus_.LoadCartridge(std::forward<std::string>(path));
 	}
 	DisInstr Gameboy::GetInstruction(uint16_t address) {
 		uint8_t ins = bus_.Read(address);
