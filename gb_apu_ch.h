@@ -1,6 +1,8 @@
 #pragma once
 #ifndef TKP_GB_APU_CH_H
 #define TKP_GB_APU_CH_H
+#include <array>
+#include <memory>
 namespace TKPEmu::Gameboy::Devices {
     constexpr int Waveforms[4] = { 0b00000001, 0b00000011, 0b00001111, 0b11111100 };
     struct APUChannel {
@@ -44,5 +46,7 @@ namespace TKPEmu::Gameboy::Devices {
 
     private:
     };
+    using ChannelArray = std::array<APUChannel, 4>;
+    using ChannelArrayPtr = std::shared_ptr<ChannelArray>;
 }
 #endif

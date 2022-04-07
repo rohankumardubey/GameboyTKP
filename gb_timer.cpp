@@ -2,9 +2,9 @@
 #include <iostream>
 #include <bitset>
 namespace TKPEmu::Gameboy::Devices {
-    Timer::Timer(Bus& bus, APU& apu) : 
+    Timer::Timer(ChannelArrayPtr channel_array_ptr, Bus& bus) : 
+		channel_array_ptr_(channel_array_ptr),
         bus_(bus), 
-		apu_(apu),
         DIV(bus.GetReference(addr_div)),
         TIMA(bus.GetReference(addr_tim)),
         TAC(bus.GetReference(addr_tac)),
@@ -74,7 +74,7 @@ namespace TKPEmu::Gameboy::Devices {
 				// Falling edge of bit 4, step frame sequencer
 				// TODO: cgb double speed makes it bit 5
 				for (int i = 0; i < 4; i++) {
-					auto& chan = bus_.Channels[i];
+					auto& chan = (*channel_array_ptr_)[i];
 					chan.StepFrameSequencer();
 					if (chan.LengthTimer == 0) {
 						bus_.ClearNR52Bit(i);
@@ -101,7 +101,6 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 			}
 		}
-		apu_.Update();
 		return ret;
 	}
 }

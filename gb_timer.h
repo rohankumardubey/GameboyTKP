@@ -2,17 +2,18 @@
 #ifndef TKP_GB_TIMER_H
 #define TKP_GB_TIMER_H
 #include "gb_bus.h"
-#include "gb_apu.h"
+#include "gb_apu_ch.h"
 #include "gb_addresses.h"
+
 namespace TKPEmu::Gameboy::Devices {
     class Timer {
     public:
-        Timer(Bus& bus, APU& apu);
+        Timer(ChannelArrayPtr channel_array_ptr, Bus& bus);
         void Reset();
         bool Update(uint8_t cycles, uint8_t old_if);
     private:
+        ChannelArrayPtr channel_array_ptr_;
         Bus& bus_;
-        APU& apu_;
         RegisterType &DIV, &TIMA, &TAC, &TMA, &IF;
         int oscillator_, timer_counter_;
         bool tima_overflow_, just_overflown_;

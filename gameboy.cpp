@@ -9,10 +9,11 @@
 #include "../include/console_colors.h"
 namespace TKPEmu::Gameboy {
 	Gameboy::Gameboy() : 
-		apu_(),
-		bus_(apu_, Instructions),
+		channel_array_ptr_(std::make_shared<ChannelArray>()),
+		apu_(channel_array_ptr_),
+		bus_(channel_array_ptr_, Instructions),
 		ppu_(bus_, &DrawMutex),
-		timer_(bus_, apu_),
+		timer_(channel_array_ptr_, bus_),
 		cpu_(bus_, ppu_, timer_),
 		joypad_(bus_.GetReference(addr_joy)),
 		interrupt_flag_(bus_.GetReference(addr_if))

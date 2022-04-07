@@ -58,7 +58,7 @@ namespace TKPEmu::Gameboy::Devices {
             0x21, 0x04, 0x01, 0x11, 0xA8, 0x00, 0x1A, 0x13, 0xBE, 0x20, 0xFE, 0x23, 0x7D, 0xFE, 0x34, 0x20,
             0xF5, 0x06, 0x19, 0x78, 0x86, 0x23, 0x05, 0x20, 0xFB, 0x86, 0x20, 0xFE, 0x3E, 0x01, 0xE0, 0x50,
         };
-        Bus(APU& apu, std::vector<DisInstr>& instrs);
+        Bus(ChannelArrayPtr channel_array_ptr, std::vector<DisInstr>& instrs);
         ~Bus();
         uint8_t Read(uint16_t address);
         uint16_t ReadL(uint16_t address);
@@ -79,7 +79,6 @@ namespace TKPEmu::Gameboy::Devices {
         std::array<uint8_t, 4> OBJ0Palette{};
         std::array<uint8_t, 4> OBJ1Palette{};
         std::array<uint8_t, 64> CGBPalette{};
-        std::array<APUChannel, 4> Channels;
         bool SoundEnabled = false;
         bool DIVReset = false;
         bool TMAChanged = false;
@@ -95,7 +94,6 @@ namespace TKPEmu::Gameboy::Devices {
         uint8_t selected_rom_bank_ = 1;
         uint8_t selected_rom_bank_high_ = 0;
     private:
-        APU& apu_;
         bool ram_enabled_ = false;
         bool rtc_enabled_ = false;
         bool banking_mode_ = false;
@@ -119,6 +117,7 @@ namespace TKPEmu::Gameboy::Devices {
         std::array<uint8_t, 0x2000> wram_{};
         std::array<uint8_t, 0x2000> vram_{};
         std::vector<DisInstr>& instructions_;
+        ChannelArrayPtr channel_array_ptr_;
         uint8_t& redirect_address(uint16_t address);
         void handle_mbc(uint16_t address, uint8_t data);
         void battery_save();
