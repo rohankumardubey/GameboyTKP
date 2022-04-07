@@ -1,6 +1,6 @@
 #pragma once
 #ifndef TKP_GB_ROMDATA_H
-#define TKPEMU_GB_ROMDATA_H
+#define TKP_GB_ROMDATA_H
 #include <string>
 #include <chrono>
 #include "../include/base_application.h"
