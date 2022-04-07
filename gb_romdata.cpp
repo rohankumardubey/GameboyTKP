@@ -59,8 +59,8 @@ namespace TKPEmu::Applications {
     }
     void GameboyRomData::draw_info() {
         Gameboy* gb_ptr = static_cast<Gameboy*>(emulator_);
-        ImGui::Text("Filename: "); ImGui::SameLine(); ImGui::Text(gb_ptr->CurrentFilename.c_str());
-        ImGui::Text(gb_ptr->GetCartridge().GetHeaderText());
+        ImGui::TextUnformatted("Filename: "); ImGui::SameLine(); ImGui::TextUnformatted(gb_ptr->CurrentFilename.c_str());
+        ImGui::TextUnformatted(gb_ptr->GetCartridge().GetHeaderText());
         ImGui::InputText("Rom hash", gb_ptr->RomHash.data(), gb_ptr->RomHash.length(), ImGuiInputTextFlags_ReadOnly);
         static bool hashed = false;
         static std::string hash = "?";
@@ -79,7 +79,7 @@ namespace TKPEmu::Applications {
         }
     }
     void GameboyRomData::draw_tilesets() {
-        ImGui::Text("0x8000:             0x8800:");
+        ImGui::TextUnformatted("0x8000:             0x8800:");
         ImGui::Image(reinterpret_cast<void*>(static_cast<intptr_t>(texture_)), ImVec2(256, 128));
         if (!texture_cached_) {
             update_tilesets();
