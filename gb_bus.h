@@ -74,7 +74,7 @@ namespace TKPEmu::Gameboy::Devices {
         bool LoadCartridge(std::string filename);
         std::string GetVramDump();
         std::array<std::array<float, 3>, 4> Palette;
-        std::deque<Change> ScanlineChanges;
+        std::unordered_map<uint8_t, Change> ScanlineChanges;
         std::array<uint8_t, 4> BGPalette{};
         std::array<uint8_t, 4> OBJ0Palette{};
         std::array<uint8_t, 4> OBJ1Palette{};

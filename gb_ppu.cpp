@@ -244,9 +244,11 @@ namespace TKPEmu::Gameboy::Devices {
 				continue;
 			}
 			std::array<uint8_t, 4>& pal_ref = bus_.BGPalette;
-			if (bus_.ScanlineChanges.size() > 0 && pixel == bus_.ScanlineChanges.back().change_x) {
-				pal_ref = bus_.ScanlineChanges.back().new_p;
-				bus_.ScanlineChanges.pop_back();
+			if (bus_.ScanlineChanges.size() > 0) [[unlikely]] {
+				bool has_change = bus_.ScanlineChanges.contains(pixel);
+				if (has_change) [[unlikely]] {
+					pal_ref = bus_.ScanlineChanges[pixel].new_p;
+				}
 			}
 			screen_color_data_second_[idx++] = bus_.Palette[pal_ref[colorNum]][0];
 			screen_color_data_second_[idx++] = bus_.Palette[pal_ref[colorNum]][1];
