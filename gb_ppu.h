@@ -29,6 +29,7 @@ namespace TKPEmu::Gameboy::Devices {
 		Bus& bus_;
 		std::mutex* draw_mutex_;
 		std::array<float, 4 * 160 * 144> screen_color_data_{};
+		std::array<float, 4 * 160 * 144> screen_color_data_second_{};
 		// PPU memory mapped registers
 		uint8_t& LCDC, &STAT, &LYC, &LY, &IF, &SCY, &SCX, &WY, &WX;
 		std::vector<uint8_t> cur_scanline_sprites_;

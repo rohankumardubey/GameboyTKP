@@ -84,7 +84,6 @@ namespace TKPEmu::Gameboy::Devices {
 					}
 					IF |= set_mode(MODE_HBLANK);
 					ReadyToDraw = true;
-					std::lock_guard<std::mutex> lg(*draw_mutex_);
 					draw_scanline();
 					bus_.ScanlineChanges.clear();
 				}
@@ -102,6 +101,8 @@ namespace TKPEmu::Gameboy::Devices {
 				IF |= set_mode(MODE_VBLANK);
 				window_internal_ = 0;
 				window_internal_temp_ = 0;
+				std::lock_guard<std::mutex> lg(*draw_mutex_);
+				std::swap(screen_color_data_, screen_color_data_second_);
 			}
 		}
 		if (!enabled) {
@@ -122,11 +123,11 @@ namespace TKPEmu::Gameboy::Devices {
 		return false;
  	}
 	void PPU::Reset() {
-		for (int i = 0; i < (screen_color_data_.size() - 4); i += 4) {
-			screen_color_data_[i + 0] = bus_.Palette[0][0];
-			screen_color_data_[i + 1] = bus_.Palette[0][1];
-			screen_color_data_[i + 2] = bus_.Palette[0][2];
-			screen_color_data_[i + 3] = 255.0f;
+		for (int i = 0; i < (screen_color_data_second_.size() - 4); i += 4) {
+			screen_color_data_second_[i + 0] = bus_.Palette[0][0];
+			screen_color_data_second_[i + 1] = bus_.Palette[0][1];
+			screen_color_data_second_[i + 2] = bus_.Palette[0][2];
+			screen_color_data_second_[i + 3] = 255.0f;
 		}
 		LY = 0x0;
 		LCDC = 0b1001'0001;
@@ -138,7 +139,7 @@ namespace TKPEmu::Gameboy::Devices {
 		return clock_target_ - clock_;
 	}
 	float* PPU::GetScreenData() {
-		return &screen_color_data_[0];
+		return &screen_color_data_second_[0];
 	}
 	int PPU::set_mode(int mode) {
 		mode &= 0b11;
@@ -223,17 +224,17 @@ namespace TKPEmu::Gameboy::Devices {
 			int idx = (pixel * 4) + (LY * 4 * 160);
 			if (windowEnabled && identifierLoc == identifierLocationW) {
 				if (!DrawWindow) {
-					screen_color_data_[idx++] = bus_.Palette[0][0];
-					screen_color_data_[idx++] = bus_.Palette[0][1];
-					screen_color_data_[idx++] = bus_.Palette[0][2];
-					screen_color_data_[idx] = 255.0f;	
+					screen_color_data_second_[idx++] = bus_.Palette[0][0];
+					screen_color_data_second_[idx++] = bus_.Palette[0][1];
+					screen_color_data_second_[idx++] = bus_.Palette[0][2];
+					screen_color_data_second_[idx] = 255.0f;	
 					continue;
 				}
 			} else if (!DrawBackground) {
-				screen_color_data_[idx++] = bus_.Palette[0][0];
-				screen_color_data_[idx++] = bus_.Palette[0][1];
-				screen_color_data_[idx++] = bus_.Palette[0][2];
-				screen_color_data_[idx] = 255.0f;
+				screen_color_data_second_[idx++] = bus_.Palette[0][0];
+				screen_color_data_second_[idx++] = bus_.Palette[0][1];
+				screen_color_data_second_[idx++] = bus_.Palette[0][2];
+				screen_color_data_second_[idx] = 255.0f;
 				continue;
 			}
 			std::array<uint8_t, 4>& pal_ref = bus_.BGPalette;
@@ -241,10 +242,10 @@ namespace TKPEmu::Gameboy::Devices {
 				pal_ref = bus_.ScanlineChanges.back().new_p;
 				bus_.ScanlineChanges.pop_back();
 			}
-			screen_color_data_[idx++] = bus_.Palette[pal_ref[colorNum]][0];
-			screen_color_data_[idx++] = bus_.Palette[pal_ref[colorNum]][1];
-			screen_color_data_[idx++] = bus_.Palette[pal_ref[colorNum]][2];
-			screen_color_data_[idx] = 255.0f;
+			screen_color_data_second_[idx++] = bus_.Palette[pal_ref[colorNum]][0];
+			screen_color_data_second_[idx++] = bus_.Palette[pal_ref[colorNum]][1];
+			screen_color_data_second_[idx++] = bus_.Palette[pal_ref[colorNum]][2];
+			screen_color_data_second_[idx] = 255.0f;
 		}
 	}
 	void PPU::render_sprites() {
@@ -296,18 +297,18 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 				int idx = (pixel * 4) + (LY * 4 * 160);
 				if (attributes & 0b1000'0000) {
-					if (!(screen_color_data_[idx] == bus_.Palette[bus_.BGPalette[0]][0] &&
-					  	screen_color_data_[idx + 1] == bus_.Palette[bus_.BGPalette[0]][1] && 
-						screen_color_data_[idx + 2] == bus_.Palette[bus_.BGPalette[0]][2])) {
+					if (!(screen_color_data_second_[idx] == bus_.Palette[bus_.BGPalette[0]][0] &&
+					  	screen_color_data_second_[idx + 1] == bus_.Palette[bus_.BGPalette[0]][1] && 
+						screen_color_data_second_[idx + 2] == bus_.Palette[bus_.BGPalette[0]][2])) {
 						continue;
 					}
 				}
 				auto red = bus_.Palette[color][0];
 				red += (255.0f - red) * SpriteDebugColor;
-				screen_color_data_[idx++] = red;
-				screen_color_data_[idx++] = bus_.Palette[color][1];
-				screen_color_data_[idx++] = bus_.Palette[color][2];
-				screen_color_data_[idx] = 255;
+				screen_color_data_second_[idx++] = red;
+				screen_color_data_second_[idx++] = bus_.Palette[color][1];
+				screen_color_data_second_[idx++] = bus_.Palette[color][2];
+				screen_color_data_second_[idx] = 255;
 			}
 		}
 	}
