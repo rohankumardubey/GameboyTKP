@@ -327,7 +327,7 @@ namespace TKPEmu::Gameboy::Devices {
 		for (const auto& m : vram_) {
 			s << std::hex << std::setfill('0') << std::setw(2) << m;
 		}
-		for (int i = 0; i < oam_.size(); i += 4) {
+		for (size_t i = 0; i < oam_.size(); i += 4) {
 			s << std::hex << std::setfill('0') << std::setw(2) << oam_[i + 3];
 			s << std::hex << std::setfill('0') << std::setw(2) << oam_[i + 2];
 			s << std::hex << std::setfill('0') << std::setw(2) << oam_[i + 1];
@@ -354,11 +354,12 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_bgp: {
-					if (CurScanlineX == -1) [[unlikely]] {
-						break;
+					if (redirect_address(addr_lly) == 0) {
+						CurScanlineX += 4;
 					}
+					CurScanlineX -= 11;
 					Change& ch = ScanlineChanges[CurScanlineX];
-					ch.old_p = BGPalette;
+					//ch.old_p = BGPalette;
 					for (int i = 0; i < 4; i++) {
 						BGPalette[i] = (data >> (i * 2)) & 0b11;
 					}
@@ -641,7 +642,7 @@ namespace TKPEmu::Gameboy::Devices {
 				std::ifstream is;
 				is.open(path_save, std::ios::binary);
 				if (is.is_open() && ram_banks_.size() > 0) {
-					for (int i = 0; i < ram_banks_.size(); ++i) {
+					for (size_t i = 0; i < ram_banks_.size(); ++i) {
 						is.read(reinterpret_cast<char*>(&ram_banks_[i]), sizeof(uint8_t) * 0x2000);
 					}
 				}

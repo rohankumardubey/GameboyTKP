@@ -18,7 +18,6 @@ namespace TKPEmu::Gameboy::Devices {
     struct Change {
 		int type = 0;
         int change_x = 0;
-		std::array<uint8_t, 4> old_p;
 		std::array<uint8_t, 4> new_p;
 	};
     class Bus {
@@ -116,8 +115,8 @@ namespace TKPEmu::Gameboy::Devices {
         std::array<uint8_t, 0x2000> eram_default_{};
         std::array<uint8_t, 0x2000> wram_{};
         std::array<uint8_t, 0x2000> vram_{};
-        std::vector<DisInstr>& instructions_;
         ChannelArrayPtr channel_array_ptr_;
+        std::vector<DisInstr>& instructions_;
         uint8_t& redirect_address(uint16_t address);
         void handle_mbc(uint16_t address, uint8_t data);
         void battery_save();
