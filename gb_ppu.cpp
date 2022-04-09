@@ -66,7 +66,11 @@ namespace TKPEmu::Gameboy::Devices {
 				// Scanline changes only matter during pixel draw
 				bus_.ScanlineChanges.clear();
 			} else if (cur_scanline_clocks < (80 + 172 + mode3_extend)) {
-				bus_.CurScanlineX = cur_scanline_clocks - 80;
+				// TODO: don't really know why the -11 but it seems to pass mealybug test :) Investigate? probably not needed if we impl fifo
+				bus_.CurScanlineX = cur_scanline_clocks - 80 - 11;
+				if (LY == 0) {
+					bus_.CurScanlineX += 4;
+				}
 				if (get_mode() != MODE_DRAW_PIXELS) {
 					IF |= set_mode(MODE_DRAW_PIXELS);
 				}

@@ -354,10 +354,6 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_bgp: {
-					if (redirect_address(addr_lly) == 0) {
-						CurScanlineX += 4;
-					}
-					CurScanlineX -= 11;
 					Change& ch = ScanlineChanges[CurScanlineX];
 					//ch.old_p = BGPalette;
 					for (int i = 0; i < 4; i++) {
