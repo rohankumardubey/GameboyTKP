@@ -47,7 +47,7 @@ namespace TKPEmu::Gameboy::Devices {
 					// Load the 10 sprites for this line
 					cur_scanline_sprites_.clear();
 					mode3_extend = 0;
-					for (size_t i = 0; i < (bus_.oam_.size() - 4); i += 4) {
+					for (size_t i = 0; i < (bus_.oam_.size()); i += 4) {
 						//SCX & 7 > 0
 						if (is_sprite_eligible(bus_.oam_[i])) {
 							if (cur_scanline_sprites_.size() < 10) {
