@@ -111,7 +111,7 @@ namespace TKPEmu::Applications {
 				ptr->push_back(LogTypeMap[i]);
 			}
 		}
-		static_cast<Gameboy*>(emulator_)->SetLogTypes(std::move(ptr));
+		static_cast<Gameboy*>(emulator_.get())->SetLogTypes(std::move(ptr));
 	}
     void GameboyTracelogger::push_disabled() {
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.6f);

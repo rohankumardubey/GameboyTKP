@@ -355,12 +355,10 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 				case addr_bgp: {
 					Change& ch = ScanlineChanges[CurScanlineX];
-					//ch.old_p = BGPalette;
 					for (int i = 0; i < 4; i++) {
 						BGPalette[i] = (data >> (i * 2)) & 0b11;
 					}
-					ch.new_p = BGPalette;
-					ch.change_x = CurScanlineX;
+					ch.new_bg_pal = BGPalette;
 					break;
 				}
 				case addr_ob0: {
@@ -391,6 +389,9 @@ namespace TKPEmu::Gameboy::Devices {
 					if (!enabled) {
 						OAMAccessible = true;
 					}
+					bool bg_en = data & LCDCFlag::BG_ENABLE;
+					Change& ch = ScanlineChanges[CurScanlineX];
+					ch.new_bg_en = bg_en;
 					break;
 				}
 				case addr_bcps: {

@@ -358,7 +358,7 @@ namespace TKPEmu::Gameboy {
 		ppu_.Reset();
 	}
 	void Gameboy::update() {
-		if ((cpu_.TClock / 2) < cpu_.MaxCycles || FastMode) {
+		if ((cpu_.TClock) < cpu_.MaxCycles || FastMode) {
 			if (cpu_.PC == 0x100) {
 				bus_.BiosEnabled = false;
 			}

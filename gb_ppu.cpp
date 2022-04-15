@@ -207,7 +207,18 @@ namespace TKPEmu::Gameboy::Devices {
 		}
 		uint16_t identifierLoc = identifierLocationB;
 		uint16_t tileRow = (((uint8_t)(positionY / 8)) * 32);
+		// bool dont_draw = false;
 		for (int pixel = 0; pixel < 160; pixel++) {
+			// if (bus_.ScanlineChanges.size() > 0) [[unlikely]] {
+			// 	bool has_change = bus_.ScanlineChanges.contains(pixel);
+			// 	if (has_change) [[unlikely]] {
+			// 		// This sets it to the changed palette if it exists, or to itself if it doesn't
+			// 		dont_draw = bus_.ScanlineChanges[pixel].new_bg_en.value_or(false);
+			// 	}
+			// }
+			// if (dont_draw) {
+			// 	continue;
+			// }
 			uint8_t positionX = pixel + SCX;
 			if (windowEnabled && positionX >= (WX - 7)) {
 				identifierLoc = identifierLocationW;
@@ -251,7 +262,8 @@ namespace TKPEmu::Gameboy::Devices {
 			if (bus_.ScanlineChanges.size() > 0) [[unlikely]] {
 				bool has_change = bus_.ScanlineChanges.contains(pixel);
 				if (has_change) [[unlikely]] {
-					pal_ref = bus_.ScanlineChanges[pixel].new_p;
+					// This sets it to the changed palette if it exists, or to itself if it doesn't
+					pal_ref = bus_.ScanlineChanges[pixel].new_bg_pal.value_or(pal_ref);
 				}
 			}
 			screen_color_data_second_[idx++] = bus_.Palette[pal_ref[colorNum]][0];

@@ -9,6 +9,7 @@
 #include <iterator>
 #include <memory>
 #include <deque>
+#include <optional>
 #include "gb_cartridge.h"
 #include "gb_addresses.h"
 #include "gb_apu.h"
@@ -17,8 +18,8 @@
 namespace TKPEmu::Gameboy::Devices {
     struct Change {
 		int type = 0;
-        int change_x = 0;
-		std::array<uint8_t, 4> new_p;
+		std::optional<std::array<uint8_t, 4>> new_bg_pal = std::nullopt;
+        std::optional<bool> new_bg_en = std::nullopt;
 	};
     class Bus {
     private:

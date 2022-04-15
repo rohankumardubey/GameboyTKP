@@ -47,7 +47,7 @@ namespace TKPEmu::Applications {
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Draw options")) {
-                Gameboy* gb_ptr = static_cast<Gameboy*>(emulator_);
+                Gameboy* gb_ptr = static_cast<Gameboy*>(emulator_.get());
                 ImGui::Checkbox("Red tint for sprites", gb_ptr->DebugSpriteTint());
                 ImGui::Checkbox("Draw background", gb_ptr->GetDrawBackground());
                 ImGui::Checkbox("Draw window", gb_ptr->GetDrawWindow());
@@ -58,7 +58,7 @@ namespace TKPEmu::Applications {
         }
     }
     void GameboyRomData::draw_info() {
-        Gameboy* gb_ptr = static_cast<Gameboy*>(emulator_);
+        Gameboy* gb_ptr = static_cast<Gameboy*>(emulator_.get());
         ImGui::TextUnformatted("Filename: "); ImGui::SameLine(); ImGui::TextUnformatted(gb_ptr->CurrentFilename.c_str());
         ImGui::TextUnformatted(gb_ptr->GetCartridge().GetHeaderText());
         ImGui::InputText("Rom hash", gb_ptr->RomHash.data(), gb_ptr->RomHash.length(), ImGuiInputTextFlags_ReadOnly);
@@ -96,7 +96,7 @@ namespace TKPEmu::Applications {
         }
     }
     void GameboyRomData::update_tilesets() {
-        Gameboy* gb = static_cast<Gameboy*>(emulator_);
+        Gameboy* gb = static_cast<Gameboy*>(emulator_.get());
         gb->GetPPU().FillTileset(image_data_.data());
         gb->GetPPU().FillTileset(image_data_.data(), 128, 0, 0x8800);
         glBindTexture(GL_TEXTURE_2D, texture_);
