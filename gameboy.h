@@ -30,7 +30,7 @@ namespace TKPEmu::Gameboy {
 		using GameboyBreakpoint = TKPEmu::Gameboy::Utils::GameboyBreakpoint;
 	public:
 		Gameboy();
-		Gameboy(GameboyKeys dirkeys, GameboyKeys actionkeys);
+		Gameboy(std::any args);
 		~Gameboy();
 		void HandleKeyDown(SDL_Keycode key) override;
 		void HandleKeyUp(SDL_Keycode key) override;

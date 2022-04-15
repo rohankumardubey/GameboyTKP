@@ -21,10 +21,11 @@ namespace TKPEmu::Gameboy {
 		EmulatorImage.width = 160;
 		EmulatorImage.height = 144;
 	}
-	Gameboy::Gameboy(GameboyKeys dirkeys, GameboyKeys actionkeys) :
+	Gameboy::Gameboy(std::any args) :
 		Gameboy()
 	{
-		SetKeysLate(dirkeys, actionkeys);
+		auto keys = std::any_cast<std::pair<GameboyKeys, GameboyKeys>>(args);
+		SetKeysLate(keys.first, keys.second);
 		init_image();
 	}
 	Gameboy::~Gameboy() {
