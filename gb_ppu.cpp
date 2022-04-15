@@ -320,7 +320,7 @@ namespace TKPEmu::Gameboy::Devices {
 				screen_color_data_second_[idx++] = red;
 				screen_color_data_second_[idx++] = bus_.Palette[color][1];
 				screen_color_data_second_[idx++] = bus_.Palette[color][2];
-				screen_color_data_second_[idx] = 255;
+				screen_color_data_second_[idx] = 255.0f;
 			}
 		}
 	}
