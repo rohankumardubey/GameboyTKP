@@ -1,17 +1,17 @@
 ## [Blargg](https://github.com/gblargg)'s tests:    
 | Test | GameboyTKP |
 | -- | -- |
-| cpu_instrs/01-special | :+1: |
-| cpu_instrs/02-interrupts | :+1: |
-| cpu_instrs/03-op sp,hl | :+1: |
-| cpu_instrs/04-op r,imm | :+1: |
-| cpu_instrs/05-op rp | :+1: |
-| cpu_instrs/06-ld r,r | :+1: |
-| cpu_instrs/07-jr,jp,call,ret,rst | :+1: |
-| cpu_instrs/08-misc instrs | :+1: |
-| cpu_instrs/09-op r,r | :+1: |
-| cpu_instrs/10-bit ops | :+1: |
-| cpu_instrs/11-op a,(hl) | :+1: |
+| 01-special | :+1: |
+| 02-interrupts | :+1: |
+| 03-op sp,hl | :+1: |
+| 04-op r,imm | :+1: |
+| 05-op rp | :+1: |
+| 06-ld r,r | :+1: |
+| 07-jr,jp,call,ret,rst | :+1: |
+| 08-misc instrs | :+1: |
+| 09-op r,r | :+1: |
+| 10-bit ops | :+1: |
+| 11-op a,(hl) | :+1: |
 
 | Test | GameboyTKP |
 | -- | -- |
@@ -19,15 +19,24 @@
 
 | Test | GameboyTKP |
 | -- | -- |
-| mem_timing/01-read_timing | :+1: |
-| mem_timing/02-write_timing | :+1: |
-| mem_timing/03-modify_timing | :+1: |
+| 01-read_timing | :+1: |
+| 02-write_timing | :+1: |
+| 03-modify_timing | :+1: |
 
 | Test | GameboyTKP |
 | -- | -- |
-| dmg_sound/01-registers | :+1: |
-| dmg_sound/02-len ctr | :+1: |
-| dmg_sound/03-trigger | :+1: |
+| 01-registers | :+1: |
+| 02-len ctr | :+1: |
+| 03-trigger | :+1: |
+| 04-sweep | :x: |
+| 05-sweep details | :x: |
+| 06-overflow on trigger | :x: |
+| 07-len sweep period sync | :x: |
+| 08-len ctr during power | :x: |
+| 09-wave read while on | :x: |
+| 10-wave trigger while on | :x: |
+| 11-regs after power | :x: |
+| 12-wave write while on | :x: |
 
 | Test | GameboyTKP |
 | -- | -- |
@@ -37,108 +46,136 @@
 
 | Test | GameboyTKP |
 | -- | -- |
-| acceptance/add_sp_e_timing | :+1: |
-| acceptance/boot_regs-dmgABC | :+1: |
-| acceptance/call_cc_timing | :+1: |
-| acceptance/call_cc_timing2 | :+1: |
-| acceptance/call_timing | :+1: |
-| acceptance/call_timing2 | :+1: |
-| acceptance/di_timing-GS | :x: |
-| acceptance/div_timing | :+1: |
-| acceptance/ei_sequence | :+1: |
-| acceptance/ei_timing | :+1: |
-| acceptance/halt_ime0_ei | :+1: |
-| acceptance/halt_ime1_timing | :+1: |
-| acceptance/if_ie_registers | :+1: |
-| acceptance/intr_timing | :+1: |
-| acceptance/jp_timing | :+1: |
-| acceptance/ld_hl_sp_e_timing | :+1: |
-| acceptance/oam_dma_restart | :+1: |
-| acceptance/oam_dma_start | :+1: |
-| acceptance/oam_dma_timing | :+1: |
-| acceptance/pop_timing | :+1: |
-| acceptance/push_timing | :+1: |
-| acceptance/rapid_di_ei | :+1: |
-| acceptance/ret_cc_timing | :+1: |
-| acceptance/ret_timing | :+1: |
-| acceptance/reti_intr_timing | :+1: |
-| acceptance/reti_timing | :+1: |
-| acceptance/rst_timing | :+1: |
+| add_sp_e_timing | :+1: |
+| boot_div-S | :x: |
+| boot_div-dmg0 | :x: |
+| boot_div-dmgABCmgb | :x: |
+| boot_div2-S | :x: |
+| boot_hwio-S | :x: |
+| boot_hwio-dmg0 | :x: |
+| boot_hwio-dmgABCmgb | :x: |
+| boot_regs-dmg0 | :x: |
+| boot_regs-dmgABC | :+1: |
+| boot_regs-mgb | :x: |
+| boot_regs-sgb | :x: |
+| boot_regs-sgb2 | :x: |
+| call_cc_timing | :+1: |
+| call_cc_timing2 | :+1: |
+| call_timing | :+1: |
+| call_timing2 | :+1: |
+| di_timing-GS | :x: |
+| div_timing | :+1: |
+| ei_sequence | :+1: |
+| ei_timing | :+1: |
+| halt_ime0_ei | :+1: |
+| halt_ime0_nointr_timing | :x: |
+| halt_ime1_timing | :+1: |
+| halt_ime1_timing2-GS | :x: |
+| if_ie_registers | :+1: |
+| intr_timing | :+1: |
+| jp_cc_timing | :x: |
+| jp_timing | :+1: |
+| ld_hl_sp_e_timing | :+1: |
+| oam_dma_restart | :+1: |
+| oam_dma_start | :+1: |
+| oam_dma_timing | :+1: |
+| pop_timing | :+1: |
+| push_timing | :+1: |
+| rapid_di_ei | :+1: |
+| ret_cc_timing | :+1: |
+| ret_timing | :+1: |
+| reti_intr_timing | :+1: |
+| reti_timing | :+1: |
+| rst_timing | :+1: |
 
 | Test | GameboyTKP |
 | -- | -- |
-| acceptance/bits/mem_oam | :+1: |
-| acceptance/bits/reg_f | :+1: |
-| acceptance/bits/unused_hwio-GS | :+1: |
+| mem_oam | :+1: |
+| reg_f | :+1: |
+| unused_hwio-GS | :+1: |
 
 | Test | GameboyTKP |
 | -- | -- |
-| acceptance/instrs/daa | :+1: |
+| daa | :+1: |
 
 | Test | GameboyTKP |
 | -- | -- |
-| acceptance/interrupts/ie_push | :+1: |
+| ie_push | :+1: |
 
 | Test | GameboyTKP |
 | -- | -- |
-| acceptance/oam_dma/basic | :+1: |
-| acceptance/oam_dma/reg_read | :+1: |
+| basic | :+1: |
+| reg_read | :+1: |
+| sources-GS | :x: |
 
 | Test | GameboyTKP |
 | -- | -- |
-| acceptance/ppu/intr_2_mode0_timing | :+1: |
-| acceptance/ppu/intr_2_mode3_timing | :+1: |
-| acceptance/ppu/intr_2_oam_ok_timing | :+1: |
-| acceptance/ppu/vblank_stat_intr-GS | :+1: |
+| hblank_ly_scx_timing-GS | :x: |
+| intr_1_2_timing-GS | :x: |
+| intr_2_0_timing | :x: |
+| intr_2_mode0_timing | :+1: |
+| intr_2_mode0_timing_sprites | :x: |
+| intr_2_mode3_timing | :+1: |
+| intr_2_oam_ok_timing | :+1: |
+| lcdon_timing-GS | :x: |
+| lcdon_write_timing-GS | :x: |
+| stat_irq_blocking | :x: |
+| stat_lyc_onoff | :x: |
+| vblank_stat_intr-GS | :+1: |
 
 | Test | GameboyTKP |
 | -- | -- |
-| acceptance/timer/div_write | :+1: |
-| acceptance/timer/tim00_div_trigger | :+1: |
-| acceptance/timer/tim01_div_trigger | :+1: |
-| acceptance/timer/tim10_div_trigger | :+1: |
-| acceptance/timer/tim11_div_trigger | :+1: |
-| acceptance/timer/tim_00 | :+1: |
-| acceptance/timer/tim_01 | :+1: |
-| acceptance/timer/tim_10 | :+1: |
-| acceptance/timer/tim_11 | :+1: |
-| acceptance/timer/tima_reload | :+1: |
-| acceptance/timer/tima_write_reloading | :+1: |
-| acceptance/timer/tma_write_reloading | :+1: |
+| div_write | :+1: |
+| rapid_toggle | :x: |
+| tim00 | :+1: |
+| tim00_div_trigger | :+1: |
+| tim01 | :+1: |
+| tim01_div_trigger | :+1: |
+| tim10 | :+1: |
+| tim10_div_trigger | :+1: |
+| tim11 | :+1: |
+| tim11_div_trigger | :+1: |
+| tima_reload | :+1: |
+| tima_write_reloading | :+1: |
+| tma_write_reloading | :+1: |
 
 | Test | GameboyTKP |
 | -- | -- |
-| emulator-only/mbc1/bits_bank1 | :+1: |
-| emulator-only/mbc1/bits_bank2 | :+1: |
-| emulator-only/mbc1/bits_mode | :+1: |
-| emulator-only/mbc1/bits_ramg | :+1: |
-| emulator-only/mbc1/ram_256kb | :+1: |
-| emulator-only/mbc1/ram_64kb | :+1: |
-| emulator-only/mbc1/rom_16MB | :+1: |
-| emulator-only/mbc1/rom_4Mb | :+1: |
-| emulator-only/mbc1/rom_8Mb | :+1: |
+| bits_bank1 | :+1: |
+| bits_bank2 | :+1: |
+| bits_mode | :+1: |
+| bits_ramg | :+1: |
+| multicart_rom_8Mb | :x: |
+| ram_256kb | :+1: |
+| ram_64kb | :+1: |
+| rom_16Mb | :+1: |
+| rom_1Mb | :x: |
+| rom_2Mb | :x: |
+| rom_4Mb | :+1: |
+| rom_512kb | :x: |
+| rom_8Mb | :+1: |
 
 | Test | GameboyTKP |
 | -- | -- |
-| emulator-only/mbc2/bits_ramg | :+1: |
-| emulator-only/mbc2/bits_romb | :+1: |
-| emulator-only/mbc2/bits_unused | :+1: |
-| emulator-only/mbc2/ram | :+1: |
-| emulator-only/mbc2/rom_1Mb | :+1: |
-| emulator-only/mbc2/rom_2Mb | :+1: |
-| emulator-only/mbc2/rom_512kb | :+1: |
+| bits_ramg | :+1: |
+| bits_romb | :+1: |
+| bits_unused | :+1: |
+| ram | :+1: |
+| rom_1Mb | :+1: |
+| rom_2Mb | :+1: |
+| rom_512kb | :+1: |
 
 | Test | GameboyTKP |
 | -- | -- |
-| emulator-only/mbc5/rom_16Mb | :+1: |
-| emulator-only/mbc5/rom_1Mb | :+1: |
-| emulator-only/mbc5/rom_2Mb | :+1: |
-| emulator-only/mbc5/rom_32Mb | :+1: |
-| emulator-only/mbc5/rom_4Mb | :+1: |
-| emulator-only/mbc5/rom_512kb | :+1: |
-| emulator-only/mbc5/rom_64Mb | :+1: |
-| emulator-only/mbc5/rom_8Mb | :+1: |
+| rom_16Mb | :+1: |
+| rom_1Mb | :+1: |
+| rom_2Mb | :+1: |
+| rom_32Mb | :+1: |
+| rom_4Mb | :+1: |
+| rom_512kb | :+1: |
+| rom_64Mb | :+1: |
+| rom_8Mb | :+1: |
 
 -----
-GameboyTKP test results generated by offtkp on Πεμ 24 Μαρ 2022 02:13:51 πμ EET.    
+GameboyTKP test results generated by offtkp on Παρ 15 Απρ 2022 07:21:48 μμ EEST.    
 To generate these test results, use generate_test_results.sh in /GameboyTKP/

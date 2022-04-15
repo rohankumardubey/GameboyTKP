@@ -24,8 +24,10 @@ namespace TKPEmu::Gameboy {
 	Gameboy::Gameboy(std::any args) :
 		Gameboy()
 	{
-		auto keys = std::any_cast<std::pair<GameboyKeys, GameboyKeys>>(args);
-		SetKeysLate(keys.first, keys.second);
+		if (args.has_value()) {
+			auto keys = std::any_cast<std::pair<GameboyKeys, GameboyKeys>>(args);
+			SetKeysLate(keys.first, keys.second);
+		}
 		init_image();
 	}
 	Gameboy::~Gameboy() {
