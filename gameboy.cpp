@@ -377,6 +377,7 @@ namespace TKPEmu::Gameboy {
 				}
 			}
 			ppu_.Update(clk);
+			apu_.Update(clk);
 			if (!cpu_.halt_)
 				log_state();
 		} else {
