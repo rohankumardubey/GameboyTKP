@@ -39,18 +39,22 @@ namespace TKPEmu::Gameboy::Devices {
             if (EnvelopePeriod != 0) {
                 if (PeriodTimer > 0) {
                     --PeriodTimer;
-                }
-                if (PeriodTimer == 0) {
-                    PeriodTimer = EnvelopePeriod;
-                    if (EnvelopeCurrentVolume > 0 && !EnvelopeIncrease) {
-                        --EnvelopeCurrentVolume;
-                    } else if (EnvelopeCurrentVolume < 0xF && EnvelopeIncrease) {
-                        ++EnvelopeCurrentVolume;
+                    if (PeriodTimer == 0) {
+                        PeriodTimer = EnvelopePeriod;
+                        if (EnvelopeCurrentVolume > 0 && !EnvelopeIncrease) {
+                            --EnvelopeCurrentVolume;
+                        } else if (EnvelopeCurrentVolume < 0xF && EnvelopeIncrease) {
+                            std::cout << "INC" << std::endl;
+                            ++EnvelopeCurrentVolume;
+                        } else {
+                            std::cout << "WTF" << std::endl;
+                        }
                     }
                 }
-                DACInput = GetAmplitude();
-                DACOutput = (((float)DACInput / 7.5f) - 1.0f) * DACEnabled * (LeftEnabled || RightEnabled);
             }
+            DACInput =  EnvelopeCurrentVolume;
+            std::cout << "Change amplitude: " << DACInput << std::endl;
+            DACOutput = ((DACInput / 7.5f) - 1.0f) * DACEnabled * (LeftEnabled || RightEnabled);
         }
     }
     void APUChannel::ClockSweep() {

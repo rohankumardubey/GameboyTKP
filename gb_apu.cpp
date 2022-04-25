@@ -28,7 +28,7 @@ namespace TKPEmu::Gameboy::Devices {
     }
     void APU::Update(int clk) {
         static int inner_clk = 0;
-        static int yep_clock = 0;
+        static unsigned yep_clock = 0;
         inner_clk += clk;
         (*channel_array_ptr_)[0].StepWaveGeneration(clk);
         (*channel_array_ptr_)[1].StepWaveGeneration(clk);

@@ -10,10 +10,11 @@ namespace TKPEmu::Gameboy::Devices {
         int FrequencyTimer = 0;
         int WaveDutyPattern = 0;
         int WaveDutyPosition = 0;
+        int MagicDivider = 2;
         int FrameSequencer = 0; // TODO: unimplemented
         bool LengthCtrEnabled = false;
         bool VolEnvEnabled = false;
-        int EnvelopeCurrentVolume = 0;
+        uint8_t EnvelopeCurrentVolume = 0;
         bool EnvelopeIncrease = false;
         int EnvelopePeriod = 0;
         int SweepPeriod = 0;

@@ -481,6 +481,7 @@ namespace TKPEmu::Gameboy::Devices {
 						chan.CalculateSweepFreq();
 						if (chan.DisableChannelFlag) {
 							ClearNR52Bit(0);
+							chan.DACEnabled = false;
 							chan.DisableChannelFlag = false;
 						}
 					}
@@ -606,6 +607,7 @@ namespace TKPEmu::Gameboy::Devices {
 		Write(address + 1, data >> 8);
 	}
 	void Bus::ClearNR52Bit(uint8_t bit) {
+		
 		redirect_address(addr_NR52) &= ~(1 << bit);
 	}
 	void Bus::Reset() {
@@ -710,6 +712,7 @@ namespace TKPEmu::Gameboy::Devices {
 			// If clock makes length zero, should disable chan
 			if (chan.LengthTimer == 0) {
 				ClearNR52Bit(channel_no);
+				chan.DACEnabled = false;
 			}
 		}
 		if (channel_no < 2) {

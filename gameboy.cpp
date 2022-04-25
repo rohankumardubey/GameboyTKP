@@ -369,7 +369,7 @@ namespace TKPEmu::Gameboy {
 			uint8_t old_if = interrupt_flag_;
 			int clk = 0;
 			if (!cpu_.skip_next_)
-				clk = cpu_.Update();	
+				clk = cpu_.Update();
 			cpu_.skip_next_ = false;
 			if (timer_.Update(clk, old_if)) {
 				if (cpu_.halt_) {
