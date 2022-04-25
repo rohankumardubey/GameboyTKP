@@ -12,6 +12,12 @@ namespace TKPEmu::Gameboy::Devices {
     public:
         APU(ChannelArrayPtr channel_array_ptr);
         void Update(int clk);
+        inline void QueueSamples() {
+            SDL_QueueAudio(device_id_, &samples_[0], sizeof(samples_));
+        }
+        inline bool IsQueueEmpty() {
+            return SDL_GetQueuedAudioSize(device_id_) == 0;
+        }
     private:
         SDL_AudioDeviceID device_id_;
         std::array<int16_t, 2048> samples_;

@@ -14,7 +14,7 @@ namespace TKPEmu::Gameboy {
 		bus_(channel_array_ptr_, Instructions),
 		ppu_(bus_, &DrawMutex),
 		timer_(channel_array_ptr_, bus_),
-		cpu_(bus_, ppu_, timer_),
+		cpu_(bus_, ppu_, apu_, timer_),
 		joypad_(bus_.GetReference(addr_joy)),
 		interrupt_flag_(bus_.GetReference(addr_if))
 	{
@@ -384,6 +384,10 @@ namespace TKPEmu::Gameboy {
 		} else {
 			auto end = std::chrono::system_clock::now();
 			auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(end - frame_start).count();
+			if (apu_.IsQueueEmpty()) {
+				// Audio starved! Queue last sample :(
+				apu_.QueueSamples();
+			}
 			if (dur > 16.6f) {
 				frame_start = std::chrono::system_clock::now();
 				cpu_.TClock = 0;

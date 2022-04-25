@@ -44,13 +44,12 @@ namespace TKPEmu::Gameboy::Devices {
                     PeriodTimer = EnvelopePeriod;
                     if (EnvelopeCurrentVolume > 0 && !EnvelopeIncrease) {
                         --EnvelopeCurrentVolume;
-                    }
-                    if (EnvelopeCurrentVolume < 0xF && EnvelopeIncrease) {
+                    } else if (EnvelopeCurrentVolume < 0xF && EnvelopeIncrease) {
                         ++EnvelopeCurrentVolume;
                     }
                 }
-                DACInput = GetAmplitude() * EnvelopeCurrentVolume;
-                DACOutput = ((DACInput / 7.5f) - 1.0f) * DACEnabled * (LeftEnabled || RightEnabled);
+                DACInput = GetAmplitude();
+                DACOutput = (((float)DACInput / 7.5f) - 1.0f) * DACEnabled * (LeftEnabled || RightEnabled);
             }
         }
     }

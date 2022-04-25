@@ -13,9 +13,11 @@
 #include "../include/disassembly_instr.h"
 namespace TKPEmu::Gameboy::Devices {
     class CPU {
+    public:
     private:
         Bus& bus_;
         PPU& ppu_;
+        APU& apu_;
         Timer& timer_;
         bool ime_scheduled_ = false;
         bool halt_bug_ = false;
@@ -101,7 +103,7 @@ namespace TKPEmu::Gameboy::Devices {
         void setup_hwio();
 
     public:
-        CPU(Bus& bus, PPU& ppu, Timer& timer);
+        CPU(Bus& bus, PPU& ppu, APU& apu, Timer& timer);
         bool halt_ = false;
         bool ime_ = false;
         bool skip_next_ = false;

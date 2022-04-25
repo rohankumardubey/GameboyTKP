@@ -2,9 +2,10 @@
 #include <cmath>
 
 namespace TKPEmu::Gameboy::Devices {
-    CPU::CPU(Bus& bus, PPU& ppu, Timer& timer) :
+    CPU::CPU(Bus& bus, PPU& ppu, APU& apu, Timer& timer) :
         bus_(bus),
         ppu_(ppu),
+        apu_(apu),
         timer_(timer),
         IF(bus_.GetReference(0xFF0F)),
         IE(bus_.GetReference(0xFFFF)),
@@ -2384,6 +2385,7 @@ namespace TKPEmu::Gameboy::Devices {
             }
         }
         ppu_.Update(dur);
+        apu_.Update(dur);
     }
     // Sets hardware registers to correct values
     void CPU::setup_hwio() {
