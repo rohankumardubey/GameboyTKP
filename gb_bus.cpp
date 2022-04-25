@@ -555,6 +555,14 @@ namespace TKPEmu::Gameboy::Devices {
 					handle_nrx4(4, data);
 					break;
 				}
+				case addr_NR51: {
+					for (int i = 0; i < 4; i++) {
+						auto& ch = (*channel_array_ptr_)[i];
+						ch.LeftEnabled = (data >> i) & 0b1;
+						ch.RightEnabled = (data >> (i + 4)) & 0b1;
+					}
+					break;
+				}
 				case addr_NR52: {
 					data &= 0b1111'0000;
 					bool enabled = data & 0b1000'0000;

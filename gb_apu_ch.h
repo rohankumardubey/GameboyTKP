@@ -20,6 +20,7 @@ namespace TKPEmu::Gameboy::Devices {
         bool SweepIncrease = false;
         int SweepShift = 0;
         bool SweepEnabled = false;
+        bool HasSweep = false;
         int SweepTimer = 0;
         int ShadowFrequency = 0;
         int Frequency = 0;
@@ -32,6 +33,8 @@ namespace TKPEmu::Gameboy::Devices {
         int DACInput = 0;
         float DACOutput = 0;
         bool DACEnabled = true;
+        bool LeftEnabled = false;
+        bool RightEnabled = false;
         bool DisableChannelFlag = false;
 
         void StepWaveGeneration(int cycles);

@@ -18,7 +18,9 @@ namespace TKPEmu::Gameboy::Devices {
         if (FrameSequencer % 2 == 0) {
             ClockLengthCtr();
             if (FrameSequencer == 2 || FrameSequencer == 6) {
-                ClockSweep();
+                if (HasSweep) {
+                    ClockSweep();
+                }
             }
         } else if (FrameSequencer == 7) {
             ClockVolEnv();
@@ -48,7 +50,7 @@ namespace TKPEmu::Gameboy::Devices {
                     }
                 }
                 DACInput = GetAmplitude() * EnvelopeCurrentVolume;
-                DACOutput = ((DACInput / 7.5f) - 1.0f) * DACEnabled; 
+                DACOutput = ((DACInput / 7.5f) - 1.0f) * DACEnabled * (LeftEnabled || RightEnabled);
             }
         }
     }

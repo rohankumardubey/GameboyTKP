@@ -18,6 +18,7 @@ namespace TKPEmu::Gameboy {
 		joypad_(bus_.GetReference(addr_joy)),
 		interrupt_flag_(bus_.GetReference(addr_if))
 	{
+		(*channel_array_ptr_.get())[0].HasSweep = true;
 		EmulatorImage.width = 160;
 		EmulatorImage.height = 144;
 	}
