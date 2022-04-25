@@ -14,7 +14,7 @@ namespace TKPEmu::Gameboy::Devices {
         void Update(int clk);
     private:
         SDL_AudioDeviceID device_id_;
-        std::array<int16_t, 48000> samples_;
+        std::array<int16_t, 4096> samples_;
         size_t sample_index_ = 0;
         ChannelArrayPtr channel_array_ptr_;
     };

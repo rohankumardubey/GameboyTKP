@@ -2,7 +2,7 @@
 #include "gb_addresses.h"
 #include <iostream>
 constexpr int SAMPLE_RATE = 48000;
-constexpr int AMPLITUDE = 18000;
+constexpr int AMPLITUDE = 8000;
 
 namespace TKPEmu::Gameboy::Devices {
     APU::APU(ChannelArrayPtr channel_array_ptr) 
@@ -28,17 +28,21 @@ namespace TKPEmu::Gameboy::Devices {
     }
     void APU::Update(int clk) {
         (*channel_array_ptr_)[0].StepWaveGeneration(clk);
-        float ch1 = (*channel_array_ptr_)[0].GetAmplitude();
-        float ch2 = (*channel_array_ptr_)[1].GetAmplitude();
-        float ch3 = (*channel_array_ptr_)[2].GetAmplitude();
-        float ch4 = (*channel_array_ptr_)[3].GetAmplitude();
-        auto samp = (ch1 + ch2 + ch3 + ch4) / 4.0f;
-        auto freq = 440;
-        double res = sin((sample_index_) / (SAMPLE_RATE / 440.0) * 2.0 * M_PI)>=0.0 ? 1.0:-1.0;//copysign(1.0, sin(((float)sample_index_/SAMPLE_RATE) * 441.0f));
-        samples_[sample_index_++] = res * AMPLITUDE * (*channel_array_ptr_)[0].DACOutput;
-        if (sample_index_ == samples_.size()) {
-            sample_index_ = 0;
-            SDL_QueueAudio(device_id_, &samples_[0], sizeof(samples_));
+        (*channel_array_ptr_)[1].StepWaveGeneration(clk);
+        double freq = (*channel_array_ptr_)[1].Frequency;
+        double freq2 = (*channel_array_ptr_)[0].Frequency;
+        freq = 131072/(2048-freq);
+        freq2 = 131072/(2048-freq2);
+        double ch1 = (sin((sample_index_) / (SAMPLE_RATE / freq2) * 2.0 * M_PI)>=0.0 ? 1.0:-1.0) * (*channel_array_ptr_)[0].DACOutput;
+        double ch2 = (sin((sample_index_) / (SAMPLE_RATE / freq) * 2.0 * M_PI)>=0.0 ? 1.0:-1.0) * (*channel_array_ptr_)[1].DACOutput;
+        if (sample_index_ == samples_.size() ) {
+            if (SDL_GetQueuedAudioSize(device_id_) == 0) {
+                sample_index_ = 0;
+                SDL_QueueAudio(device_id_, &samples_[0], sizeof(samples_));
+            }
+        } else {
+            auto sample = (ch1 + ch2) / 2;
+            samples_[sample_index_++] = sample * AMPLITUDE;
         }
     }
 }

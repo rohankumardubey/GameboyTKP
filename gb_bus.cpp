@@ -468,9 +468,9 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR13: {
-					(*channel_array_ptr_)[0].WaveFrequency &= 0b0111'0000'0000;
-					(*channel_array_ptr_)[0].WaveFrequency |= data;
-					(*channel_array_ptr_)[0].ShadowFrequency = (*channel_array_ptr_)[0].WaveFrequency;
+					(*channel_array_ptr_)[0].Frequency &= 0b0111'0000'0000;
+					(*channel_array_ptr_)[0].Frequency |= data;
+					(*channel_array_ptr_)[0].ShadowFrequency = (*channel_array_ptr_)[0].Frequency;
 					data |= 0b1111'1111;
 					break;
 				}
@@ -500,8 +500,8 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR23: {
-					(*channel_array_ptr_)[1].WaveFrequency &= 0b0111'0000'0000;
-					(*channel_array_ptr_)[1].WaveFrequency |= data;
+					(*channel_array_ptr_)[1].Frequency &= 0b0111'0000'0000;
+					(*channel_array_ptr_)[1].Frequency |= data;
 					data |= 0b1111'1111;
 					break;
 				}
@@ -528,8 +528,8 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR33: {
-					(*channel_array_ptr_)[2].WaveFrequency &= 0b0111'0000'0000;
-					(*channel_array_ptr_)[2].WaveFrequency |= data;
+					(*channel_array_ptr_)[2].Frequency &= 0b0111'0000'0000;
+					(*channel_array_ptr_)[2].Frequency |= data;
 					data |= 0b1111'1111;
 					break;
 				}
@@ -704,10 +704,10 @@ namespace TKPEmu::Gameboy::Devices {
 				ClearNR52Bit(channel_no);
 			}
 		}
-		if (channel_no == 0) {
-			chan.WaveFrequency &= 0b0000'1111'1111;
-			chan.WaveFrequency |= (data & 0b111) << 8;
-			chan.ShadowFrequency = chan.WaveFrequency;
+		if (channel_no < 2) {
+			chan.Frequency &= 0b0000'1111'1111;
+			chan.Frequency |= (data & 0b111) << 8;
+			chan.ShadowFrequency = chan.Frequency;
 		}
 		if ((data & 0b1000'0000)) {
 			chan.LengthCtrEnabled = true;
@@ -743,6 +743,7 @@ namespace TKPEmu::Gameboy::Devices {
 		(*channel_array_ptr_)[channel_no].LengthData = data & ((*channel_array_ptr_)[channel_no].LengthInit - 1); // and with highest value
 		(*channel_array_ptr_)[channel_no].LengthTimer = (*channel_array_ptr_)[channel_no].LengthInit - (*channel_array_ptr_)[channel_no].LengthData;
 		(*channel_array_ptr_)[channel_no].LengthHalf = (*channel_array_ptr_)[channel_no].LengthTimer / 2;
+		(*channel_array_ptr_)[channel_no].WaveDutyPattern = data >> 6;
 	}
 	void Bus::disable_dac(int channel_no) {
 		auto& chan = (*channel_array_ptr_)[channel_no];

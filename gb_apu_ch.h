@@ -7,7 +7,6 @@ namespace TKPEmu::Gameboy::Devices {
     constexpr int Waveforms[4] = { 0b00000001, 0b00000011, 0b00001111, 0b11111100 };
     struct APUChannel {
         // TODO: some of these variables dont need to be public
-        unsigned WaveFrequency = 0;
         int FrequencyTimer = 0;
         int WaveDutyPattern = 0;
         int WaveDutyPosition = 0;

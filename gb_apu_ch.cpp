@@ -5,7 +5,7 @@ namespace TKPEmu::Gameboy::Devices {
     void APUChannel::StepWaveGeneration(int cycles) {
         FrequencyTimer -= cycles;
         if (FrequencyTimer <= 0) {
-            FrequencyTimer += (2048 - WaveFrequency) * 4;
+            FrequencyTimer += (2048 - Frequency) * 4;
             // WaveDutyPosition stays in range 0-7
             WaveDutyPosition = (WaveDutyPosition + 1) & 0b111;
         }
@@ -48,7 +48,7 @@ namespace TKPEmu::Gameboy::Devices {
                     }
                 }
                 DACInput = GetAmplitude() * EnvelopeCurrentVolume;
-                DACOutput = (DACInput / 7.5f) - 1.0f; 
+                DACOutput = ((DACInput / 7.5f) - 1.0f) * DACEnabled; 
             }
         }
     }
