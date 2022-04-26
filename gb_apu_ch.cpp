@@ -71,11 +71,15 @@ namespace TKPEmu::Gameboy::Devices {
             --SweepTimer; 
         }
         if (SweepTimer == 0) {
-            SweepTimer = (SweepPeriod == 0) ? 8 : SweepPeriod;
+            if (SweepPeriod > 0) {
+                SweepTimer = SweepPeriod;
+            } else {
+                SweepTimer = 8;
+            }
             SweepEnabled = SweepPeriod != 0 || SweepShift != 0;
-            if (SweepEnabled) {
+            if (SweepEnabled && SweepPeriod > 0) {
                 CalculateSweepFreq();
-                if (new_frequency <= 2047) {
+                if (new_frequency <= 2047 && SweepShift > 0) {
                     Frequency = new_frequency;
                     ShadowFrequency = new_frequency;
                     CalculateSweepFreq();
@@ -91,7 +95,6 @@ namespace TKPEmu::Gameboy::Devices {
             new_frequency = ShadowFrequency + new_frequency;
         }
         if (new_frequency > 2047) {
-            SweepEnabled = false;
             DisableChannelFlag = true;
         }
     }
