@@ -19,6 +19,7 @@ namespace TKPEmu::Gameboy::Devices {
     struct Change {
 		int type = 0;
 		std::optional<std::array<uint8_t, 4>> new_bg_pal = std::nullopt;
+        int new_bg_pal_index = 0;
         std::optional<bool> new_bg_en = std::nullopt;
 	};
     class Bus {
@@ -78,7 +79,6 @@ namespace TKPEmu::Gameboy::Devices {
         std::array<uint8_t, 4> BGPalette{};
         std::array<uint8_t, 4> OBJ0Palette{};
         std::array<uint8_t, 4> OBJ1Palette{};
-        std::array<uint8_t, 64> CGBPalette{};
         bool SoundEnabled = false;
         bool DIVReset = false;
         bool TMAChanged = false;

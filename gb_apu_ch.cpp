@@ -59,9 +59,9 @@ namespace TKPEmu::Gameboy::Devices {
                     } else if (EnvelopeCurrentVolume < 0xF && EnvelopeIncrease) {
                         ++EnvelopeCurrentVolume;
                     }
+                    DACInput = -EnvelopeCurrentVolume; // uhh idk. it sounds reversed if you dont add the '-' at the start
                 }
             }
-            DACInput = -EnvelopeCurrentVolume; // uhh idk. it sounds reversed if you dont add the '-' at the start
         }
     }
     void APUChannel::ClockSweep() {

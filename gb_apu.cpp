@@ -1,7 +1,7 @@
 #include "gb_apu.h"
 #include "gb_addresses.h"
 #include <iostream>
-constexpr int SAMPLE_RATE = 48000;
+constexpr int SAMPLE_RATE = 96000;
 constexpr int AMPLITUDE = 8000;
 constexpr int RESAMPLED_RATE = (4194304 / SAMPLE_RATE);
 
@@ -25,6 +25,9 @@ namespace TKPEmu::Gameboy::Devices {
         float i = 0;
         std::fill(samples_.begin(), samples_.end(), 0);
         SDL_PauseAudioDevice(device_id_, 0);
+    }
+    APU::~APU() {
+        SDL_CloseAudioDevice(device_id_);
     }
     void APU::Update(int clk) {
         static int inner_clk = 0;

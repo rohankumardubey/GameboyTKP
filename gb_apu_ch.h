@@ -8,7 +8,7 @@ namespace TKPEmu::Gameboy::Devices {
     struct APUChannel {
         // TODO: some of these variables dont need to be public
         int FrequencyTimer = 0;
-        int WaveDutyPattern = 0;
+        int WaveDutyPattern = 2;
         int WaveDutyPosition = 0;
         int MagicDivider = 2;
         int FrameSequencer = 0; // TODO: unimplemented

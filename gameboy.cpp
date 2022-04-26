@@ -421,7 +421,9 @@ namespace TKPEmu::Gameboy {
 		}
 	}
 	bool Gameboy::load_file(std::string path) {
-		return bus_.LoadCartridge(std::forward<std::string>(path));
+		auto loaded = bus_.LoadCartridge(std::forward<std::string>(path));;
+		ppu_.UseCGB = bus_.UseCGB;
+		return loaded;
 	}
 	DisInstr Gameboy::GetInstruction(uint16_t address) {
 		uint8_t ins = bus_.Read(address);

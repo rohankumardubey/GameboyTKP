@@ -19,6 +19,7 @@ namespace TKPEmu::Gameboy::Devices {
 		bool DrawBackground = true;
 		bool DrawWindow = true;
 		bool DrawSprites = true;
+		bool UseCGB = false;
 		PPU(Bus& bus, std::mutex* draw_mutex);
 		void Update(uint8_t cycles);
 		void Reset();
