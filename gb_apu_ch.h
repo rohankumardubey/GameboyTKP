@@ -14,7 +14,7 @@ namespace TKPEmu::Gameboy::Devices {
         int FrameSequencer = 0; // TODO: unimplemented
         bool LengthCtrEnabled = false;
         bool VolEnvEnabled = false;
-        uint8_t EnvelopeCurrentVolume = 0;
+        uint8_t EnvelopeCurrentVolume = 0xF;
         bool EnvelopeIncrease = false;
         int EnvelopePeriod = 0;
         int SweepPeriod = 0;
@@ -32,10 +32,12 @@ namespace TKPEmu::Gameboy::Devices {
         int LengthInit = 64;
         int PeriodTimer = 0;
         int DACInput = 0;
-        float DACOutput = 0;
+        float DACOutput = 1;
         bool DACEnabled = true;
         bool LeftEnabled = false;
+        uint8_t LeftVolume = 0;
         bool RightEnabled = false;
+        uint8_t RightVolume = 0;
         bool DisableChannelFlag = false;
 
         void StepWaveGeneration(int cycles);
@@ -45,6 +47,9 @@ namespace TKPEmu::Gameboy::Devices {
         void ClockVolEnv();
         void ClockSweep();
         void CalculateSweepFreq();
+        inline uint8_t GlobalVolume() {
+            return ((LeftEnabled * LeftVolume) || (RightEnabled * RightVolume));
+        }
         int new_frequency = 0;
 
     private:

@@ -8,6 +8,7 @@ namespace TKPEmu::Gameboy::Devices {
             FrequencyTimer += (2048 - Frequency) * 4;
             // WaveDutyPosition stays in range 0-7
             WaveDutyPosition = (WaveDutyPosition + 1) & 0b111;
+            DACOutput = ((DACInput / 7.5f) - 1.0f) * DACEnabled;
         }
     }
     bool APUChannel::GetAmplitude() {
@@ -44,17 +45,12 @@ namespace TKPEmu::Gameboy::Devices {
                         if (EnvelopeCurrentVolume > 0 && !EnvelopeIncrease) {
                             --EnvelopeCurrentVolume;
                         } else if (EnvelopeCurrentVolume < 0xF && EnvelopeIncrease) {
-                            std::cout << "INC" << std::endl;
                             ++EnvelopeCurrentVolume;
-                        } else {
-                            std::cout << "WTF" << std::endl;
                         }
                     }
                 }
             }
-            DACInput =  EnvelopeCurrentVolume;
-            std::cout << "Change amplitude: " << DACInput << std::endl;
-            DACOutput = ((DACInput / 7.5f) - 1.0f) * DACEnabled * (LeftEnabled || RightEnabled);
+            DACInput = EnvelopeCurrentVolume;
         }
     }
     void APUChannel::ClockSweep() {

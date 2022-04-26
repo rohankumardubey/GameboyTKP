@@ -30,16 +30,17 @@ namespace TKPEmu::Gameboy::Devices {
         static int inner_clk = 0;
         static unsigned yep_clock = 0;
         inner_clk += clk;
-        (*channel_array_ptr_)[0].StepWaveGeneration(clk);
-        (*channel_array_ptr_)[1].StepWaveGeneration(clk);
-        double freq = (*channel_array_ptr_)[1].Frequency;
-        double freq2 = (*channel_array_ptr_)[0].Frequency;
-        freq = 131072/(2048-freq);
-        freq2 = 131072/(2048-freq2);
-        double ch1 = (sin(((yep_clock * freq2) / SAMPLE_RATE) * 2.0 * M_PI)>=0.0 ? 1.0:-1.0) * (*channel_array_ptr_)[0].DACOutput;
-        double ch2 = (sin(((yep_clock * freq) / SAMPLE_RATE) * 2.0 * M_PI)>=0.0 ? 1.0:-1.0) * (*channel_array_ptr_)[1].DACOutput;
+        auto& chan1 = (*channel_array_ptr_)[0];
+        auto& chan2 = (*channel_array_ptr_)[1];
+        auto& chan4 = (*channel_array_ptr_)[3];
+        chan1.StepWaveGeneration(clk);
+        chan2.StepWaveGeneration(clk);
+        chan4.StepWaveGeneration(clk);
+        double chan1out = (chan1.GetAmplitude() == 0.0 ? 1.0 : -1.0) * chan1.DACOutput * chan1.GlobalVolume();
+        double chan2out = (chan2.GetAmplitude() == 0.0 ? 1.0 : -1.0) * chan2.DACOutput * chan2.GlobalVolume();
+        double chan4out = 0;
         if (inner_clk >= RESAMPLED_RATE) {
-            auto sample = (ch1 + ch2) / 2;
+            auto sample = (chan1out + chan2out + chan4out) / 3;
             samples_[sample_index_++] = sample * AMPLITUDE;
             yep_clock++;
             // in case it's bigger

@@ -556,11 +556,21 @@ namespace TKPEmu::Gameboy::Devices {
 					handle_nrx4(4, data);
 					break;
 				}
-				case addr_NR51: {
+				case addr_NR50: {
+					std::cout << "nr50 write" << std::endl;
 					for (int i = 0; i < 4; i++) {
 						auto& ch = (*channel_array_ptr_)[i];
-						ch.LeftEnabled = (data >> i) & 0b1;
-						ch.RightEnabled = (data >> (i + 4)) & 0b1;
+						ch.RightVolume = data & 0b111;
+						ch.LeftVolume = (data >> 4) & 0b111;
+					}
+				}
+				case addr_NR51: {
+					std::cout << "nr51 write " << std::bitset<8>(data) << std::endl;
+					#pragma GCC unroll 4
+					for (int i = 0; i < 4; i++) {
+						auto& ch = (*channel_array_ptr_)[i];
+						ch.RightEnabled = (data >> i) & 0b1;
+						ch.LeftEnabled = (data >> (i + 4)) & 0b1;
 					}
 					break;
 				}
@@ -568,6 +578,7 @@ namespace TKPEmu::Gameboy::Devices {
 					data &= 0b1111'0000;
 					bool enabled = data & 0b1000'0000;
 					if (!enabled) {
+						std::cout << "DISABLED!" << std::endl;
 						// When sound is disabled, clear all registers
 						for (int i = addr_NR10; i <= addr_NR51; i++) {
 							Write(i, 0);
