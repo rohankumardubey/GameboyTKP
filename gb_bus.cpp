@@ -465,6 +465,14 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 				case addr_NR12: {
 					handle_nrx2(1, data);
+					auto& chan = (*channel_array_ptr_)[0];
+					std::cout << "nr12: " << std::bitset<8>(data) << " start at: " << (int)chan.EnvelopeCurrentVolume;
+					if (chan.EnvelopeIncrease) {
+						std::cout << " increasing ";
+					} else {
+						std::cout << " decreasing ";
+					}
+					std::cout << " by " << chan.EnvelopePeriod << std::endl;
 					break;
 				}
 				case addr_NR13: {
@@ -765,6 +773,7 @@ namespace TKPEmu::Gameboy::Devices {
 		chan.EnvelopeIncrease = data & 0b0000'1000;
 		int sweep = data & 0b0000'0111;
 		chan.EnvelopePeriod = sweep;
+		chan.PeriodTimer = chan.EnvelopePeriod;
 		chan.VolEnvEnabled = sweep != 0;
 		if ((data >> 3) == 0) {
 			disable_dac(channel_no);

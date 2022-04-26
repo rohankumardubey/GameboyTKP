@@ -13,7 +13,7 @@ namespace TKPEmu::Gameboy::Devices {
         int MagicDivider = 2;
         int FrameSequencer = 0; // TODO: unimplemented
         bool LengthCtrEnabled = false;
-        bool VolEnvEnabled = false;
+        bool VolEnvEnabled = true;
         uint8_t EnvelopeCurrentVolume = 0xF;
         bool EnvelopeIncrease = false;
         int EnvelopePeriod = 0;

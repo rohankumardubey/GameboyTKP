@@ -21,7 +21,7 @@ namespace TKPEmu::Gameboy::Devices {
                 LFSR &= !(1 << 6);
                 LFSR |= xor_res << 6;
             }
-            DACOutput = ((DACInput / 7.5f) - 1.0f) * DACEnabled;
+            DACOutput = DACEnabled;
         }
     }
     bool APUChannel::GetAmplitude() {
@@ -49,21 +49,19 @@ namespace TKPEmu::Gameboy::Devices {
         }
     }
     void APUChannel::ClockVolEnv() {
-        if (VolEnvEnabled) {
-            if (EnvelopePeriod != 0) {
-                if (PeriodTimer > 0) {
-                    --PeriodTimer;
-                    if (PeriodTimer == 0) {
-                        PeriodTimer = EnvelopePeriod;
-                        if (EnvelopeCurrentVolume > 0 && !EnvelopeIncrease) {
-                            --EnvelopeCurrentVolume;
-                        } else if (EnvelopeCurrentVolume < 0xF && EnvelopeIncrease) {
-                            ++EnvelopeCurrentVolume;
-                        }
+        if (EnvelopePeriod != 0) {
+            if (PeriodTimer > 0) {
+                --PeriodTimer;
+                if (PeriodTimer == 0) {
+                    PeriodTimer = EnvelopePeriod;
+                    if (EnvelopeCurrentVolume > 0 && !EnvelopeIncrease) {
+                        --EnvelopeCurrentVolume;
+                    } else if (EnvelopeCurrentVolume < 0xF && EnvelopeIncrease) {
+                        ++EnvelopeCurrentVolume;
                     }
                 }
             }
-            DACInput = EnvelopeCurrentVolume;
+            DACInput = -EnvelopeCurrentVolume; // uhh idk. it sounds reversed if you dont add the '-' at the start
         }
     }
     void APUChannel::ClockSweep() {
