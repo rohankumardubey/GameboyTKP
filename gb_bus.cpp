@@ -736,7 +736,6 @@ namespace TKPEmu::Gameboy::Devices {
 			// If clock makes length zero, should disable chan
 			if (chan.LengthTimer == 0) {
 				ClearNR52Bit(channel_no);
-				chan.DACEnabled = false;
 			}
 		}
 		if (channel_no < 2) {
