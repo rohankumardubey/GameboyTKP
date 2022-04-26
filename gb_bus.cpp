@@ -236,7 +236,11 @@ namespace TKPEmu::Gameboy::Devices {
 			case 0x8000:
 			case 0x9000: {
 				WriteToVram = true;
-				return vram_[address % 0x2000];
+				if (UseCGB) {
+					return vram_[vram_bank_][address % 0x2000];
+				} else {
+					return vram_[0][address % 0x2000];
+				}
 			}
 			case 0xA000:
 			case 0xB000: {
@@ -293,6 +297,14 @@ namespace TKPEmu::Gameboy::Devices {
 					return unused_mem_area_;
 				}
 				else {
+					switch(address) {
+						case addr_bcpd: {
+							return bg_cram_[bg_palette_index_];
+						}
+						case addr_ocpd: {
+							return obj_cram_[obj_palette_index_];
+						}
+					}
 					return hram_[address % 0xFF00];
 				}
 			}
@@ -322,19 +334,6 @@ namespace TKPEmu::Gameboy::Devices {
 	std::vector<RamBank>& Bus::GetRamBanks() {
 		return ram_banks_;
 	}
-	std::string Bus::GetVramDump() {
-		std::stringstream s;
-		for (const auto& m : vram_) {
-			s << std::hex << std::setfill('0') << std::setw(2) << m;
-		}
-		for (size_t i = 0; i < oam_.size(); i += 4) {
-			s << std::hex << std::setfill('0') << std::setw(2) << oam_[i + 3];
-			s << std::hex << std::setfill('0') << std::setw(2) << oam_[i + 2];
-			s << std::hex << std::setfill('0') << std::setw(2) << oam_[i + 1];
-			s << std::hex << std::setfill('0') << std::setw(2) << oam_[i];
-		}
-		return std::move(s.str());
-	}
 	void Bus::Write(uint16_t address, uint8_t data) {	
 		if (address <= 0x7FFF) {
 			handle_mbc(address, data);
@@ -355,21 +354,35 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 				case addr_bgp: {
 					Change& ch = ScanlineChanges[CurScanlineX];
-					for (int i = 0; i < 4; i++) {
-						BGPalette[i] = (data >> (i * 2)) & 0b11;
+					if (UseCGB) {
+
+					} else {
+						for (int i = 0; i < 4; i++) {
+							BGPalettes[0][i] = (data >> (i * 2)) & 0b11;
+						}
+						ch.new_bg_pal = BGPalettes[0];
 					}
-					ch.new_bg_pal = BGPalette;
 					break;
 				}
 				case addr_ob0: {
-					for (int i = 0; i < 4; i++) {
-						OBJ0Palette[i] = (data >> (i * 2)) & 0b11;
+					if (UseCGB) {
+						// this is free ram in this mode
+						// TODO: they are actually registers in cgb-dmg mode
+					} else {
+						for (int i = 0; i < 4; i++) {
+							OBJPalettes[0][i] = (data >> (i * 2)) & 0b11;
+						}
 					}
 					break;
 				}
 				case addr_ob1: {
-					for (int i = 0; i < 4; i++) {
-						OBJ1Palette[i] = (data >> (i * 2)) & 0b11;
+					if (UseCGB) {
+						// this is free ram in this mode
+						// TODO: they are actually registers in cgb-dmg mode
+					} else {
+						for (int i = 0; i < 4; i++) {
+							OBJPalettes[1][i] = (data >> (i * 2)) & 0b11;
+						}
 					}
 					break;
 				}
@@ -394,14 +407,15 @@ namespace TKPEmu::Gameboy::Devices {
 					ch.new_bg_en = bg_en;
 					break;
 				}
+				case addr_vbk: {
+					vram_bank_ = data & 0b1;
+					data |= 0b1111'1110;
+					break;
+				}
 				case addr_bcps: {
 					if (UseCGB) {
-						if (data & 0b1000'0000) {
-							palette_auto_increment_ = true;
-						} else {
-							palette_auto_increment_ = false;
-						}
-						palette_index_ = data & 0b111111;
+						bg_palette_auto_increment_ = data & 0b1000'0000;
+						bg_palette_index_ = data & 0b11'1111;
 					} else {
 						data |= 0b1111'1111;
 					}
@@ -409,9 +423,13 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 				case addr_bcpd: {
 					if (UseCGB) {
-						CGBPalette[palette_index_] = data;
-						if (palette_auto_increment_) {
-							palette_index_++;
+						auto pal_index = bg_palette_index_ >> 3;
+						auto color_index = (bg_palette_index_ >> 1) & 0b11;
+						auto byte_index = bg_palette_index_ & 0b1;
+						BGPalettes[pal_index][color_index] &= 0xFF << (byte_index * 8);
+						BGPalettes[pal_index][color_index] |= data << (byte_index * 8);
+						if (bg_palette_auto_increment_) {
+							++bg_palette_index_;
 						}
 					} else {
 						data |= 0b1111'1111;
@@ -610,7 +628,7 @@ namespace TKPEmu::Gameboy::Devices {
 				case 0xFF27: case 0xFF28: case 0xFF29:
 				case 0xFF2A: case 0xFF2B: case 0xFF2C: case 0xFF2D: case 0xFF2E: 
 				case 0xFF2F: case 0xFF4C: case 0xFF4D:
-				case 0xFF4E: case 0xFF4F: case 0xFF50: case 0xFF51: case 0xFF52:
+				case 0xFF4E: case 0xFF50: case 0xFF51: case 0xFF52:
 				case 0xFF53: case 0xFF54: case 0xFF55: case 0xFF56: case 0xFF57:
 				case 0xFF58: case 0xFF59: case 0xFF5A: case 0xFF5B: case 0xFF5C:
 				case 0xFF5D: case 0xFF5E: case 0xFF5F: case 0xFF60: case 0xFF61:
@@ -649,7 +667,8 @@ namespace TKPEmu::Gameboy::Devices {
 		}
 		SoundEnabled = false;
 		oam_.fill(0);
-		vram_.fill(0);
+		vram_[0].fill(0);
+		vram_[1].fill(0);
 		DirectionKeys = 0b1110'1111;
         ActionKeys = 0b1101'1111;
 		selected_rom_bank_ = 1;

@@ -18,10 +18,12 @@
 namespace TKPEmu::Gameboy::Devices {
     struct Change {
 		int type = 0;
-		std::optional<std::array<uint8_t, 4>> new_bg_pal = std::nullopt;
+		std::optional<std::array<uint16_t, 4>> new_bg_pal = std::nullopt;
         int new_bg_pal_index = 0;
         std::optional<bool> new_bg_en = std::nullopt;
 	};
+    using PaletteColors = std::array<uint16_t, 4>;
+    class PPU;
     class Bus {
     private:
         using RamBank = std::array<uint8_t, 0x2000>;
@@ -73,12 +75,10 @@ namespace TKPEmu::Gameboy::Devices {
         std::vector<RamBank>& GetRamBanks();
         Cartridge& GetCartridge();
         bool LoadCartridge(std::string filename);
-        std::string GetVramDump();
         std::array<std::array<float, 3>, 4> Palette;
         std::unordered_map<uint8_t, Change> ScanlineChanges;
-        std::array<uint8_t, 4> BGPalette{};
-        std::array<uint8_t, 4> OBJ0Palette{};
-        std::array<uint8_t, 4> OBJ1Palette{};
+        std::array<PaletteColors, 8> BGPalettes{};
+        std::array<PaletteColors, 8> OBJPalettes{};
         bool SoundEnabled = false;
         bool DIVReset = false;
         bool TMAChanged = false;
@@ -89,7 +89,6 @@ namespace TKPEmu::Gameboy::Devices {
         uint8_t DirectionKeys = 0b1110'1111;
         uint8_t ActionKeys = 0b1101'1111;
         uint8_t CurScanlineX = 0;
-        std::array<uint8_t, 0xA0> oam_{};
         uint8_t selected_ram_bank_ = 0;
         uint8_t selected_rom_bank_ = 1;
         uint8_t selected_rom_bank_high_ = 0;
@@ -101,8 +100,11 @@ namespace TKPEmu::Gameboy::Devices {
         bool dma_transfer_ = false;
         bool dma_setup_ = false;
         bool dma_fresh_bug_ = false;
-        bool palette_auto_increment_ = false;
-        uint8_t palette_index_ = 0;
+        bool bg_palette_auto_increment_ = false;
+        uint8_t bg_palette_index_ = 0;
+        bool obj_palette_auto_increment_ = false;
+        uint8_t obj_palette_index_ = 0;
+        bool vram_bank_ = 0;
         uint8_t rom_banks_size_ = 2;
         std::string curr_save_file_;
         size_t dma_index_ = 0;
@@ -115,7 +117,10 @@ namespace TKPEmu::Gameboy::Devices {
         std::array<uint8_t, 0x100> hram_{};
         std::array<uint8_t, 0x2000> eram_default_{};
         std::array<uint8_t, 0x2000> wram_{};
-        std::array<uint8_t, 0x2000> vram_{};
+        std::array<std::array<uint8_t, 0x2000>, 2> vram_{};
+        std::array<uint8_t, 0xA0> oam_{};
+        std::array<uint8_t, 0x40> bg_cram_{};
+        std::array<uint8_t, 0x40> obj_cram_{};
         ChannelArrayPtr channel_array_ptr_;
         std::vector<DisInstr>& instructions_;
         uint8_t& redirect_address(uint16_t address);
@@ -126,6 +131,8 @@ namespace TKPEmu::Gameboy::Devices {
         void handle_nrx2(int channel_no, uint8_t& data);
         void handle_nrx1(int channel_no, uint8_t& data);
         void disable_dac(int channel_no);
+
+        friend class PPU;
     };
 }
 #endif

@@ -43,9 +43,6 @@ namespace TKPEmu::Gameboy {
 	void Gameboy::SetLogTypes(std::unique_ptr<std::vector<LogType>> types_ptr) {
 		log_types_ptr_ = std::move(types_ptr);
 	}
-	std::string Gameboy::GetScreenshotHash() {
-		return md5(bus_.GetVramDump());
-	}
 	void Gameboy::v_log_state() {
 		*ofstream_ptr_ << std::setfill('0');
 		int inst = bus_.Read(cpu_.PC);

@@ -21,6 +21,7 @@ namespace TKPEmu::Gameboy::Devices {
 					UseCGB = true;
 				} else {
 					// check if force gbc
+					UseCGB = true;
 				}
 			}
 			is.seekg(0, std::ios_base::beg);

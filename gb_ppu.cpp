@@ -207,18 +207,7 @@ namespace TKPEmu::Gameboy::Devices {
 		}
 		uint16_t identifierLoc = identifierLocationB;
 		uint16_t tileRow = (((uint8_t)(positionY / 8)) * 32);
-		// bool dont_draw = false;
 		for (int pixel = 0; pixel < 160; pixel++) {
-			// if (bus_.ScanlineChanges.size() > 0) [[unlikely]] {
-			// 	bool has_change = bus_.ScanlineChanges.contains(pixel);
-			// 	if (has_change) [[unlikely]] {
-			// 		// This sets it to the changed palette if it exists, or to itself if it doesn't
-			// 		dont_draw = bus_.ScanlineChanges[pixel].new_bg_en.value_or(false);
-			// 	}
-			// }
-			// if (dont_draw) {
-			// 	continue;
-			// }
 			uint8_t positionX = pixel + SCX;
 			if (windowEnabled && positionX >= (WX - 7)) {
 				identifierLoc = identifierLocationW;
@@ -243,6 +232,17 @@ namespace TKPEmu::Gameboy::Devices {
 			int colorBit = -((positionX % 8) - 7);
 			int colorNum = (((data2 >> colorBit) & 0b1) << 1) | ((data1 >> colorBit) & 0b1);
 			int idx = (pixel * 4) + (LY * 4 * 160);
+			PaletteColors& pal_ref = UseCGB ? get_cur_bg_pal(0) : get_cur_bg_pal(0);
+			float red, green, blue;
+			if (UseCGB) {
+				red = pal_ref[0];
+				green = pal_ref[1];
+				blue = pal_ref[2];
+			} else {
+				red = bus_.Palette[pal_ref[colorNum]][0];
+				green = bus_.Palette[pal_ref[colorNum]][1];
+				blue = bus_.Palette[pal_ref[colorNum]][2];
+			}
 			if (windowEnabled && identifierLoc == identifierLocationW) {
 				if (!DrawWindow) {
 					screen_color_data_second_[idx++] = bus_.Palette[0][0];
@@ -258,17 +258,16 @@ namespace TKPEmu::Gameboy::Devices {
 				screen_color_data_second_[idx] = 255.0f;
 				continue;
 			}
-			std::array<uint8_t, 4>& pal_ref = bus_.BGPalette;
 			if (bus_.ScanlineChanges.size() > 0) [[unlikely]] {
 				bool has_change = bus_.ScanlineChanges.contains(pixel);
 				if (has_change) [[unlikely]] {
 					// This sets it to the changed palette if it exists, or to itself if it doesn't
-					pal_ref = bus_.ScanlineChanges[pixel].new_bg_pal.value_or(pal_ref);
+					pal_ref = std::move(bus_.ScanlineChanges[pixel].new_bg_pal.value_or(pal_ref));
 				}
 			}
-			screen_color_data_second_[idx++] = bus_.Palette[pal_ref[colorNum]][0];
-			screen_color_data_second_[idx++] = bus_.Palette[pal_ref[colorNum]][1];
-			screen_color_data_second_[idx++] = bus_.Palette[pal_ref[colorNum]][2];
+			screen_color_data_second_[idx++] = red;
+			screen_color_data_second_[idx++] = green;
+			screen_color_data_second_[idx++] = blue;
 			screen_color_data_second_[idx] = 255.0f;
 		}
 	}
@@ -308,30 +307,41 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 				int colorNum = ((data2 >> colorbit) & 0b1) << 1;
 				colorNum |= (data1 >> colorbit) & 0b1;
-				bool obp1 = (attributes & 0b10000);
 				uint8_t color = 1;
-				if (obp1) {
-					color = bus_.OBJ1Palette[colorNum];
-				} else {
-					color = bus_.OBJ0Palette[colorNum];
-				}
+				bool obp1 = (attributes & 0b10000);
+				auto& obj_ref = UseCGB ? get_cur_obj_pal(0) : get_cur_obj_pal(obp1);	
 				int pixel = positionX - tilePixel + 7;
 				if ((LY > 143) || (pixel < 0) || (pixel > 159) || (colorNum == 0)) {
 					continue;
 				}
 				int idx = (pixel * 4) + (LY * 4 * 160);
 				if (attributes & 0b1000'0000) {
-					if (!(screen_color_data_second_[idx] == bus_.Palette[bus_.BGPalette[0]][0] &&
-					  	screen_color_data_second_[idx + 1] == bus_.Palette[bus_.BGPalette[0]][1] && 
-						screen_color_data_second_[idx + 2] == bus_.Palette[bus_.BGPalette[0]][2])) {
-						continue;
+					if (UseCGB) {
+
+					} else {
+						auto& bg_ref = get_cur_bg_pal(0);
+						if (!(screen_color_data_second_[idx] == bus_.Palette[bg_ref[0]][0] &&
+							screen_color_data_second_[idx + 1] == bus_.Palette[bg_ref[0]][1] && 
+							screen_color_data_second_[idx + 2] == bus_.Palette[bg_ref[0]][2])) {
+							continue;
+						}
 					}
 				}
-				auto red = bus_.Palette[color][0];
+				float red, green, blue;
+				if (UseCGB) {
+					red = obj_ref[0];
+					green = obj_ref[1];
+					blue = obj_ref[2];
+				} else {
+					auto color = obj_ref[colorNum];
+					red = bus_.Palette[color][0];
+					green = bus_.Palette[color][1];
+					blue = bus_.Palette[color][2];
+				}
 				red += (255.0f - red) * SpriteDebugColor;
 				screen_color_data_second_[idx++] = red;
-				screen_color_data_second_[idx++] = bus_.Palette[color][1];
-				screen_color_data_second_[idx++] = bus_.Palette[color][2];
+				screen_color_data_second_[idx++] = green;
+				screen_color_data_second_[idx++] = blue;
 				screen_color_data_second_[idx] = 255.0f;
 			}
 		}
@@ -355,6 +365,20 @@ namespace TKPEmu::Gameboy::Devices {
 					}
 				}
 			}
+		}
+	}
+	PaletteColors& PPU::get_cur_bg_pal(uint8_t attributes) {
+		if (UseCGB) {
+			throw("AAAAAAAAAAAAAAA");
+		} else {
+			return bus_.BGPalettes[0];
+		}
+	}
+	PaletteColors& PPU::get_cur_obj_pal(uint8_t attributes) {
+		if (UseCGB) {
+			return bus_.BGPalettes[0];
+		} else {
+			return bus_.OBJPalettes[!!(attributes)];
 		}
 	}
 }

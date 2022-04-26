@@ -43,6 +43,8 @@ namespace TKPEmu::Gameboy::Devices {
 		int update_lyc();
 		bool is_sprite_eligible(uint8_t sprite_y);
 		void draw_scanline();
+		PaletteColors& get_cur_bg_pal(uint8_t attributes);
+		PaletteColors& get_cur_obj_pal(uint8_t attributes);
 		inline void render_tiles();
 		inline void render_sprites();
 	};
