@@ -543,6 +543,8 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_NR41: {
+					auto& chan = (*channel_array_ptr_)[3];
+					chan.LFSR = 0xFFFF;
 					handle_nrx1(4, data);
 					data |= 0b1111'1111; 
 					break;
@@ -551,13 +553,26 @@ namespace TKPEmu::Gameboy::Devices {
 					handle_nrx2(4, data);
 					break;
 				}
-				
+				case addr_NR43: {
+					auto& chan = (*channel_array_ptr_)[3];
+					auto shift_amount = data >> 4;
+					auto divisor_code = data & 0b111;
+					auto divisor = divisor_code * 16;
+					if (divisor == 0) {
+						divisor = 8;
+					}
+					chan.FrequencyTimer = divisor << shift_amount;
+					chan.Divisor = divisor;
+					chan.DivisorShift = shift_amount;
+					chan.WidthMode = data & 0b1000;
+					break;
+				}
 				case addr_NR44: {
 					handle_nrx4(4, data);
 					break;
 				}
 				case addr_NR50: {
-					std::cout << "nr50 write" << std::endl;
+					#pragma GCC unroll 4
 					for (int i = 0; i < 4; i++) {
 						auto& ch = (*channel_array_ptr_)[i];
 						ch.RightVolume = data & 0b111;
@@ -565,7 +580,6 @@ namespace TKPEmu::Gameboy::Devices {
 					}
 				}
 				case addr_NR51: {
-					std::cout << "nr51 write " << std::bitset<8>(data) << std::endl;
 					#pragma GCC unroll 4
 					for (int i = 0; i < 4; i++) {
 						auto& ch = (*channel_array_ptr_)[i];
@@ -578,7 +592,6 @@ namespace TKPEmu::Gameboy::Devices {
 					data &= 0b1111'0000;
 					bool enabled = data & 0b1000'0000;
 					if (!enabled) {
-						std::cout << "DISABLED!" << std::endl;
 						// When sound is disabled, clear all registers
 						for (int i = addr_NR10; i <= addr_NR51; i++) {
 							Write(i, 0);
@@ -762,10 +775,11 @@ namespace TKPEmu::Gameboy::Devices {
 	}
 	void Bus::handle_nrx1(int channel_no, uint8_t& data) {
 		--channel_no;
-		(*channel_array_ptr_)[channel_no].LengthData = data & ((*channel_array_ptr_)[channel_no].LengthInit - 1); // and with highest value
-		(*channel_array_ptr_)[channel_no].LengthTimer = (*channel_array_ptr_)[channel_no].LengthInit - (*channel_array_ptr_)[channel_no].LengthData;
-		(*channel_array_ptr_)[channel_no].LengthHalf = (*channel_array_ptr_)[channel_no].LengthTimer / 2;
-		(*channel_array_ptr_)[channel_no].WaveDutyPattern = data >> 6;
+		auto& chan = (*channel_array_ptr_)[channel_no];
+		chan.LengthData = data & (chan.LengthInit - 1); // and with highest value
+		chan.LengthTimer = chan.LengthInit - chan.LengthData;
+		chan.LengthHalf = chan.LengthTimer / 2;
+		chan.WaveDutyPattern = data >> 6;
 	}
 	void Bus::disable_dac(int channel_no) {
 		auto& chan = (*channel_array_ptr_)[channel_no];

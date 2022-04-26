@@ -35,10 +35,10 @@ namespace TKPEmu::Gameboy::Devices {
         auto& chan4 = (*channel_array_ptr_)[3];
         chan1.StepWaveGeneration(clk);
         chan2.StepWaveGeneration(clk);
-        chan4.StepWaveGeneration(clk);
+        chan4.StepWaveGenerationCh4(clk);
         double chan1out = (chan1.GetAmplitude() == 0.0 ? 1.0 : -1.0) * chan1.DACOutput * chan1.GlobalVolume();
         double chan2out = (chan2.GetAmplitude() == 0.0 ? 1.0 : -1.0) * chan2.DACOutput * chan2.GlobalVolume();
-        double chan4out = 0;
+        double chan4out = (~chan4.LFSR & 0x01) * chan4.DACOutput * chan4.GlobalVolume();
         if (inner_clk >= RESAMPLED_RATE) {
             auto sample = (chan1out + chan2out + chan4out) / 3;
             samples_[sample_index_++] = sample * AMPLITUDE;

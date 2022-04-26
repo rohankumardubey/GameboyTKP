@@ -11,6 +11,19 @@ namespace TKPEmu::Gameboy::Devices {
             DACOutput = ((DACInput / 7.5f) - 1.0f) * DACEnabled;
         }
     }
+    void APUChannel::StepWaveGenerationCh4(int cycles) {
+        FrequencyTimer -= cycles;
+        if (FrequencyTimer <= 0) {
+            FrequencyTimer = Divisor << DivisorShift;
+            auto xor_res = (LFSR & 0b01) ^ ((LFSR & 0b10) >> 1);
+            LFSR = (LFSR >> 1) | (xor_res << 14);
+            if (WidthMode) {
+                LFSR &= !(1 << 6);
+                LFSR |= xor_res << 6;
+            }
+            DACOutput = ((DACInput / 7.5f) - 1.0f) * DACEnabled;
+        }
+    }
     bool APUChannel::GetAmplitude() {
         return (Waveforms[WaveDutyPattern] >> WaveDutyPosition) & 0b1;
     }

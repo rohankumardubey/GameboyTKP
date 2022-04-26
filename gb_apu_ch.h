@@ -39,8 +39,13 @@ namespace TKPEmu::Gameboy::Devices {
         bool RightEnabled = false;
         uint8_t RightVolume = 0;
         bool DisableChannelFlag = false;
+        unsigned Divisor = 0;
+        bool WidthMode = false;
+        unsigned DivisorShift = 0;
+        uint16_t LFSR = 0;
 
         void StepWaveGeneration(int cycles);
+        void StepWaveGenerationCh4(int cycles);
         void StepFrameSequencer();
         bool GetAmplitude();
         void ClockLengthCtr();
@@ -50,9 +55,8 @@ namespace TKPEmu::Gameboy::Devices {
         inline uint8_t GlobalVolume() {
             return ((LeftEnabled * LeftVolume) || (RightEnabled * RightVolume));
         }
-        int new_frequency = 0;
-
     private:
+        int new_frequency = 0;
     };
     using ChannelArray = std::array<APUChannel, 4>;
     using ChannelArrayPtr = std::shared_ptr<ChannelArray>;
