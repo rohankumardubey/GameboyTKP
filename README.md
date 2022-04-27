@@ -13,6 +13,11 @@ This emulator can be integrated into other projects. Check `example_main.cpp` fo
  - Rewind functionality (WIP)
 
 ## Images
+![Legend of Zelda color](.Images/zd_clr.bmp)
+![Yugioh](.Images/yugi.bmp)
+![GTA](.Images/gta.bmp)
+![Pokemon Gold](.Images/gold.bmp)
+<br/>
 ![Legend of Zelda](./Images/zd.bmp)
 ![Kirby](./Images/krb.bmp)
 ![Frogger](./Images/frg.bmp)
@@ -46,9 +51,9 @@ See generated test results [here](./TEST_RESULTS.md).
 Always generate new test results before pushing a commit when changing the code.
 
 **Graphics tests:**
-|Test|GameboyTKP  |
-|--|--|
-| dmg-acid2 | ![dmg-acid2](./Images/dmg-acid2_result.bmp) |
+| Test            | GameboyTKP                                              |
+| --------------- | ------------------------------------------------------- |
+| dmg-acid2       | ![dmg-acid2](./Images/dmg-acid2_result.bmp)             |
 | sprite_priority | ![sprite_priority](./Images/sprite_priority_result.bmp) |
 
 ## License

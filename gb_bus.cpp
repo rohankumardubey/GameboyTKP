@@ -415,7 +415,6 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_svbk: {
-					std::cout << "wram write: " << (data & 0b111) << std::endl;
 					wram_bank_ = data & 0b111;
 					if (wram_bank_ == 0) {
 						wram_bank_ = 1;
