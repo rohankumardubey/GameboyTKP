@@ -296,8 +296,8 @@ namespace TKPEmu::Gameboy::Devices {
 		});
 		for (auto i = cur_scanline_sprites_.rbegin(); i != cur_scanline_sprites_.rend(); ++i) {
 			auto sprite = *i;
-			int positionY = bus_.oam_[sprite] - 16;
-			int positionX = bus_.oam_[sprite + 1] - 8;
+			int16_t positionY = bus_.oam_[sprite] - 16;
+			int16_t positionX = bus_.oam_[sprite + 1] - 8;
 			uint8_t tileLoc = bus_.oam_[sprite + 2];
 			uint8_t attributes = bus_.oam_[sprite + 3];
 			if (use8x16) {
@@ -306,6 +306,9 @@ namespace TKPEmu::Gameboy::Devices {
 			}
 			bool yFlip = attributes & 0b1000000;
 			bool xFlip = attributes & 0b100000;
+			// if its 8 aligned the sprite cant be between two tiles so we dont
+			// need to fetch the attributes every pixel
+			bool is_8_aligned = (positionX % 8) == 0;
 			int height = use8x16 ? 16 : 8;
 			int line = LY - positionY;
 			if (yFlip) {
@@ -325,28 +328,16 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 				int colorNum = ((data2 >> colorbit) & 0b1) << 1;
 				colorNum |= (data1 >> colorbit) & 0b1;
-				uint8_t color = 1;
 				bool obp1 = (attributes & 0b10000);
-				auto& obj_ref = UseCGB ? get_cur_obj_pal(0) : get_cur_obj_pal(obp1);	
+				auto& obj_ref = UseCGB ? get_cur_obj_pal(attributes & 0b111) : get_cur_obj_pal(obp1);	
 				int pixel = positionX - tilePixel + 7;
 				if ((LY > 143) || (pixel < 0) || (pixel > 159) || (colorNum == 0)) {
 					continue;
 				}
 				int idx = (pixel * 4) + (LY * 4 * 160);
-				if (attributes & 0b1000'0000) {
-					if (UseCGB) {
-						if (LCDC & LCDCFlag::BG_ENABLE) {
-							continue;
-						}
-					} else {
-						auto& bg_ref = get_cur_bg_pal(0);
-						if (!(screen_color_data_second_[idx] == bus_.Palette[bg_ref[0]][0] &&
-							screen_color_data_second_[idx + 1] == bus_.Palette[bg_ref[0]][1] && 
-							screen_color_data_second_[idx + 2] == bus_.Palette[bg_ref[0]][2])) {
-							continue;
-						}
-					}
-				}
+				uint16_t bg_offset = ((SCX + pixel) / 8) + (((SCY + LY) / 8) * 32);
+				uint8_t bg_attributes = bus_.vram_[1][(0x9800 + bg_offset) % 0x2000];
+				bool master_priority = LCDC & LCDCFlag::BG_ENABLE;
 				float red, green, blue;
 				if (UseCGB) {
 					red = static_cast<float>(obj_ref[colorNum] & 0b11111) / 0x1F;
@@ -357,6 +348,33 @@ namespace TKPEmu::Gameboy::Devices {
 					red = bus_.Palette[color][0];
 					green = bus_.Palette[color][1];
 					blue = bus_.Palette[color][2];
+				}
+				if (UseCGB) {
+					if ((bg_attributes & 0b1000'0000) && !master_priority) {
+						continue;
+					}
+				}
+				if (attributes & 0b1000'0000) {
+					if (UseCGB) {
+						if (master_priority) {
+							auto& bg_ref = get_cur_bg_pal(bg_attributes & 0b111);
+							auto bg_red = static_cast<float>(bg_ref[0] & 0b11111) / 0x1F;
+							auto bg_green = static_cast<float>((bg_ref[0] >> 5) & 0b11111) / 0x1F;
+							auto bg_blue = static_cast<float>((bg_ref[0] >> 10) & 0b11111) /0x1F;
+							if (!(screen_color_data_second_[idx] == bg_red &&
+								screen_color_data_second_[idx + 1] == bg_green && 
+								screen_color_data_second_[idx + 2] == bg_blue)) {
+								continue;
+							}
+						}
+					} else {
+						auto& bg_ref = get_cur_bg_pal(0);
+						if (!(screen_color_data_second_[idx] == bus_.Palette[bg_ref[0]][0] &&
+							screen_color_data_second_[idx + 1] == bus_.Palette[bg_ref[0]][1] && 
+							screen_color_data_second_[idx + 2] == bus_.Palette[bg_ref[0]][2])) {
+							continue;
+						}
+					}
 				}
 				red += (255.0f - red) * SpriteDebugColor;
 				screen_color_data_second_[idx++] = red;
