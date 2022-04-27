@@ -209,7 +209,9 @@ namespace TKPEmu::Gameboy {
 		Step.store(true);
 		Step.notify_all();
 	}
-	void Gameboy::start_normal() { 
+	void Gameboy::start_normal() {
+		apu_.UseSound = true;
+		apu_.InitSound();
 		Reset();
 		auto func = [this]() {
 			std::lock_guard<std::mutex> lguard(ThreadStartedMutex);
@@ -225,6 +227,8 @@ namespace TKPEmu::Gameboy {
 		UpdateThread.detach();
 	}
 	void Gameboy::start_console() {
+		// Don't use sound in this mode
+		apu_.UseSound = false;
 		Paused = false;
 		Stopped = false;
 		Reset();
@@ -293,9 +297,9 @@ namespace TKPEmu::Gameboy {
                     if (key != SDLK_UNKNOWN) {
                         HandleKeyDown(key);
                         std::thread th([this, &key]() {
-                            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                            std::this_thread::sleep_for(std::chrono::milliseconds(100));
                             HandleKeyUp(key);
-                            std::this_thread::sleep_for(std::chrono::milliseconds(400));
+                            std::this_thread::sleep_for(std::chrono::milliseconds(800));
                             Screenshot("image.bmp");
                         });
                         th.detach();
@@ -307,6 +311,8 @@ namespace TKPEmu::Gameboy {
 		}
 	}
 	void Gameboy::start_debug() {
+		apu_.UseSound = true;
+		apu_.InitSound();
 		auto func = [this]() {
 			std::lock_guard<std::mutex> lguard(ThreadStartedMutex);
 			Loaded = true;
