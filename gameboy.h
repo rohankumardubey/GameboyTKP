@@ -13,6 +13,10 @@
 #include "gb_timer.h"
 #include "gb_apu.h"
 #include "gb_apu_ch.h"
+
+namespace TKPEmu::Applications {
+	class GameboyRomData;
+}
 namespace TKPEmu::Gameboy {
 	class Gameboy : public Emulator {
 	private:
@@ -80,6 +84,7 @@ namespace TKPEmu::Gameboy {
 		void update() override;
 		void init_image();
 		std::string print() const override;
+		friend class TKPEmu::Applications::GameboyRomData;
 	};
 }
 #endif

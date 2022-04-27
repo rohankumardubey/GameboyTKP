@@ -8,6 +8,12 @@ namespace TKPEmu::Gameboy::Devices {
 		MODE_HBLANK = 0,
 		MODE_VBLANK = 1,
 	};
+	uint8_t reverse(uint8_t b) {
+		b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
+		b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
+		b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
+		return b;
+	}
 	PPU::PPU(Bus& bus, std::mutex* draw_mutex) : bus_(bus), draw_mutex_(draw_mutex),
 		LCDC(bus.GetReference(0xFF40)),
 		STAT(bus.GetReference(0xFF41)),
@@ -227,17 +233,28 @@ namespace TKPEmu::Gameboy::Devices {
 				tileLocation += (tileNumber + 128) * 16;
 			}
 			uint8_t line = (positionY % 8) * 2;
-			uint8_t data1 = bus_.Read(tileLocation + line);
-			uint8_t data2 = bus_.Read(tileLocation + line + 1);
+			uint8_t attrib = bus_.vram_[1][(0x9800 + tileRow + tileCol) % 0x2000];
+			bool vram_bank = UseCGB ? (attrib & 0b1000) : false;
+			bool xFlip = UseCGB ? (attrib & 0b100000) : false;
+			bool yFlip = UseCGB ? (attrib & 0b1000000) : false;
+			if (yFlip) {
+				line = 14 - line;
+			}
+			uint8_t data1 = bus_.vram_[vram_bank][(tileLocation + line) % 0x2000];
+			uint8_t data2 = bus_.vram_[vram_bank][(tileLocation + line + 1) % 0x2000];
+			if (xFlip) {
+				data1 = reverse(data1);
+				data2 = reverse(data2);
+			}
 			int colorBit = -((positionX % 8) - 7);
 			int colorNum = (((data2 >> colorBit) & 0b1) << 1) | ((data1 >> colorBit) & 0b1);
 			int idx = (pixel * 4) + (LY * 4 * 160);
-			PaletteColors& pal_ref = UseCGB ? get_cur_bg_pal(0) : get_cur_bg_pal(0);
+			PaletteColors& pal_ref = UseCGB ? get_cur_bg_pal(attrib & 0b111) : get_cur_bg_pal(0);
 			float red, green, blue;
 			if (UseCGB) {
-				red = pal_ref[0];
-				green = pal_ref[1];
-				blue = pal_ref[2];
+				red = static_cast<float>(pal_ref[colorNum] & 0b11111) / 0x1F;
+				green = static_cast<float>((pal_ref[colorNum] >> 5) & 0b11111) / 0x1F;
+				blue = static_cast<float>((pal_ref[colorNum] >> 10) & 0b11111) /0x1F;
 			} else {
 				red = bus_.Palette[pal_ref[colorNum]][0];
 				green = bus_.Palette[pal_ref[colorNum]][1];
@@ -297,8 +314,9 @@ namespace TKPEmu::Gameboy::Devices {
 			}
 			line *= 2;
 			uint16_t address = (0x8000 + (tileLoc * 16) + line);
-			uint8_t data1 = bus_.Read(address);
-			uint8_t data2 = bus_.Read(address + 1);
+			bool vram_bank = UseCGB ? (attributes & 0b1000) : false;
+			uint8_t data1 = bus_.vram_[vram_bank][address % 0x2000];
+			uint8_t data2 = bus_.vram_[vram_bank][(address + 1) % 0x2000];
 			for (int tilePixel = 7; tilePixel >= 0; tilePixel--) {
 				int colorbit = tilePixel;
 				if (xFlip) {
@@ -317,7 +335,9 @@ namespace TKPEmu::Gameboy::Devices {
 				int idx = (pixel * 4) + (LY * 4 * 160);
 				if (attributes & 0b1000'0000) {
 					if (UseCGB) {
-
+						if (LCDC & LCDCFlag::BG_ENABLE) {
+							continue;
+						}
 					} else {
 						auto& bg_ref = get_cur_bg_pal(0);
 						if (!(screen_color_data_second_[idx] == bus_.Palette[bg_ref[0]][0] &&
@@ -329,9 +349,9 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 				float red, green, blue;
 				if (UseCGB) {
-					red = obj_ref[0];
-					green = obj_ref[1];
-					blue = obj_ref[2];
+					red = static_cast<float>(obj_ref[colorNum] & 0b11111) / 0x1F;
+					green = static_cast<float>((obj_ref[colorNum] >> 5) & 0b11111) / 0x1F;
+					blue = static_cast<float>((obj_ref[colorNum] >> 10) & 0b11111) /0x1F;
 				} else {
 					auto color = obj_ref[colorNum];
 					red = bus_.Palette[color][0];
@@ -369,14 +389,14 @@ namespace TKPEmu::Gameboy::Devices {
 	}
 	PaletteColors& PPU::get_cur_bg_pal(uint8_t attributes) {
 		if (UseCGB) {
-			throw("AAAAAAAAAAAAAAA");
+			return bus_.BGPalettes[attributes];
 		} else {
 			return bus_.BGPalettes[0];
 		}
 	}
 	PaletteColors& PPU::get_cur_obj_pal(uint8_t attributes) {
 		if (UseCGB) {
-			return bus_.BGPalettes[0];
+			return bus_.OBJPalettes[attributes];
 		} else {
 			return bus_.OBJPalettes[!!(attributes)];
 		}

@@ -17,6 +17,7 @@ namespace TKPEmu::Applications {
         void v_draw() override;
         void draw_info();
         void draw_tilesets();
+        void draw_palettes();
         void update_tilesets();
         bool texture_cached_ = false;
         GLuint texture_;

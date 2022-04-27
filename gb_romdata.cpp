@@ -42,8 +42,8 @@ namespace TKPEmu::Applications {
                 draw_tilesets();
                 ImGui::EndTabItem();
             }
-            if (ImGui::BeginTabItem("OAM")) {
-
+            if (ImGui::BeginTabItem("Palettes")) {
+                draw_palettes();
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Draw options")) {
@@ -94,6 +94,76 @@ namespace TKPEmu::Applications {
                 }
             }
         }
+    }
+    void GameboyRomData::draw_palettes() {
+        Gameboy* gb = static_cast<Gameboy*>(emulator_.get());
+        ImGui::BeginChild("left pane##pal", ImVec2(150, 0));
+        ImGui::TextUnformatted("BG:");
+        #pragma GCC unroll 8
+        for (int i = 0; i < 8; ++i) {
+            float arr0[3] = {
+                (static_cast<float>(gb->bus_.BGPalettes[i][0] & 0b11111) / 0x1F),
+                (static_cast<float>((gb->bus_.BGPalettes[i][0] >> 5) & 0b11111) / 0x1F),
+                (static_cast<float>((gb->bus_.BGPalettes[i][0] >> 10) & 0b11111) / 0x1F),
+            };
+            float arr1[3] = {
+                (static_cast<float>(gb->bus_.BGPalettes[i][1] & 0b11111) / 0x1F),
+                (static_cast<float>((gb->bus_.BGPalettes[i][1] >> 5) & 0b11111) / 0x1F),
+                (static_cast<float>((gb->bus_.BGPalettes[i][1] >> 10) & 0b11111) / 0x1F),
+            };
+            float arr2[3] = {
+                (static_cast<float>(gb->bus_.BGPalettes[i][2] & 0b11111) / 0x1F),
+                (static_cast<float>((gb->bus_.BGPalettes[i][2] >> 5) & 0b11111) / 0x1F),
+                (static_cast<float>((gb->bus_.BGPalettes[i][2] >> 10) & 0b11111) / 0x1F),
+            };
+            float arr3[3] = {
+                (static_cast<float>(gb->bus_.BGPalettes[i][3] & 0b11111) / 0x1F),
+                (static_cast<float>((gb->bus_.BGPalettes[i][3] >> 5) & 0b11111) / 0x1F),
+                (static_cast<float>((gb->bus_.BGPalettes[i][3] >> 10) & 0b11111) / 0x1F),
+            };
+            ImGui::ColorEdit3("##1", arr0, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+            ImGui::SameLine();
+            ImGui::ColorEdit3("##2", arr1, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+            ImGui::SameLine();
+            ImGui::ColorEdit3("##3", arr2, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+            ImGui::SameLine();
+            ImGui::ColorEdit3("##4", arr3, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+        }
+        ImGui::EndChild();
+        ImGui::SameLine();
+        ImGui::BeginChild("right pane##pal", ImVec2(150, 0));
+        ImGui::TextUnformatted("OBJ:");
+        #pragma GCC unroll 8
+        for (int i = 0; i < 8; ++i) {
+            float arr0[3] = {
+                (static_cast<float>(gb->bus_.OBJPalettes[i][0] & 0b11111) / 0x1F),
+                (static_cast<float>((gb->bus_.OBJPalettes[i][0] >> 5) & 0b11111) / 0x1F),
+                (static_cast<float>((gb->bus_.OBJPalettes[i][0] >> 10) & 0b11111) / 0x1F),
+            };
+            float arr1[3] = {
+                (static_cast<float>(gb->bus_.OBJPalettes[i][1] & 0b11111) / 0x1F),
+                (static_cast<float>((gb->bus_.OBJPalettes[i][1] >> 5) & 0b11111) / 0x1F),
+                (static_cast<float>((gb->bus_.OBJPalettes[i][1] >> 10) & 0b11111) / 0x1F),
+            };
+            float arr2[3] = {
+                (static_cast<float>(gb->bus_.OBJPalettes[i][2] & 0b11111) / 0x1F),
+                (static_cast<float>((gb->bus_.OBJPalettes[i][2] >> 5) & 0b11111) / 0x1F),
+                (static_cast<float>((gb->bus_.OBJPalettes[i][2] >> 10) & 0b11111) / 0x1F),
+            };
+            float arr3[3] = {
+                (static_cast<float>(gb->bus_.OBJPalettes[i][3] & 0b11111) / 0x1F),
+                (static_cast<float>((gb->bus_.OBJPalettes[i][3] >> 5) & 0b11111) / 0x1F),
+                (static_cast<float>((gb->bus_.OBJPalettes[i][3] >> 10) & 0b11111) / 0x1F),
+            };
+            ImGui::ColorEdit3("##1", arr0, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+            ImGui::SameLine();
+            ImGui::ColorEdit3("##2", arr1, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+            ImGui::SameLine();
+            ImGui::ColorEdit3("##3", arr2, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+            ImGui::SameLine();
+            ImGui::ColorEdit3("##4", arr3, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+        }
+        ImGui::EndChild();
     }
     void GameboyRomData::update_tilesets() {
         Gameboy* gb = static_cast<Gameboy*>(emulator_.get());

@@ -304,8 +304,10 @@ namespace TKPEmu::Gameboy::Devices {
 						case addr_ocpd: {
 							return obj_cram_[obj_palette_index_];
 						}
+						default: [[likely]] {
+							return hram_[address % 0xFF00];
+						}
 					}
-					return hram_[address % 0xFF00];
 				}
 			}
 		}
@@ -334,7 +336,7 @@ namespace TKPEmu::Gameboy::Devices {
 	std::vector<RamBank>& Bus::GetRamBanks() {
 		return ram_banks_;
 	}
-	void Bus::Write(uint16_t address, uint8_t data) {	
+	void Bus::Write(uint16_t address, uint8_t data) {
 		if (address <= 0x7FFF) {
 			handle_mbc(address, data);
 		}
@@ -426,10 +428,50 @@ namespace TKPEmu::Gameboy::Devices {
 						auto pal_index = bg_palette_index_ >> 3;
 						auto color_index = (bg_palette_index_ >> 1) & 0b11;
 						auto byte_index = bg_palette_index_ & 0b1;
-						BGPalettes[pal_index][color_index] &= 0xFF << (byte_index * 8);
-						BGPalettes[pal_index][color_index] |= data << (byte_index * 8);
+						if (byte_index == 0) {
+							BGPalettes[pal_index][color_index] &= 0xFF00;
+							BGPalettes[pal_index][color_index] |= data;
+						} else {
+							BGPalettes[pal_index][color_index] &= 0x00FF;
+							BGPalettes[pal_index][color_index] |= data << 8;
+						}
 						if (bg_palette_auto_increment_) {
 							++bg_palette_index_;
+							if (bg_palette_index_ == 0x40) {
+								bg_palette_index_ = 0;
+							}
+						}
+					} else {
+						data |= 0b1111'1111;
+					}
+					break;
+				}
+				case addr_ocps: {
+					if (UseCGB) {
+						obj_palette_auto_increment_ = data & 0b1000'0000;
+						obj_palette_index_ = data & 0b11'1111;
+					} else {
+						data |= 0b1111'1111;
+					}
+					break;
+				}
+				case addr_ocpd: {
+					if (UseCGB) {
+						auto pal_index = obj_palette_index_ >> 3;
+						auto color_index = (obj_palette_index_ >> 1) & 0b11;
+						auto byte_index = obj_palette_index_ & 0b1;
+						if (byte_index == 0) {
+							OBJPalettes[pal_index][color_index] &= 0xFF00;
+							OBJPalettes[pal_index][color_index] |= data;
+						} else {
+							OBJPalettes[pal_index][color_index] &= 0x00FF;
+							OBJPalettes[pal_index][color_index] |= data << 8;
+						}
+						if (obj_palette_auto_increment_) {
+							++obj_palette_index_;
+							if (obj_palette_index_ == 0x40) {
+								obj_palette_index_ = 0;
+							}
 						}
 					} else {
 						data |= 0b1111'1111;
@@ -633,7 +675,7 @@ namespace TKPEmu::Gameboy::Devices {
 				case 0xFF58: case 0xFF59: case 0xFF5A: case 0xFF5B: case 0xFF5C:
 				case 0xFF5D: case 0xFF5E: case 0xFF5F: case 0xFF60: case 0xFF61:
 				case 0xFF62: case 0xFF63: case 0xFF64: case 0xFF65: case 0xFF66:
-				case 0xFF67: case 0xFF6A: case 0xFF6B:
+				case 0xFF67:
 				case 0xFF6C: case 0xFF6D: case 0xFF6E: case 0xFF6F: case 0xFF70:
 				case 0xFF71: case 0xFF72: case 0xFF73: case 0xFF74: case 0xFF75:
 				case 0xFF76: case 0xFF77: case 0xFF78: case 0xFF79: case 0xFF7A:
