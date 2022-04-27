@@ -20,9 +20,7 @@ This emulator can be integrated into other projects. Check `example_main.cpp` fo
 <br/>
 ![Legend of Zelda](./Images/zd.bmp)
 ![Kirby](./Images/krb.bmp)
-![Frogger](./Images/frg.bmp)
 ![Donkey Kong](./Images/dk.bmp)
-![F-1 Race](./Images/f1.bmp)
 ![Pokemon Red](./Images/red.bmp)
 
 ## Resources
