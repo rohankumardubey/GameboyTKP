@@ -13,10 +13,10 @@ This emulator can be integrated into other projects. Check `example_main.cpp` fo
  - Rewind functionality (WIP)
 
 ## Images
-![Legend of Zelda color](.Images/zd_clr.bmp)
-![Yugioh](.Images/yugi.bmp)
-![GTA](.Images/gta.bmp)
-![Pokemon Gold](.Images/gold.bmp)
+![Legend of Zelda color](./Images/zd_clr.bmp)
+![Yugioh](./Images/yugi.bmp)
+![GTA](./Images/gta.bmp)
+![Pokemon Gold](./Images/gold.bmp)
 <br/>
 ![Legend of Zelda](./Images/zd.bmp)
 ![Kirby](./Images/krb.bmp)
