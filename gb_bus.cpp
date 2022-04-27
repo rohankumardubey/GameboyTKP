@@ -272,9 +272,11 @@ namespace TKPEmu::Gameboy::Devices {
 					}
 				}
 			}
-			case 0xC000:
+			case 0xC000: {
+				return wram_[0][address % 0x1000];
+			}
 			case 0xD000: {
-				return wram_[address % 0x2000];
+				return wram_[wram_bank_][address % 0x1000];
 			}
 			case 0xE000: {
 				return redirect_address(address - 0x2000);
@@ -412,6 +414,14 @@ namespace TKPEmu::Gameboy::Devices {
 				case addr_vbk: {
 					vram_bank_ = data & 0b1;
 					data |= 0b1111'1110;
+					break;
+				}
+				case addr_svbk: {
+					wram_bank_ = data & 0b111;
+					if (wram_bank_ == 0) {
+						wram_bank_ = 1;
+					}
+					data |= 0b1111'1000;
 					break;
 				}
 				case addr_bcps: {
@@ -676,11 +686,12 @@ namespace TKPEmu::Gameboy::Devices {
 				case 0xFF5D: case 0xFF5E: case 0xFF5F: case 0xFF60: case 0xFF61:
 				case 0xFF62: case 0xFF63: case 0xFF64: case 0xFF65: case 0xFF66:
 				case 0xFF67:
-				case 0xFF6C: case 0xFF6D: case 0xFF6E: case 0xFF6F: case 0xFF70:
+				case 0xFF6C: case 0xFF6D: case 0xFF6E: case 0xFF6F:
 				case 0xFF71: case 0xFF72: case 0xFF73: case 0xFF74: case 0xFF75:
 				case 0xFF76: case 0xFF77: case 0xFF78: case 0xFF79: case 0xFF7A:
 				case 0xFF7B: case 0xFF7C: case 0xFF7D: case 0xFF7E: case 0xFF7F: {
 					data |= 0b1111'1111;
+					std::cout << "Write to bad address: " << std::hex << address << std::endl;
 					break;
 				}
 			}

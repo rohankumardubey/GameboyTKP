@@ -235,7 +235,7 @@ namespace TKPEmu::Gameboy::Devices {
 				tileLocation += (tileNumber + 128) * 16;
 			}
 			uint8_t line = (positionY % 8) * 2;
-			uint8_t attrib = bus_.vram_[1][(0x9800 + tileRow + tileCol) % 0x2000];
+			uint8_t attrib = bus_.vram_[1][(identifierLoc + tileRow + tileCol) % 0x2000];
 			bool vram_bank = UseCGB ? (attrib & 0b1000) : false;
 			bool xFlip = UseCGB ? (attrib & 0b100000) : false;
 			bool yFlip = UseCGB ? (attrib & 0b1000000) : false;
@@ -339,8 +339,20 @@ namespace TKPEmu::Gameboy::Devices {
 					continue;
 				}
 				int idx = (pixel * 4) + (LY * 4 * 160);
+				bool windowEnabled = (LCDC & LCDCFlag::WND_ENABLE && WY <= LY) && positionX >= (WX - 7);
+				uint16_t identifierLoc;
+				if (windowEnabled) {
+					uint16_t identifierLocationW = (LCDC & LCDCFlag::WND_TILEMAP) ? 0x9C00 : 0x9800;
+					identifierLoc = identifierLocationW;
+				} else {
+					uint16_t identifierLocationB = (LCDC & LCDCFlag::BG_TILEMAP) ? 0x9C00 : 0x9800;
+					identifierLoc = identifierLocationB;
+				}
 				uint16_t bg_offset = ((SCX + pixel) / 8) + (((SCY + LY) / 8) * 32);
-				uint8_t bg_attributes = bus_.vram_[1][(0x9800 + bg_offset) % 0x2000];
+				if (windowEnabled) {
+					bg_offset = ((pixel - (WX - 7)) / 8) + ((LY - WY - (window_internal_ * 4)) / 8) * 32;
+				}
+				uint8_t bg_attributes = bus_.vram_[1][(identifierLoc + bg_offset) % 0x2000];
 				bool master_priority = LCDC & LCDCFlag::BG_ENABLE;
 				float red, green, blue;
 				if (UseCGB) {

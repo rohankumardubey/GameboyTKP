@@ -105,6 +105,7 @@ namespace TKPEmu::Gameboy::Devices {
         bool obj_palette_auto_increment_ = false;
         uint8_t obj_palette_index_ = 0;
         bool vram_bank_ = 0;
+        uint8_t wram_bank_ = 1;
         uint8_t rom_banks_size_ = 2;
         std::string curr_save_file_;
         size_t dma_index_ = 0;
@@ -116,7 +117,7 @@ namespace TKPEmu::Gameboy::Devices {
         Cartridge cartridge_;
         std::array<uint8_t, 0x100> hram_{};
         std::array<uint8_t, 0x2000> eram_default_{};
-        std::array<uint8_t, 0x2000> wram_{};
+        std::array<std::array<uint8_t, 0x1000>, 8> wram_{};
         std::array<std::array<uint8_t, 0x2000>, 2> vram_{};
         std::array<uint8_t, 0xA0> oam_{};
         std::array<uint8_t, 0x40> bg_cram_{};

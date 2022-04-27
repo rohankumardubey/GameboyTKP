@@ -128,6 +128,7 @@ constexpr auto addr_ocps = 0xFF6A;
 constexpr auto addr_ocpd = 0xFF6B;
 
 constexpr auto addr_vbk  = 0xFF4F;
+constexpr auto addr_svbk = 0xFF70;
 
 constexpr auto addr_if = 0xFF0F;
 constexpr auto addr_ie = 0xFFFF;
