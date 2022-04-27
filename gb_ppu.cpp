@@ -184,7 +184,9 @@ namespace TKPEmu::Gameboy::Devices {
 	void PPU::draw_scanline() {
 		bool enabled = LCDC & LCDCFlag::LCD_ENABLE;
 		if (enabled) {
-			if (LCDC & LCDCFlag::BG_ENABLE) {
+			if (UseCGB) {
+				render_tiles();
+			} else if (LCDC & LCDCFlag::BG_ENABLE) {
 				render_tiles();
 			}
 			if (LCDC & LCDCFlag::OBJ_ENABLE && DrawSprites) {
@@ -249,16 +251,16 @@ namespace TKPEmu::Gameboy::Devices {
 			int colorBit = -((positionX % 8) - 7);
 			int colorNum = (((data2 >> colorBit) & 0b1) << 1) | ((data1 >> colorBit) & 0b1);
 			int idx = (pixel * 4) + (LY * 4 * 160);
-			PaletteColors& pal_ref = UseCGB ? get_cur_bg_pal(attrib & 0b111) : get_cur_bg_pal(0);
+			PaletteColors& bg_ref = UseCGB ? get_cur_bg_pal(attrib & 0b111) : get_cur_bg_pal(0);
 			float red, green, blue;
 			if (UseCGB) {
-				red = static_cast<float>(pal_ref[colorNum] & 0b11111) / 0x1F;
-				green = static_cast<float>((pal_ref[colorNum] >> 5) & 0b11111) / 0x1F;
-				blue = static_cast<float>((pal_ref[colorNum] >> 10) & 0b11111) /0x1F;
+				red = static_cast<float>(bg_ref[colorNum] & 0b11111) / 0x1F;
+				green = static_cast<float>((bg_ref[colorNum] >> 5) & 0b11111) / 0x1F;
+				blue = static_cast<float>((bg_ref[colorNum] >> 10) & 0b11111) / 0x1F;
 			} else {
-				red = bus_.Palette[pal_ref[colorNum]][0];
-				green = bus_.Palette[pal_ref[colorNum]][1];
-				blue = bus_.Palette[pal_ref[colorNum]][2];
+				red = bus_.Palette[bg_ref[colorNum]][0];
+				green = bus_.Palette[bg_ref[colorNum]][1];
+				blue = bus_.Palette[bg_ref[colorNum]][2];
 			}
 			if (windowEnabled && identifierLoc == identifierLocationW) {
 				if (!DrawWindow) {
@@ -279,7 +281,7 @@ namespace TKPEmu::Gameboy::Devices {
 				bool has_change = bus_.ScanlineChanges.contains(pixel);
 				if (has_change) [[unlikely]] {
 					// This sets it to the changed palette if it exists, or to itself if it doesn't
-					pal_ref = std::move(bus_.ScanlineChanges[pixel].new_bg_pal.value_or(pal_ref));
+					bg_ref = std::move(bus_.ScanlineChanges[pixel].new_bg_pal.value_or(bg_ref));
 				}
 			}
 			screen_color_data_second_[idx++] = red;
@@ -291,9 +293,11 @@ namespace TKPEmu::Gameboy::Devices {
 	void PPU::render_sprites() {
 		bool use8x16 = LCDC & LCDCFlag::OBJ_SIZE;
 		// Sort depending on X and reverse iterate to correctly select sprite priority
-		std::sort(cur_scanline_sprites_.begin(), cur_scanline_sprites_.end(), [this](const auto& lhs, const auto& rhs) {
-			return bus_.oam_[lhs + 1] < bus_.oam_[rhs + 1];
-		});
+		if (!UseCGB) {
+			std::sort(cur_scanline_sprites_.begin(), cur_scanline_sprites_.end(), [this](const auto& lhs, const auto& rhs) {
+				return bus_.oam_[lhs + 1] < bus_.oam_[rhs + 1];
+			});
+		}
 		for (auto i = cur_scanline_sprites_.rbegin(); i != cur_scanline_sprites_.rend(); ++i) {
 			auto sprite = *i;
 			int16_t positionY = bus_.oam_[sprite] - 16;
@@ -350,8 +354,16 @@ namespace TKPEmu::Gameboy::Devices {
 					blue = bus_.Palette[color][2];
 				}
 				if (UseCGB) {
-					if ((bg_attributes & 0b1000'0000) && !master_priority) {
-						continue;
+					if ((bg_attributes & 0b1000'0000) && master_priority) {
+						auto& bg_ref = get_cur_bg_pal(bg_attributes & 0b111);
+						auto bg_red = static_cast<float>(bg_ref[0] & 0b11111) / 0x1F;
+						auto bg_green = static_cast<float>((bg_ref[0] >> 5) & 0b11111) / 0x1F;
+						auto bg_blue = static_cast<float>((bg_ref[0] >> 10) & 0b11111) /0x1F;
+						if (!(screen_color_data_second_[idx] == bg_red &&
+							screen_color_data_second_[idx + 1] == bg_green && 
+							screen_color_data_second_[idx + 2] == bg_blue)) {
+							continue;
+						}
 					}
 				}
 				if (attributes & 0b1000'0000) {

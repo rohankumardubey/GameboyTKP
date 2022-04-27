@@ -1,7 +1,7 @@
 #include "gb_apu.h"
 #include "gb_addresses.h"
 #include <iostream>
-constexpr int SAMPLE_RATE = 96000;
+constexpr int SAMPLE_RATE = 48000;
 constexpr int AMPLITUDE = 8000;
 constexpr int RESAMPLED_RATE = (4194304 / SAMPLE_RATE);
 
@@ -13,7 +13,7 @@ namespace TKPEmu::Gameboy::Devices {
         want.freq = SAMPLE_RATE;
         want.format = AUDIO_S16SYS;
         want.channels = 1;
-        want.samples = 2048;
+        want.samples = 512;
         SDL_AudioSpec have;
         if (SDL_OpenAudio(&want, &have) != 0) {
             SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "Failed to open audio: %s", SDL_GetError());
