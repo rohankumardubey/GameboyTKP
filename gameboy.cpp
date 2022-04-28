@@ -398,8 +398,6 @@ namespace TKPEmu::Gameboy {
 			if (dur > 16.6f) {
 				frame_start = std::chrono::system_clock::now();
 				cpu_.TClock = 0;
-			} else {
-				
 			}
 		}
 	}
