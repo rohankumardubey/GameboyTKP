@@ -3,7 +3,7 @@
 namespace TKPEmu::Gameboy {
     std::string QA::TestError = "";
     bool QA::TestMooneye(std::filesystem::path path) {
-        Gameboy::Gameboy gb_;
+        Gameboy gb_;
         gb_.LoadFromFile(path.string());
         TestError = "exceeded 4,000,000 instructions";
         for (unsigned i = 0; i < 4'000'000; i++) {
