@@ -486,6 +486,38 @@ namespace TKPEmu::Gameboy::Devices {
 					}
 					break;
 				}
+				case addr_hdma1: {
+					hdma_source_ &= 0xFF;
+					hdma_source_ |= data << 8;
+					data |= 0b1111'1111;
+					break;
+				}
+				case addr_hdma2: {
+					hdma_source_ &= 0xFF00;
+					hdma_source_ |= data & 0xF0;
+					data |= 0b1111'1111;
+					break;
+				}
+				case addr_hdma3: {
+					hdma_dest_ &= 0xFF;
+					hdma_dest_ |= (data & 0b0001'1111) << 8;
+					data |= 0b1111'1111;
+					break;
+				}
+				case addr_hdma4: {
+					hdma_dest_ &= 0xFF00;
+					hdma_dest_ |= data & 0xF0;
+					data |= 0b1111'1111;
+					break;
+				}
+				case addr_hdma5: {
+					use_gdma_ = data & 0b1000'0000;
+					hdma_size_ = ((data & 0b0111'1111) - 1) * 16;
+					if (!UseCGB) {
+						data |= 0b1111'1111;
+					}
+					break;
+				}
 				case addr_div: {
 					DIVReset = true;
 					break;
@@ -678,8 +710,7 @@ namespace TKPEmu::Gameboy::Devices {
 				case 0xFF27: case 0xFF28: case 0xFF29:
 				case 0xFF2A: case 0xFF2B: case 0xFF2C: case 0xFF2D: case 0xFF2E: 
 				case 0xFF2F: case 0xFF4C: case 0xFF4D:
-				case 0xFF4E: case 0xFF50: case 0xFF51: case 0xFF52:
-				case 0xFF53: case 0xFF54: case 0xFF55: case 0xFF56: case 0xFF57:
+				case 0xFF4E: case 0xFF50: case 0xFF56: case 0xFF57:
 				case 0xFF58: case 0xFF59: case 0xFF5A: case 0xFF5B: case 0xFF5C:
 				case 0xFF5D: case 0xFF5E: case 0xFF5F: case 0xFF60: case 0xFF61:
 				case 0xFF62: case 0xFF63: case 0xFF64: case 0xFF65: case 0xFF66:

@@ -14,8 +14,13 @@
 #include "gb_apu.h"
 #include "gb_apu_ch.h"
 
-namespace TKPEmu::Applications {
-	class GameboyRomData;
+namespace TKPEmu {
+	namespace Applications {
+		class GameboyRomData;
+	}
+	namespace Gameboy {
+		struct QA;
+	}
 }
 namespace TKPEmu::Gameboy {
 	class Gameboy : public Emulator {
@@ -85,6 +90,7 @@ namespace TKPEmu::Gameboy {
 		void init_image();
 		std::string print() const override;
 		friend class TKPEmu::Applications::GameboyRomData;
+		friend struct TKPEmu::Gameboy::QA;
 	};
 }
 #endif

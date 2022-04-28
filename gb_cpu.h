@@ -11,9 +11,11 @@
 #include "gb_timer.h"
 #include "gb_addresses.h"
 #include "../include/disassembly_instr.h"
+namespace TKPEmu::Gameboy {
+    struct QA;
+}
 namespace TKPEmu::Gameboy::Devices {
     class CPU {
-    public:
     private:
         Bus& bus_;
         PPU& ppu_;
@@ -24,6 +26,7 @@ namespace TKPEmu::Gameboy::Devices {
         int tTemp = 0;
         int tRemove = 0;
         bool stop_ = false;
+        uint8_t last_instr_ = 0;
 
         // Instruction functions
         void NOP(); void LDBC16(); void LDBCA(); void INCBC(); void INCB(); void DECB(); void LDB8(); void RLCA(); void LD16SP(); void ADDHLBC(); void LDABC(); void DECBC(); void INCC(); void DECC(); void LDC8(); void RRCA();
@@ -161,6 +164,8 @@ namespace TKPEmu::Gameboy::Devices {
         unsigned long TotalClocks = 0;
         void Reset(bool skip);
         int Update();
+
+        friend struct TKPEmu::Gameboy::QA;
     };
 }
 #endif

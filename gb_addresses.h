@@ -120,13 +120,18 @@ constexpr auto addr_dma = 0xFF46;
 constexpr auto addr_bgp = 0xFF47;
 constexpr auto addr_ob0 = 0xFF48;
 constexpr auto addr_ob1 = 0xFF49;
-
+// HDMA
+constexpr auto addr_hdma1 = 0xFF51;
+constexpr auto addr_hdma2 = 0xFF52;
+constexpr auto addr_hdma3 = 0xFF53;
+constexpr auto addr_hdma4 = 0xFF54;
+constexpr auto addr_hdma5 = 0xFF55;
+// CGB Palette registers
 constexpr auto addr_bcps = 0xFF68;
 constexpr auto addr_bcpd = 0xFF69;
-
 constexpr auto addr_ocps = 0xFF6A;
 constexpr auto addr_ocpd = 0xFF6B;
-
+// CGB bank registers
 constexpr auto addr_vbk  = 0xFF4F;
 constexpr auto addr_svbk = 0xFF70;
 

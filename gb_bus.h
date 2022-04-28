@@ -100,6 +100,10 @@ namespace TKPEmu::Gameboy::Devices {
         bool dma_transfer_ = false;
         bool dma_setup_ = false;
         bool dma_fresh_bug_ = false;
+        uint16_t hdma_source_ = 0;
+        uint16_t hdma_dest_ = 0;
+        uint16_t hdma_size_ = 0;
+        bool use_gdma_ = false;
         bool bg_palette_auto_increment_ = false;
         uint8_t bg_palette_index_ = 0;
         bool obj_palette_auto_increment_ = false;

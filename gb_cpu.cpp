@@ -2301,7 +2301,8 @@ namespace TKPEmu::Gameboy::Devices {
         auto old_pc = PC++;
         PC -= halt_bug_;
         halt_bug_ = false;
-        (this->*Instructions[bus_.Read(old_pc)].op)();
+        last_instr_ = bus_.Read(old_pc);
+        (this->*Instructions[last_instr_].op)();
         TClock += tTemp;
         if (tTemp >= tRemove) {
             tTemp -= tRemove;
