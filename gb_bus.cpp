@@ -9,7 +9,8 @@
 namespace TKPEmu::Gameboy::Devices {
     using RamBank = std::array<uint8_t, 0x2000>;
 	Bus::Bus(ChannelArrayPtr channel_array_ptr, std::vector<DisInstr>& instrs)
-			: channel_array_ptr_(channel_array_ptr), instructions_(instrs) {
+			: channel_array_ptr_(channel_array_ptr), instructions_(instrs) 
+	{
 		(*channel_array_ptr_)[2].LengthInit = 256;
 	}
 	Bus::~Bus() {
@@ -125,6 +126,48 @@ namespace TKPEmu::Gameboy::Devices {
 			}
 		}
 	}
+	void Bus::fill_fast_map() {
+		for (int i = 0x0; i < 0x40; i++) {
+			auto address = (i << 8) % 0x4000;
+			fast_map_[i << 8] = &((rom_banks_[0])[address]);
+		}
+		for (int i = 0x40; i < 0x80; i++) {
+			auto address = (i << 8) % 0x4000;
+			fast_map_[i << 8] = &((rom_banks_[1])[address]);
+		}
+		for (int i = 0x80; i < 0xA0; i++) {
+			auto address = (i << 8) % 0x2000;
+			fast_map_[i << 8] = &((vram_banks_[0])[address]);
+		}
+		for (int i = 0xA0; i < 0xC0; i++) {
+			auto address = (i << 8) % 0x2000;
+			fast_map_[i << 8] = &(eram_default_[address]);
+		}
+		for (int i = 0xC0; i < 0xD0; i++) {
+			auto address = (i << 8) % 0x1000;
+			fast_map_[i << 8] = &(wram_banks_[0][address]);
+		}
+		for (int i = 0xD0; i < 0xE0; i++) {
+			auto address = (i << 8) % 0x1000;
+			fast_map_[i << 8] = &(wram_banks_[1][address]);
+		}
+		for (int i = 0xE0; i < 0xF0; i++) {
+			auto address = (i << 8) % 0x1000;
+			fast_map_[i << 8] = &(wram_banks_[0][address]);
+		}
+		for (int i = 0xF0; i < 0xFE; i++) {
+			auto address = (i << 8) % 0x1000;
+			fast_map_[i << 8] = &(wram_banks_[0][address]);
+		}
+	}
+	uint8_t& Bus::fast_redirect_address(uint16_t address) {
+		uint8_t* paddr = fast_map_[address & 0xFF00];
+		if (paddr) {
+			return *(paddr + (address & 0xFF));
+		} else {
+			return redirect_address(address);
+		}
+	}
 	uint8_t& Bus::redirect_address(uint16_t address) {
 		unused_mem_area_ = 0;
 		WriteToVram = false;
@@ -236,9 +279,9 @@ namespace TKPEmu::Gameboy::Devices {
 			case 0x9000: {
 				WriteToVram = true;
 				if (UseCGB) {
-					return vram_[vram_bank_][address % 0x2000];
+					return vram_banks_[vram_sel_bank_][address % 0x2000];
 				} else {
-					return vram_[0][address % 0x2000];
+					return vram_banks_[0][address % 0x2000];
 				}
 			}
 			case 0xA000:
@@ -272,10 +315,10 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 			}
 			case 0xC000: {
-				return wram_[0][address % 0x1000];
+				return wram_banks_[0][address % 0x1000];
 			}
 			case 0xD000: {
-				return wram_[wram_bank_][address % 0x1000];
+				return wram_banks_[wram_sel_bank_][address % 0x1000];
 			}
 			case 0xE000: {
 				return redirect_address(address - 0x2000);
@@ -325,7 +368,7 @@ namespace TKPEmu::Gameboy::Devices {
 				return action_key_mode_ ? ActionKeys : DirectionKeys;
 			}
 		}
-		uint8_t read = redirect_address(address);
+		uint8_t read = fast_redirect_address(address);
 		return read;
 	}
 	uint16_t Bus::ReadL(uint16_t address) {
@@ -410,14 +453,14 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_vbk: {
-					vram_bank_ = data & 0b1;
+					vram_sel_bank_ = data & 0b1;
 					data |= 0b1111'1110;
 					break;
 				}
 				case addr_svbk: {
-					wram_bank_ = data & 0b111;
-					if (wram_bank_ == 0) {
-						wram_bank_ = 1;
+					wram_sel_bank_ = data & 0b111;
+					if (wram_sel_bank_ == 0) {
+						wram_sel_bank_ = 1;
 					}
 					data |= 0b1111'1000;
 					break;
@@ -748,8 +791,8 @@ namespace TKPEmu::Gameboy::Devices {
 		}
 		SoundEnabled = false;
 		oam_.fill(0);
-		vram_[0].fill(0);
-		vram_[1].fill(0);
+		vram_banks_[0].fill(0);
+		vram_banks_[1].fill(0);
 		DirectionKeys = 0b1110'1111;
         ActionKeys = 0b1101'1111;
 		selected_rom_bank_ = 1;
@@ -781,6 +824,8 @@ namespace TKPEmu::Gameboy::Devices {
 				is.close();
 			}
 		}
+		if (ret)
+			fill_fast_map();
 		UseCGB = cartridge_.UseCGB;
 		return ret;
 	}

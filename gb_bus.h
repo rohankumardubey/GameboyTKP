@@ -108,8 +108,8 @@ namespace TKPEmu::Gameboy::Devices {
         uint8_t bg_palette_index_ = 0;
         bool obj_palette_auto_increment_ = false;
         uint8_t obj_palette_index_ = 0;
-        bool vram_bank_ = 0;
-        uint8_t wram_bank_ = 1;
+        bool vram_sel_bank_ = 0;
+        uint8_t wram_sel_bank_ = 1;
         uint8_t rom_banks_size_ = 2;
         std::string curr_save_file_;
         size_t dma_index_ = 0;
@@ -121,14 +121,17 @@ namespace TKPEmu::Gameboy::Devices {
         Cartridge cartridge_;
         std::array<uint8_t, 0x100> hram_{};
         std::array<uint8_t, 0x2000> eram_default_{};
-        std::array<std::array<uint8_t, 0x1000>, 8> wram_{};
-        std::array<std::array<uint8_t, 0x2000>, 2> vram_{};
+        std::array<std::array<uint8_t, 0x1000>, 8> wram_banks_{};
+        std::array<std::array<uint8_t, 0x2000>, 2> vram_banks_{};
         std::array<uint8_t, 0xA0> oam_{};
         std::array<uint8_t, 0x40> bg_cram_{};
         std::array<uint8_t, 0x40> obj_cram_{};
+        std::array<uint8_t*, 0x10000> fast_map_{};
         ChannelArrayPtr channel_array_ptr_;
         std::vector<DisInstr>& instructions_;
         uint8_t& redirect_address(uint16_t address);
+        uint8_t& fast_redirect_address(uint16_t address);
+        void fill_fast_map();
         void handle_mbc(uint16_t address, uint8_t data);
         void battery_save();
 	    // Take channel input with 1-based index to match the register names (eg. NR14)

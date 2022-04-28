@@ -4,9 +4,11 @@
 #include <syncstream>
 #include <GL/glew.h>
 #include <filesystem>
+#include <valgrind/callgrind.h>
 #include "gameboy.h"
 #include "../lib/md5.h"
 #include "../include/console_colors.h"
+
 namespace TKPEmu::Gameboy {
 	Gameboy::Gameboy() : 
 		channel_array_ptr_(std::make_shared<ChannelArray>()),
@@ -366,6 +368,7 @@ namespace TKPEmu::Gameboy {
 	}
 	void Gameboy::update() {
 		if ((cpu_.TClock < cpu_.MaxCycles) || FastMode) {
+			CALLGRIND_START_INSTRUMENTATION;
 			if (cpu_.PC == 0x100) {
 				bus_.BiosEnabled = false;
 			}
@@ -384,6 +387,7 @@ namespace TKPEmu::Gameboy {
 			apu_.Update(clk);
 			if (!cpu_.halt_)
 				log_state();
+			CALLGRIND_STOP_INSTRUMENTATION;
 		} else {
 			auto end = std::chrono::system_clock::now();
 			auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(end - frame_start).count();
@@ -394,6 +398,8 @@ namespace TKPEmu::Gameboy {
 			if (dur > 16.6f) {
 				frame_start = std::chrono::system_clock::now();
 				cpu_.TClock = 0;
+			} else {
+				
 			}
 		}
 	}
