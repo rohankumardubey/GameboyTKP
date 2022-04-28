@@ -202,7 +202,7 @@ namespace TKPEmu::Gameboy::Devices {
 			unsig = false;
 		}
 		bool windowEnabled = (LCDC & LCDCFlag::WND_ENABLE && WY <= LY);
-		if (WX >= 160 || WX == 0) {
+		if (WX >= 166 || WX == 0) {
 			windowEnabled = false;
 		}
 		uint16_t identifierLocationW = (LCDC & LCDCFlag::WND_TILEMAP) ? 0x9C00 : 0x9800;
@@ -217,7 +217,7 @@ namespace TKPEmu::Gameboy::Devices {
 		uint16_t tileRow = (((uint8_t)(positionY / 8)) * 32);
 		for (int pixel = 0; pixel < 160; pixel++) {
 			uint8_t positionX = pixel + SCX;
-			if (windowEnabled && positionX >= (WX - 7)) {
+			if (windowEnabled && pixel >= (WX - 7)) {
 				identifierLoc = identifierLocationW;
 				positionX = pixel - (WX - 7);
 				positionY = LY - WY - (window_internal_ * 4);
@@ -400,7 +400,7 @@ namespace TKPEmu::Gameboy::Devices {
 						}
 					}
 				}
-				red += (255.0f - red) * SpriteDebugColor;
+				red += (280.0f - red) * SpriteDebugColor;
 				screen_color_data_second_[idx++] = red;
 				screen_color_data_second_[idx++] = green;
 				screen_color_data_second_[idx++] = blue;
