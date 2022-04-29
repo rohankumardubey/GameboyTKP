@@ -1,27 +1,21 @@
 #!/bin/sh
-if (( $# != 3 )); then
-    echo "This script requires TKPEmu: https://github.com/OFFTKP/TKPEmu"
-    >&2 echo "Correct syntax: ./generate_test_results.sh (TKPEmu path) (blargg tests directory) (mooneye-gb tests directory)"
-    exit
-fi
-
-emu=$1
+emu="../build/TKPEmu"
 outf="./TEST_RESULTS.md"
-blargg=$2
-mooneye=$3
+blargg="./tests/blarg"
+mooneye="./tests/mooneye"
 
 # Delete file contents
 >$outf
 
 echo "## [Blargg](https://github.com/gblargg)'s tests:    " >> $outf
 echo "Testing blargg directory $blargg"
-$emu -T "$blargg/cpu_instrs/individual" -p -g -G $outf
+$emu -T "$blargg/cpu_instrs" -p -g -G $outf
 echo "" >> $outf
 $emu -T "$blargg/instr_timing" -p -g -G $outf
 echo "" >> $outf
-$emu -T "$blargg/mem_timing/individual" -p -g -G $outf
+$emu -T "$blargg/mem_timing" -p -g -G $outf
 echo "" >> $outf
-$emu -T "$blargg/dmg_sound/rom_singles" -p -g -G $outf
+$emu -T "$blargg/dmg_sound" -p -g -G $outf
 echo "" >> $outf
 $emu -T "$blargg" -p -g -G $outf
 echo "" >> $outf
