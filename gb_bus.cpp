@@ -25,7 +25,6 @@ namespace TKPEmu::Gameboy::Devices {
 				if (address <= 0x1FFF) {
 					if ((data & 0b1111) == 0b1010) {
 						ram_enabled_ = true;
-						refill_fast_map_ram();
 					} else {
 						ram_enabled_ = false;
 					}
@@ -46,7 +45,6 @@ namespace TKPEmu::Gameboy::Devices {
 					// MODE register
 					banking_mode_ = data & 0b1;
 					refill_fast_map_rom();
-					refill_fast_map_ram();
 				}
 				break;
 			}
@@ -61,12 +59,10 @@ namespace TKPEmu::Gameboy::Devices {
 					} else {
 						if ((data & 0b1111) == 0b1010) {
 							ram_enabled_ = true;
-							refill_fast_map_ram();
 						} else {
 							ram_enabled_ = false;
 						}
 					}
-					
 				}
 				break;
 			}
@@ -77,7 +73,6 @@ namespace TKPEmu::Gameboy::Devices {
 				if (address <= 0x1FFF) {
 					if ((data & 0b1111) == 0b1010) {
 						ram_enabled_ = true;
-						refill_fast_map_ram();
 						// TODO: enable writing to RTC mbc3 registers
 					} else {
 						ram_enabled_ = false;
@@ -93,7 +88,6 @@ namespace TKPEmu::Gameboy::Devices {
 				else if (address <= 0x5FFF) {
 					if (data <= 0b11) {
 						selected_ram_bank_ = data; 
-						refill_fast_map_ram();
 					} else {
 						// TODO: mbc3 rtc
 					}
@@ -102,7 +96,6 @@ namespace TKPEmu::Gameboy::Devices {
 					// MODE register
 					banking_mode_ = data & 0b1;
 					refill_fast_map_rom();
-					refill_fast_map_ram();
 				}
 				break;
 			}
@@ -115,7 +108,6 @@ namespace TKPEmu::Gameboy::Devices {
 				if (address <= 0x1FFF) {
 					if ((data & 0b1111) == 0b1010) {
 						ram_enabled_ = true;
-						refill_fast_map_ram();
 					} else {
 						ram_enabled_ = false;
 					}
@@ -128,7 +120,6 @@ namespace TKPEmu::Gameboy::Devices {
 				} else if (address <= 0x5FFF) {
 					if (data <= 0xF) {
 						selected_ram_bank_ = data;
-						refill_fast_map_ram();
 					}
 				}
 				break;
@@ -151,7 +142,6 @@ namespace TKPEmu::Gameboy::Devices {
 			auto address = (i << 8) % 0x2000;
 			fast_map_[i << 8] = &((vram_banks_[0])[address]);
 		}
-		refill_fast_map_ram();
 		for (int i = 0xC0; i < 0xD0; i++) {
 			auto address = (i << 8) % 0x1000;
 			fast_map_[i << 8] = &(wram_banks_[0][address]);
@@ -231,15 +221,6 @@ namespace TKPEmu::Gameboy::Devices {
 			}
 		}
 	}
-	void Bus::refill_fast_map_ram() {
-		if (ram_enabled_ && cartridge_.GetRamSize() != 0) {
-			auto sel = (banking_mode_ ? selected_ram_bank_ : 0) % cartridge_.GetRamSize();
-			for (int i = 0xA0; i < 0xC0; i++) {
-				auto address = (i << 8) % 0x2000;
-				fast_map_[i << 8] = &((ram_banks_[sel])[address]);
-			}
-		}
-	}
 	void Bus::refill_fast_map_vram() {
 		for (int i = 0x80; i < 0xA0; i++) {
 			auto address = (i << 8) % 0x2000;
@@ -256,7 +237,7 @@ namespace TKPEmu::Gameboy::Devices {
 			fast_map_[i << 8] = &(wram_banks_[wram_sel_bank_][address]);
 		}
 	}
-	// TODO: fix issues with this - generate test results to see issues
+	// TODO: add ram to fast map
 	uint8_t& Bus::fast_redirect_address(uint16_t address) {
 		uint8_t* paddr = fast_map_[address & 0xFF00];
 		if (paddr) {
@@ -468,7 +449,8 @@ namespace TKPEmu::Gameboy::Devices {
 				return action_key_mode_ ? ActionKeys : DirectionKeys;
 			}
 		}
-		uint8_t read = redirect_address(address);
+		unused_mem_area_ = 0xFF;
+		uint8_t read = fast_redirect_address(address);
 		return read;
 	}
 	uint16_t Bus::ReadL(uint16_t address) {
@@ -893,7 +875,7 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 			}
-			redirect_address(address) = data;
+			fast_redirect_address(address) = data;
 		}
 	}
 	void Bus::WriteL(uint16_t address, uint16_t data) {

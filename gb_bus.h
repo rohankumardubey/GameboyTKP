@@ -137,10 +137,9 @@ namespace TKPEmu::Gameboy::Devices {
         uint8_t& redirect_address(uint16_t address);
         uint8_t& fast_redirect_address(uint16_t address);
         void fill_fast_map();
-        void refill_fast_map_rom();
-        void refill_fast_map_ram();
-        void refill_fast_map_vram();
-        void refill_fast_map_wram();
+        inline void refill_fast_map_rom();
+        inline void refill_fast_map_vram();
+        inline void refill_fast_map_wram();
 
         void handle_mbc(uint16_t address, uint8_t data);
         void battery_save();
