@@ -873,7 +873,7 @@ namespace TKPEmu::Gameboy::Devices {
 				case 0xFF71: case 0xFF72: case 0xFF73: case 0xFF74: case 0xFF75:
 				case 0xFF76: case 0xFF77: case 0xFF78: case 0xFF79: case 0xFF7A:
 				case 0xFF7B: case 0xFF7C: case 0xFF7D: case 0xFF7E: case 0xFF7F: {
-					//data |= 0b1111'1111;
+					data |= 0b1111'1111;
 					break;
 				}
 			}
