@@ -63,6 +63,7 @@ namespace TKPEmu::Gameboy::Devices {
         };
         Bus(ChannelArrayPtr channel_array_ptr, std::vector<DisInstr>& instrs);
         ~Bus();
+        std::string GetVramDump(); // TODO: remove this function, switch to QA struct for test
         uint8_t Read(uint16_t address);
         uint16_t ReadL(uint16_t address);
         uint8_t& GetReference(uint16_t address);

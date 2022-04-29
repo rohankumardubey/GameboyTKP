@@ -10,7 +10,7 @@ namespace TKPEmu::Gameboy::Devices {
     // All computation for this class happens in gb_bus and gb_apu_ch
     class APU {
     public:
-        APU(ChannelArrayPtr channel_array_ptr);
+        APU(ChannelArrayPtr channel_array_ptr, uint8_t& NR52);
         ~APU();
         void InitSound();
         void Update(int clk);
@@ -25,6 +25,7 @@ namespace TKPEmu::Gameboy::Devices {
         SDL_AudioDeviceID device_id_;
         std::array<int16_t, 512> samples_;
         size_t sample_index_ = 0;
+        uint8_t& NR52_;
         ChannelArrayPtr channel_array_ptr_;
     };
 }

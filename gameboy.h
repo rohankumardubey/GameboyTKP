@@ -47,6 +47,7 @@ namespace TKPEmu::Gameboy {
 		std::string GetEmulatorName() override;
 		bool IsReadyToDraw() override;
 		void SetLogTypes(std::unique_ptr<std::vector<LogType>> types_ptr);
+		std::string GetScreenshotHash() override;
         DisInstr GetInstruction(uint16_t address);
 		bool AddBreakpoint(GBBPArguments bp);
 		bool* DebugSpriteTint();
@@ -64,8 +65,8 @@ namespace TKPEmu::Gameboy {
 		std::vector<DisInstr> Instructions{};
 	private:
 		ChannelArrayPtr channel_array_ptr_;
-		APU apu_;
 		Bus bus_;
+		APU apu_;
 		PPU ppu_;
 		Timer timer_;
 		CPU cpu_;

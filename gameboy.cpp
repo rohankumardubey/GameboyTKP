@@ -12,8 +12,8 @@
 namespace TKPEmu::Gameboy {
 	Gameboy::Gameboy() : 
 		channel_array_ptr_(std::make_shared<ChannelArray>()),
-		apu_(channel_array_ptr_),
 		bus_(channel_array_ptr_, Instructions),
+		apu_(channel_array_ptr_, bus_.GetReference(addr_NR52)),
 		ppu_(bus_, &DrawMutex),
 		timer_(channel_array_ptr_, bus_),
 		cpu_(bus_, ppu_, apu_, timer_),
@@ -353,6 +353,9 @@ namespace TKPEmu::Gameboy {
 		};
 		UpdateThread = std::thread(func);
 		UpdateThread.detach();
+	}
+	std::string Gameboy::GetScreenshotHash() {
+		return md5(bus_.GetVramDump());
 	}
 	void Gameboy::reset_normal() {
 		bus_.SoftReset();

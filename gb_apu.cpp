@@ -6,8 +6,8 @@ constexpr int AMPLITUDE = 8000;
 constexpr int RESAMPLED_RATE = (4194304 / SAMPLE_RATE);
 
 namespace TKPEmu::Gameboy::Devices {
-    APU::APU(ChannelArrayPtr channel_array_ptr) 
-            : channel_array_ptr_(channel_array_ptr) {}
+    APU::APU(ChannelArrayPtr channel_array_ptr, uint8_t& NR52) 
+            : channel_array_ptr_(channel_array_ptr), NR52_(NR52) {}
     APU::~APU() {
         if (UseSound) {
             SDL_CloseAudioDevice(device_id_);
@@ -35,13 +35,13 @@ namespace TKPEmu::Gameboy::Devices {
         }
     }
     void APU::Update(int clk) {
-        if (UseSound) {
+        if (UseSound && (NR52_ & 0b1000'0000)) {
             static int inner_clk = 0;
             static unsigned yep_clock = 0;
-            inner_clk += clk;
             auto& chan1 = (*channel_array_ptr_)[0];
             auto& chan2 = (*channel_array_ptr_)[1];
             auto& chan4 = (*channel_array_ptr_)[3];
+            inner_clk += clk;
             chan1.StepWaveGeneration(clk);
             chan2.StepWaveGeneration(clk);
             chan4.StepWaveGenerationCh4(clk);
@@ -49,7 +49,7 @@ namespace TKPEmu::Gameboy::Devices {
             double chan2out = (chan2.GetAmplitude() == 0.0 ? 1.0 : -1.0) * chan2.DACOutput * chan2.GlobalVolume();
             double chan4out = (~chan4.LFSR & 0x01) * chan4.DACOutput * chan4.GlobalVolume();
             if (inner_clk >= RESAMPLED_RATE) {
-                auto sample = (chan1out + chan2out + chan4out) / 3;
+                auto sample = (chan1out + chan2out) / 3;
                 samples_[sample_index_++] = sample * AMPLITUDE;
                 yep_clock++;
                 // in case it's bigger

@@ -476,6 +476,19 @@ namespace TKPEmu::Gameboy::Devices {
 	std::vector<RamBank>& Bus::GetRamBanks() {
 		return ram_banks_;
 	}
+	std::string Bus::GetVramDump() {
+		std::stringstream s;
+		for (const auto& m : vram_banks_[0]) {
+			s << std::hex << std::setfill('0') << std::setw(2) << m;
+		}
+		for (int i = 0; i < oam_.size(); i += 4) {
+			s << std::hex << std::setfill('0') << std::setw(2) << oam_[i + 3];
+			s << std::hex << std::setfill('0') << std::setw(2) << oam_[i + 2];
+			s << std::hex << std::setfill('0') << std::setw(2) << oam_[i + 1];
+			s << std::hex << std::setfill('0') << std::setw(2) << oam_[i];
+		}
+		return std::move(s.str());
+	}
 	void Bus::Write(uint16_t address, uint8_t data) {
 		if (address <= 0x7FFF) {
 			handle_mbc(address, data);
@@ -872,7 +885,6 @@ namespace TKPEmu::Gameboy::Devices {
 		Write(address + 1, data >> 8);
 	}
 	void Bus::ClearNR52Bit(uint8_t bit) {
-		
 		redirect_address(addr_NR52) &= ~(1 << bit);
 	}
 	void Bus::Reset() {
