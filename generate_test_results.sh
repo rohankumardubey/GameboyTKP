@@ -9,37 +9,50 @@ mooneye="./tests/mooneye"
 
 echo "## [Blargg](https://github.com/gblargg)'s tests:    " >> $outf
 echo "Testing blargg directory $blargg"
+echo "" >> $outf
+echo "cpu_instrs:" >> $outf
 $emu -T "$blargg/cpu_instrs" -p -g -G $outf
 echo "" >> $outf
-$emu -T "$blargg/instr_timing" -p -g -G $outf
-echo "" >> $outf
+echo "mem_timing:" >> $outf
 $emu -T "$blargg/mem_timing" -p -g -G $outf
 echo "" >> $outf
+echo "dmg_sound:" >> $outf
 $emu -T "$blargg/dmg_sound" -p -g -G $outf
 echo "" >> $outf
+echo "other:" >> $outf
 $emu -T "$blargg" -p -g -G $outf
 echo "" >> $outf
 echo "Testing mooneye directory $mooneye"
 echo "## [Gekkio](https://github.com/Gekkio)'s tests:    " >> $outf
 echo "" >> $outf
+echo "acceptance:" >> $outf
 $emu -T "$mooneye/acceptance" -p -g -G $outf
 echo "" >> $outf
+echo "acceptance/bits:" >> $outf
 $emu -T "$mooneye/acceptance/bits" -p -g -G $outf
 echo "" >> $outf
+echo "acceptance/instr:" >> $outf
 $emu -T "$mooneye/acceptance/instr" -p -g -G $outf
 echo "" >> $outf
+echo "acceptance/interrupts:" >> $outf
 $emu -T "$mooneye/acceptance/interrupts" -p -g -G $outf
 echo "" >> $outf
+echo "acceptance/oam_dma:" >> $outf
 $emu -T "$mooneye/acceptance/oam_dma" -p -g -G $outf
 echo "" >> $outf
+echo "acceptance/ppu:" >> $outf
 $emu -T "$mooneye/acceptance/ppu" -p -g -G $outf
 echo "" >> $outf
+echo "acceptance/timer:" >> $outf
 $emu -T "$mooneye/acceptance/timer" -p -g -G $outf
 echo "" >> $outf
+echo "emulator-only/mbc1:" >> $outf
 $emu -T "$mooneye/emulator-only/mbc1" -p -g -G $outf
 echo "" >> $outf
+echo "emulator-only/mbc2:" >> $outf
 $emu -T "$mooneye/emulator-only/mbc2" -p -g -G $outf
 echo "" >> $outf
+echo "emulator-only/mbc5:" >> $outf
 $emu -T "$mooneye/emulator-only/mbc5" -p -g -G $outf
 echo "" >> $outf
 echo "-----" >> $outf

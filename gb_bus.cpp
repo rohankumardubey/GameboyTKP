@@ -232,7 +232,7 @@ namespace TKPEmu::Gameboy::Devices {
 		}
 	}
 	void Bus::refill_fast_map_ram() {
-		if (ram_enabled_ && cartridge_.GetRamSize() == 0) {
+		if (ram_enabled_ && cartridge_.GetRamSize() != 0) {
 			auto sel = (banking_mode_ ? selected_ram_bank_ : 0) % cartridge_.GetRamSize();
 			for (int i = 0xA0; i < 0xC0; i++) {
 				auto address = (i << 8) % 0x2000;
@@ -256,6 +256,7 @@ namespace TKPEmu::Gameboy::Devices {
 			fast_map_[i << 8] = &(wram_banks_[wram_sel_bank_][address]);
 		}
 	}
+	// TODO: fix issues with this - generate test results to see issues
 	uint8_t& Bus::fast_redirect_address(uint16_t address) {
 		uint8_t* paddr = fast_map_[address & 0xFF00];
 		if (paddr) {
@@ -464,7 +465,7 @@ namespace TKPEmu::Gameboy::Devices {
 				return action_key_mode_ ? ActionKeys : DirectionKeys;
 			}
 		}
-		uint8_t read = fast_redirect_address(address);
+		uint8_t read = redirect_address(address);
 		return read;
 	}
 	uint16_t Bus::ReadL(uint16_t address) {
