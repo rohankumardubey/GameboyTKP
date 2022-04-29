@@ -4,11 +4,16 @@
 #include <syncstream>
 #include <GL/glew.h>
 #include <filesystem>
-#include <valgrind/callgrind.h>
+// #include <valgrind/callgrind.h>
 #include "gameboy.h"
 #include "../lib/md5.h"
 #include "../include/console_colors.h"
-
+#ifndef CALLGRIND_START_INSTRUMENTATION
+#define CALLGRIND_START_INSTRUMENTATION
+#endif
+#ifndef CALLGRIND_STOP_INSTRUMENTATION
+#define CALLGRIND_STOP_INSTRUMENTATION
+#endif
 namespace TKPEmu::Gameboy {
 	Gameboy::Gameboy() : 
 		channel_array_ptr_(std::make_shared<ChannelArray>()),
