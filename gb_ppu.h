@@ -23,7 +23,6 @@ namespace TKPEmu::Gameboy::Devices {
 		PPU(Bus& bus, std::mutex* draw_mutex);
 		void Update(uint8_t cycles);
 		void Reset();
-        int CalcCycles();
 		float* GetScreenData();
 		void FillTileset(float* pixels, size_t x_off = 0, size_t y_off = 0, uint16_t addr = 0x8000);
 	private:

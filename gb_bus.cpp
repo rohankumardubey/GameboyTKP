@@ -445,6 +445,9 @@ namespace TKPEmu::Gameboy::Devices {
 						case addr_ocpd: {
 							return obj_cram_[obj_palette_index_];
 						}
+						case addr_hdma5: {
+							return hdma_remaining_;
+						}
 						default: [[likely]] {
 							return hram_[address % 0xFF00];
 						}
@@ -666,10 +669,22 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_hdma5: {
-					use_gdma_ = data & 0b1000'0000;
-					hdma_size_ = ((data & 0b0111'1111) - 1) * 16;
 					if (!UseCGB) {
 						data |= 0b1111'1111;
+					} else {
+						if (data != 0) {
+							use_gdma_ = data & 0b1000'0000;
+							hdma_size_ = ((data & 0b0111'1111) + 1);
+							if (use_gdma_) {
+								for (int i = 0; i < hdma_size_; i++) {
+									TransferHDMA();
+								}
+							}
+							hdma_index_ = 0;
+							hdma_transfer_ = true;
+						} else {
+							hdma_transfer_ = false;
+						}
 					}
 					break;
 				}
@@ -964,6 +979,20 @@ namespace TKPEmu::Gameboy::Devices {
 			dma_setup_ = false;
 			dma_index_ = 0;
 			dma_offset_ = dma_new_offset_;
+		}
+	}
+	void Bus::TransferHDMA() {
+		if (hdma_transfer_) {
+			if (hdma_index_ < hdma_size_) {
+				#pragma GCC unroll 10
+				for (int i = 0; i < 16; i++) {
+					Write(hdma_dest_++, Read(hdma_source_++));
+				}
+				hdma_index_++;
+				hdma_remaining_--;
+			} else {
+				hdma_transfer_ = false;
+			}
 		}
 	}
 	void Bus::battery_save() {

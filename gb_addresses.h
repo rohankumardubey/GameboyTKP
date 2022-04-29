@@ -116,6 +116,7 @@ constexpr auto addr_NR52 = 0xFF26;
 constexpr auto addr_lcd = 0xFF40;
 constexpr auto addr_sta = 0xFF41;
 constexpr auto addr_lly = 0xFF44;
+constexpr auto addr_lyc = 0xFF45;
 constexpr auto addr_dma = 0xFF46;
 constexpr auto addr_bgp = 0xFF47;
 constexpr auto addr_ob0 = 0xFF48;

@@ -71,6 +71,7 @@ namespace TKPEmu::Gameboy::Devices {
         void Write(uint16_t address, uint8_t data);
         void WriteL(uint16_t address, uint16_t data);
         void TransferDMA(uint8_t clk);
+        void TransferHDMA();
         void Reset();
         void SoftReset();
         std::vector<RamBank>& GetRamBanks();
@@ -103,7 +104,10 @@ namespace TKPEmu::Gameboy::Devices {
         bool dma_fresh_bug_ = false;
         uint16_t hdma_source_ = 0;
         uint16_t hdma_dest_ = 0;
+        uint16_t hdma_index_ = 0;
         uint16_t hdma_size_ = 0;
+        bool hdma_transfer_ = false;
+        uint8_t hdma_remaining_ = 0;
         bool use_gdma_ = false;
         bool bg_palette_auto_increment_ = false;
         uint8_t bg_palette_index_ = 0;

@@ -115,11 +115,6 @@ namespace TKPEmu::Gameboy::Devices {
 				std::swap(screen_color_data_, screen_color_data_second_);
 			}
 		}
-		if (!enabled) {
-			clock_ = 0;
-			STAT &= 0b1111'1100;
-			LY = 0;
-		}
 	}
 	bool PPU::is_sprite_eligible(uint8_t sprite_y) {
 		bool use8x16 = LCDC & LCDCFlag::OBJ_SIZE;
@@ -150,9 +145,6 @@ namespace TKPEmu::Gameboy::Devices {
 		STAT = 0b1000'0000;
 		clock_ = 0;
 		clock_target_ = 0;
-	}
-    int PPU::CalcCycles() {
-		return clock_target_ - clock_;
 	}
 	float* PPU::GetScreenData() {
 		return &screen_color_data_[0];
