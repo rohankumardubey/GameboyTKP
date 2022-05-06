@@ -46,13 +46,14 @@ Best test to get started on correct ppu output
 ## Tests
 
 See generated test results [here](./TEST_RESULTS.md).    
-Always generate new test results before pushing a commit when changing the code.
+Always generate new test results before pushing a commit when changing the code.    
+You can generate all tests with `./generate_test_results.sh` script on linux.
 
 **Graphics tests:**
 | Test            | GameboyTKP                                              |
 | --------------- | ------------------------------------------------------- |
 | dmg-acid2       | ![dmg-acid2](./Images/dmg-acid2_result.bmp)             |
-| cgb-acid2       | ![cgb-acid2](./Images/acid.bmp)
+| cgb-acid2       | ![cgb-acid2](./Images/acid.bmp)                         |
 | sprite_priority | ![sprite_priority](./Images/sprite_priority_result.bmp) |
 
 ## License
