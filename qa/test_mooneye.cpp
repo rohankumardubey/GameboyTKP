@@ -1,11 +1,10 @@
-#include "gb_test_functions.h"
+#include "test_mooneye.h"
 
-namespace TKPEmu::Gameboy {
-    std::string QA::TestError = "";
-    bool QA::TestMooneye(std::filesystem::path path) {
+namespace TKPEmu::Gameboy::QA {
+    void MooneyeTestCase::testMooneye(std::filesystem::path path) {
         Gameboy gb_;
         gb_.LoadFromFile(path.string());
-        TestError = "exceeded 4,000,000 instructions";
+        // TestError = "exceeded 4,000,000 instructions";
         for (unsigned i = 0; i < 4'000'000; i++) {
             gb_.update();
             if (gb_.cpu_.last_instr_ == 0x40) {
@@ -20,13 +19,12 @@ namespace TKPEmu::Gameboy {
                 )
                 {
                     // A successful test writes these fibonacci numbers to the registers
-                    return true;
+                    return;
                 }
-                TestError = "registers are not equal to the magic numbers";
+                // TestError = "registers are not equal to the magic numbers";
                 break;
             }
         }
-        TestError = "Failed Mooneye test: " + path.stem().string() + " - " + TestError;
-        return false;
+        // TestError = "Failed Mooneye test: " + path.stem().string() + " - " + TestError;
     }
 }

@@ -11,8 +11,8 @@
 #include "gb_timer.h"
 #include "gb_addresses.h"
 #include "../include/disassembly_instr.h"
-namespace TKPEmu::Gameboy {
-    struct QA;
+namespace TKPEmu::Gameboy::QA {
+    class MooneyeTestCase;
 }
 namespace TKPEmu::Gameboy::Devices {
     class CPU {
@@ -165,7 +165,7 @@ namespace TKPEmu::Gameboy::Devices {
         void Reset(bool skip);
         int Update();
 
-        friend struct TKPEmu::Gameboy::QA;
+        friend class TKPEmu::Gameboy::QA::MooneyeTestCase;
     };
 }
 #endif
