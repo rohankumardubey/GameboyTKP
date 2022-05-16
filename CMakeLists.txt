@@ -4,5 +4,5 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/expected_results.csv ~/.config/tkpemu
 set(FILES gameboy.cpp gb_apu_ch.cpp gb_apu.cpp
     gb_bus.cpp gb_cartridge.cpp gb_cpu.cpp
     gb_disassembler.cpp gb_ppu.cpp gb_romdata.cpp
-    gb_test_functions.cpp gb_timer.cpp gb_tracelogger.cpp)
+    gb_timer.cpp gb_tracelogger.cpp)
 add_library(GameboyTKP ${FILES})
