@@ -450,7 +450,7 @@ namespace TKPEmu::Gameboy::Devices {
 			}
 		}
 		unused_mem_area_ = 0xFF;
-		uint8_t read = fast_redirect_address(address);
+		uint8_t read = redirect_address(address);
 		return read;
 	}
 	uint16_t Bus::ReadL(uint16_t address) {
@@ -548,18 +548,22 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 				case addr_vbk: {
-					vram_sel_bank_ = data & 0b1;
-					data |= 0b1111'1110;
-					refill_fast_map_vram();
+					if (UseCGB) {
+						vram_sel_bank_ = data & 0b1;
+						data |= 0b1111'1110;
+						refill_fast_map_vram();
+					}
 					break;
 				}
 				case addr_svbk: {
-					wram_sel_bank_ = data & 0b111;
-					if (wram_sel_bank_ == 0) {
-						wram_sel_bank_ = 1;
+					if (UseCGB) {
+						wram_sel_bank_ = data & 0b111;
+						if (wram_sel_bank_ == 0) {
+							wram_sel_bank_ = 1;
+						}
+						data |= 0b1111'1000;
+						refill_fast_map_wram();
 					}
-					data |= 0b1111'1000;
-					refill_fast_map_wram();
 					break;
 				}
 				case addr_bcps: {
@@ -875,7 +879,7 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 			}
-			fast_redirect_address(address) = data;
+			redirect_address(address) = data;
 		}
 	}
 	void Bus::WriteL(uint16_t address, uint16_t data) {
@@ -905,6 +909,8 @@ namespace TKPEmu::Gameboy::Devices {
         ActionKeys = 0b1101'1111;
 		selected_rom_bank_ = 1;
 		selected_ram_bank_ = 0;
+		wram_sel_bank_ = 1;
+		vram_sel_bank_ = 1;
 		BiosEnabled = true;
 	}
 	Cartridge& Bus::GetCartridge() {
