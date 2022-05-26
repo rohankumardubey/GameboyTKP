@@ -167,6 +167,7 @@ namespace TKPEmu::Gameboy {
 		Step.notify_all();
 	}
 	void Gameboy::load_state(std::ifstream& ifstream) {
+		// TODO: God, fix this ugly shit
 		if (!Paused) {
 			Paused = true;
 		}
