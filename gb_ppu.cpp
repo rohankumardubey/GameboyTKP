@@ -1,4 +1,4 @@
-#include "gb_ppu.h"
+#include <GameboyTKP/gb_ppu.h>
 #include <GL/glew.h>
 #include <iostream>
 namespace TKPEmu::Gameboy::Devices {

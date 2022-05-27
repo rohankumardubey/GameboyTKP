@@ -4,8 +4,8 @@
 #include <iomanip>
 #include <iostream>
 #include <filesystem>
-#include "gb_bus.h"
-#include "gb_addresses.h"
+#include <GameboyTKP/gb_bus.h>
+#include <GameboyTKP/gb_addresses.h>
 namespace TKPEmu::Gameboy::Devices {
     using RamBank = std::array<uint8_t, 0x2000>;
 	Bus::Bus(ChannelArrayPtr channel_array_ptr, std::vector<DisInstr>& instrs)

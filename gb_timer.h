@@ -1,9 +1,9 @@
 #pragma once
 #ifndef TKP_GB_TIMER_H
 #define TKP_GB_TIMER_H
-#include "gb_bus.h"
-#include "gb_apu_ch.h"
-#include "gb_addresses.h"
+#include <GameboyTKP/gb_bus.h>
+#include <GameboyTKP/gb_apu_ch.h>
+#include <GameboyTKP/gb_addresses.h>
 
 namespace TKPEmu::Gameboy::Devices {
     class Timer {

@@ -1,5 +1,5 @@
-#include "gb_apu.h"
-#include "gb_addresses.h"
+#include <GameboyTKP/gb_apu.h>
+#include <GameboyTKP/gb_addresses.h>
 #include <iostream>
 constexpr int SAMPLE_RATE = 48000;
 constexpr int AMPLITUDE = 8000;

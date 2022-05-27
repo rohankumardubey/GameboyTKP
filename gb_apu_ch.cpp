@@ -1,4 +1,4 @@
-#include "gb_apu_ch.h"
+#include <GameboyTKP/gb_apu_ch.h>
 #include <iostream>
 
 namespace TKPEmu::Gameboy::Devices {

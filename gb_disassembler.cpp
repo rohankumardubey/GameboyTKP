@@ -1,4 +1,4 @@
-#include "gb_disassembler.h"
+#include <GameboyTKP/gb_disassembler.h>
 #include <iostream>
 namespace TKPEmu::Applications {
     GameboyDisassembler::GameboyDisassembler(std::string menu_title, std::string window_title) : IMApplication(menu_title, window_title) {

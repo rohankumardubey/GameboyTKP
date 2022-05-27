@@ -1,18 +1,17 @@
 #pragma once
 #ifndef TKP_GB_GAMEBOY_H
 #define TKP_GB_GAMEBOY_H
-// TODO: twitch plays plugin
 #include <array>
-#include "../include/emulator.h"
-#include "../include/disassembly_instr.h"
-#include "gb_breakpoint.h"
-#include "gb_addresses.h"
-#include "gb_cpu.h"
-#include "gb_ppu.h"
-#include "gb_bus.h"
-#include "gb_timer.h"
-#include "gb_apu.h"
-#include "gb_apu_ch.h"
+#include <include/emulator.h>
+#include <include/disassembly_instr.h>
+#include <GameboyTKP/gb_breakpoint.h>
+#include <GameboyTKP/gb_addresses.h>
+#include <GameboyTKP/gb_cpu.h>
+#include <GameboyTKP/gb_ppu.h>
+#include <GameboyTKP/gb_bus.h>
+#include <GameboyTKP/gb_timer.h>
+#include <GameboyTKP/gb_apu.h>
+#include <GameboyTKP/gb_apu_ch.h>
 
 namespace TKPEmu {
 	namespace Applications {

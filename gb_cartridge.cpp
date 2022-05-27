@@ -3,7 +3,7 @@
 #include <cmath>
 #include <sstream>
 #include <iomanip>
-#include "gb_cartridge.h"
+#include <GameboyTKP/gb_cartridge.h>
 
 namespace TKPEmu::Gameboy::Devices {
 	bool Cartridge::Load(const std::string& filename, std::vector<std::array<uint8_t, 0x4000>>& romBanks, std::vector<std::array<uint8_t, 0x2000>>& ramBanks) {

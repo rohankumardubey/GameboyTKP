@@ -10,10 +10,10 @@
 #include <memory>
 #include <deque>
 #include <optional>
-#include "gb_cartridge.h"
-#include "gb_addresses.h"
-#include "gb_apu.h"
-#include "gb_apu_ch.h"
+#include <GameboyTKP/gb_cartridge.h>
+#include <GameboyTKP/gb_addresses.h>
+#include <GameboyTKP/gb_apu.h>
+#include <GameboyTKP/gb_apu_ch.h>
 
 namespace TKPEmu::Gameboy::Devices {
     struct Change {

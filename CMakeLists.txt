@@ -6,3 +6,4 @@ set(FILES gameboy.cpp gb_apu_ch.cpp gb_apu.cpp
     gb_disassembler.cpp gb_ppu.cpp gb_romdata.cpp
     gb_timer.cpp gb_tracelogger.cpp)
 add_library(GameboyTKP ${FILES})
+target_include_directories(GameboyTKP PUBLIC ../)

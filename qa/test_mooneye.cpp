@@ -1,4 +1,4 @@
-#include "test_mooneye.h"
+#include <GameboyTKP/qa/test_mooneye.h>
 
 namespace TKPEmu::Gameboy::QA {
     void MooneyeTestCase::testMooneye(std::filesystem::path path) {

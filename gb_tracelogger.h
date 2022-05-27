@@ -4,8 +4,8 @@
 // TODO: if no selected registers, show message
 // TODO: writes to vram have special string
 #include <array>
-#include "../include/base_application.h"
-#include "gameboy.h"
+#include <include/base_application.h>
+#include <GameboyTKP/gameboy.h>
 #define PATH_MAX 4096
 namespace TKPEmu::Applications {
 	using Gameboy = TKPEmu::Gameboy::Gameboy;

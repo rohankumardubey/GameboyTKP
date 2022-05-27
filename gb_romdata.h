@@ -3,9 +3,9 @@
 #define TKP_GB_ROMDATA_H
 #include <string>
 #include <chrono>
-#include "../include/base_application.h"
-#include "gameboy.h"
-#include "gb_cartridge.h"
+#include <include/base_application.h>
+#include <GameboyTKP/gameboy.h>
+#include <GameboyTKP/gb_cartridge.h>
 #include <GL/glew.h>
 namespace TKPEmu::Applications {
     using Gameboy = TKPEmu::Gameboy::Gameboy;

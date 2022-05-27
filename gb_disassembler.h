@@ -8,9 +8,9 @@
 // TODO: enter press on breakpoint adds breakpoint
 // TODO: list of instructions combo box
 #include <execution>
-#include "../include/base_application.h"
-#include "gb_breakpoint.h"
-#include "gameboy.h"
+#include <include/base_application.h>
+#include <GameboyTKP/gb_breakpoint.h>
+#include <GameboyTKP/gameboy.h>
 namespace TKPEmu::Applications {
     class GameboyDisassembler : public IMApplication {
     private:

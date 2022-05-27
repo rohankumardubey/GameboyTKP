@@ -1,8 +1,8 @@
 #include <filesystem>
 #include <iostream>
-#include "gb_tracelogger.h"
-#include "gb_addresses.h"
-#include "../imgui/imgui.h"
+#include <GameboyTKP/gb_tracelogger.h>
+#include <GameboyTKP/gb_addresses.h>
+#include <imgui/imgui.h>
 
 namespace TKPEmu::Applications {
 	GameboyTracelogger::GameboyTracelogger(std::string menu_title, std::string window_title)

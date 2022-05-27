@@ -1,9 +1,9 @@
 #pragma once
 #ifndef TKP_GB_PPU_H
 #define TKP_GB_PPU_H
-#include "gb_bus.h"
-#include "../include/TKPImage.h"
-#include "gb_addresses.h"
+#include <GameboyTKP/gb_bus.h>
+#include <include/TKPImage.h>
+#include <GameboyTKP/gb_addresses.h>
 #include <mutex>
 #include <array>
 #include <queue>

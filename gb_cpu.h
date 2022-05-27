@@ -6,11 +6,11 @@
 #include <array>
 #include <iomanip>
 #include <fstream>
-#include "gb_bus.h"
-#include "gb_ppu.h"
-#include "gb_timer.h"
-#include "gb_addresses.h"
-#include "../include/disassembly_instr.h"
+#include <GameboyTKP/gb_bus.h>
+#include <GameboyTKP/gb_ppu.h>
+#include <GameboyTKP/gb_timer.h>
+#include <GameboyTKP/gb_addresses.h>
+#include <include/disassembly_instr.h>
 namespace TKPEmu::Gameboy::QA {
     class MooneyeTestCase;
 }

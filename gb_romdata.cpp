@@ -1,4 +1,4 @@
-#include "gb_romdata.h"
+#include <GameboyTKP/gb_romdata.h>
 #include <GL/glew.h>
 
 namespace TKPEmu::Applications {

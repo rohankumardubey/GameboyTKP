@@ -1,4 +1,4 @@
-#include "gb_timer.h"
+#include <GameboyTKP/gb_timer.h>
 #include <iostream>
 #include <bitset>
 namespace TKPEmu::Gameboy::Devices {

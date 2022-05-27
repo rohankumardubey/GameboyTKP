@@ -1,8 +1,8 @@
 #pragma once
 #ifndef TKP_TOOLS_GBADDR_H
 #define TKP_TOOLS_GBADDR_H
-#include "../include/disassembly_instr.h"
-#include "gb_breakpoint.h"
+#include <include/disassembly_instr.h>
+#include <GameboyTKP/gb_breakpoint.h>
 #include <cstdint>
 using RegisterType = uint8_t;
 using BigRegisterType = uint16_t;
