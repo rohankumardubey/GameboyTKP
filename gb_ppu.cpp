@@ -115,6 +115,11 @@ namespace TKPEmu::Gameboy::Devices {
 				std::swap(screen_color_data_, screen_color_data_second_);
 			}
 		}
+		if (!enabled) {
+			clock_ = 0;
+			STAT &= 0b1111'1100;
+			LY = 0;
+		}
 	}
 	bool PPU::is_sprite_eligible(uint8_t sprite_y) {
 		bool use8x16 = LCDC & LCDCFlag::OBJ_SIZE;
