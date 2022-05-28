@@ -131,31 +131,31 @@ namespace TKPEmu::Gameboy::Devices {
 	}
 	void Bus::fill_fast_map() {
 		for (int i = 0x0; i < 0x40; i++) {
-			auto address = (i << 8) % 0x4000;
+			auto address = (i << 8) & 0x3FFF;
 			fast_map_[i << 8] = &((rom_banks_[0])[address]);
 		}
 		for (int i = 0x40; i < 0x80; i++) {
-			auto address = (i << 8) % 0x4000;
+			auto address = (i << 8) & 0x3FFF;
 			fast_map_[i << 8] = &((rom_banks_[1])[address]);
 		}
 		for (int i = 0x80; i < 0xA0; i++) {
-			auto address = (i << 8) % 0x2000;
+			auto address = (i << 8) & 0x1FFF;
 			fast_map_[i << 8] = &((vram_banks_[0])[address]);
 		}
 		for (int i = 0xC0; i < 0xD0; i++) {
-			auto address = (i << 8) % 0x1000;
+			auto address = (i << 8) & 0xFFF;
 			fast_map_[i << 8] = &(wram_banks_[0][address]);
 		}
 		for (int i = 0xD0; i < 0xE0; i++) {
-			auto address = (i << 8) % 0x1000;
+			auto address = (i << 8) & 0xFFF;
 			fast_map_[i << 8] = &(wram_banks_[1][address]);
 		}
 		for (int i = 0xE0; i < 0xF0; i++) {
-			auto address = (i << 8) % 0x1000;
+			auto address = (i << 8) & 0xFFF;
 			fast_map_[i << 8] = &(wram_banks_[0][address]);
 		}
 		for (int i = 0xF0; i < 0xFE; i++) {
-			auto address = (i << 8) % 0x1000;
+			auto address = (i << 8) & 0xFFF;
 			fast_map_[i << 8] = &(wram_banks_[1][address]);
 		}
 	}
