@@ -128,7 +128,7 @@ namespace TKPEmu::Gameboy {
 		}
 		*ofstream_ptr_ << "\n";
 	}
-	bool Gameboy::IsReadyToDraw() {
+	bool& Gameboy::IsReadyToDraw() {
 		return ppu_.ReadyToDraw;
 	}
 	bool* Gameboy::DebugSpriteTint() {

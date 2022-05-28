@@ -93,7 +93,6 @@ namespace TKPEmu::Gameboy::Devices {
 						clock_ += 8;
 					}
 					IF |= set_mode(MODE_HBLANK);
-					ReadyToDraw = true;
 					draw_scanline();
 					bus_.ScanlineChanges.clear();
 				}
@@ -113,6 +112,7 @@ namespace TKPEmu::Gameboy::Devices {
 				window_internal_temp_ = 0;
 				std::lock_guard<std::mutex> lg(*draw_mutex_);
 				std::swap(screen_color_data_, screen_color_data_second_);
+				ReadyToDraw = true;
 			}
 		}
 		if (!enabled) {
