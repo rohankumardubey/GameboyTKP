@@ -450,7 +450,7 @@ namespace TKPEmu::Gameboy::Devices {
 			}
 		}
 		unused_mem_area_ = 0xFF;
-		uint8_t read = redirect_address(address);
+		uint8_t read = fast_redirect_address(address);
 		return read;
 	}
 	uint16_t Bus::ReadL(uint16_t address) {
@@ -879,7 +879,7 @@ namespace TKPEmu::Gameboy::Devices {
 					break;
 				}
 			}
-			redirect_address(address) = data;
+			fast_redirect_address(address) = data;
 		}
 	}
 	void Bus::WriteL(uint16_t address, uint16_t data) {
