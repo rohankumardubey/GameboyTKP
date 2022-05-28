@@ -7,7 +7,8 @@ Gameboy backend written in C++ for [TKPEmu](https://github.com/OFFTKP/TKPEmu).
  - Disassembler/Debugger
  - Advanced breakpoints
  - Tracelogger
- - Save states 
+ - Save states
+ - Web server (check profile)
  - Rewind functionality (WIP)
 
 ## Images
