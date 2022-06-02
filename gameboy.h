@@ -87,6 +87,8 @@ namespace TKPEmu::Gameboy {
 		void reset_skip() override;
 		bool load_file(std::string path) override;
 		void update() override;
+		inline void update_spinlock();
+		inline void update_audio_sync();
 		void init_image();
 		std::string print() const override;
 		friend class TKPEmu::Applications::GameboyRomData;

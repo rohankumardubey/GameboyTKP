@@ -376,6 +376,9 @@ namespace TKPEmu::Gameboy {
 		ppu_.Reset();
 	}
 	void Gameboy::update() {
+		update_audio_sync();
+	}
+	void Gameboy::update_spinlock() {
 		if ((cpu_.TClock < cpu_.MaxCycles) || FastMode) {
 			CALLGRIND_START_INSTRUMENTATION;
 			if (cpu_.PC == 0x100) {
@@ -408,6 +411,32 @@ namespace TKPEmu::Gameboy {
 				frame_start = std::chrono::system_clock::now();
 				cpu_.TClock = 0;
 			}
+		}
+	}
+	void Gameboy::update_audio_sync() {
+		if ((apu_.IsQueueEmpty()) || FastMode) {
+			CALLGRIND_START_INSTRUMENTATION;
+			if (cpu_.PC == 0x100) {
+				bus_.BiosEnabled = false;
+			}
+			uint8_t old_if = interrupt_flag_;
+			int clk = 0;
+			if (!cpu_.skip_next_)
+				clk = cpu_.Update();
+			cpu_.skip_next_ = false;
+			if (timer_.Update(clk, old_if)) {
+				if (cpu_.halt_) {
+					cpu_.halt_ = false;
+					cpu_.skip_next_ = true;
+				}
+			}
+			ppu_.Update(clk);
+			apu_.Update(clk);
+			if (!cpu_.halt_)
+				log_state();
+			CALLGRIND_STOP_INSTRUMENTATION;
+		} else {
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
 	}
 	std::string Gameboy::print() const { 
