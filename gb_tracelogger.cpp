@@ -3,6 +3,7 @@
 #include <GameboyTKP/gb_tracelogger.h>
 #include <GameboyTKP/gb_addresses.h>
 #include <imgui/imgui.h>
+#include <include/error_factory.hxx>
 
 namespace TKPEmu::Applications {
 	GameboyTracelogger::GameboyTracelogger(std::string menu_title, std::string window_title)
@@ -10,11 +11,10 @@ namespace TKPEmu::Applications {
 	{
         std::fill(available_types_.begin(), available_types_.end(), true);
         std::string path = std::filesystem::current_path();
-        if (path.length() < PATH_MAX) {
+        if (path.length() < PATH_MAX) [[likely]] {
             strncpy(path_buf_, path.data(), PATH_MAX);
         } else {
-            std::cerr << "Error: Executable path too long" << std::endl;
-            exit(1);
+            throw ErrorFactory::generate_exception(__func__, __LINE__, "Executable path too long");
         }
     }
 	void GameboyTracelogger::v_draw() {
@@ -60,8 +60,7 @@ namespace TKPEmu::Applications {
                     emulator_->StartLogging(log_path_);
                     is_logging_ = true;
                 } else {
-                    std::cerr << "Error: Emulator is nullptr" << std::endl;
-                    exit(1);
+                    throw ErrorFactory::generate_exception(__func__, __LINE__, "Emulator is nullptr");
                 }
             }
         } else {
@@ -70,8 +69,7 @@ namespace TKPEmu::Applications {
                     emulator_->StopLogging();
                     is_logging_ = false;
                 } else {
-                    std::cerr << "Error: Emulator is nullptr" << std::endl;
-                    exit(1);
+                    throw ErrorFactory::generate_exception(__func__, __LINE__, "Emulator is nullptr");
                 }
             }
         }
