@@ -378,7 +378,7 @@ namespace TKPEmu::Gameboy {
 	void Gameboy::update() {
 		update_audio_sync();
 	}
-	void Gameboy::update_spinlock() {
+	void Gameboy::update_spinloop() {
 		if ((cpu_.TClock < cpu_.MaxCycles) || FastMode) {
 			CALLGRIND_START_INSTRUMENTATION;
 			if (cpu_.PC == 0x100) {

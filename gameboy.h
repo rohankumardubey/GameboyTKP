@@ -73,7 +73,6 @@ namespace TKPEmu::Gameboy {
 		GameboyKeys action_keys_;
 		uint8_t& joypad_, &interrupt_flag_;
 		std::chrono::system_clock::time_point frame_start = std::chrono::system_clock::now();
-		std::chrono::system_clock::time_point second_start = std::chrono::system_clock::now();
 		int frames = 0;
 		int frame_counter = 0;
 		std::unique_ptr<std::vector<LogType>> log_types_ptr_;
@@ -87,7 +86,9 @@ namespace TKPEmu::Gameboy {
 		void reset_skip() override;
 		bool load_file(std::string path) override;
 		void update() override;
-		inline void update_spinlock();
+		// this is the old update function that was replaced by update_audio_sync
+		// keeping it anyway
+		inline void update_spinloop();
 		inline void update_audio_sync();
 		void init_image();
 		std::string print() const override;
