@@ -47,6 +47,7 @@ namespace TKPEmu::Gameboy {
 		bool& IsReadyToDraw() override;
 		void SetLogTypes(std::unique_ptr<std::vector<LogType>> types_ptr);
 		std::string GetScreenshotHash() override;
+		std::vector<std::string> Disassemble(std::string instr) override;
         DisInstr GetInstruction(uint16_t address);
 		bool AddBreakpoint(GBBPArguments bp);
 		bool* DebugSpriteTint();

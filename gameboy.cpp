@@ -363,6 +363,39 @@ namespace TKPEmu::Gameboy {
 	std::string Gameboy::GetScreenshotHash() {
 		return md5(bus_.GetVramDump());
 	}
+	std::vector<std::string> Gameboy::Disassemble(std::string instr) {
+		auto get_hex = [](char c) {
+			switch (c) {
+				case '0':
+				case '1':
+				case '2':
+				case '3':
+				case '4':
+				case '5':
+				case '6':
+				case '7':
+				case '8':
+				case '9':
+				return uint8_t(c - '0');
+				case 'A':
+				case 'B':
+				case 'C':
+				case 'D':
+				case 'E':
+				case 'F':
+				return uint8_t(c - 'A' + 10);
+			}
+			return uint8_t(0);
+		};
+		std::vector<std::string> ret;
+		uint8_t ins = (get_hex(instr[0]) << 4) | get_hex(instr[1]);
+		ret.push_back(cpu_.Instructions[ins].name);
+		if (instr.size() == 4)
+			ret.push_back(instr.substr(2, 2));
+		else if (instr.size() == 6)
+			ret.push_back(instr.substr(2, 4));
+		return ret;
+	}
 	void Gameboy::reset_normal() {
 		bus_.SoftReset();
 		cpu_.Reset(false);
