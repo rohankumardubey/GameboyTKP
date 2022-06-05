@@ -42,7 +42,7 @@ namespace TKPEmu::Gameboy {
 		~Gameboy();
 		void HandleKeyDown(SDL_Keycode key) override;
 		void HandleKeyUp(SDL_Keycode key) override;
-		float* GetScreenData() override;
+		void* GetScreenData() override;
 		std::string GetEmulatorName() override;
 		bool& IsReadyToDraw() override;
 		void SetLogTypes(std::unique_ptr<std::vector<LogType>> types_ptr);

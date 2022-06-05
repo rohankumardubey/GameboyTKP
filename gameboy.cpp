@@ -567,7 +567,7 @@ namespace TKPEmu::Gameboy {
 	void Gameboy::RemoveBreakpoint(int index) {
 		Breakpoints.erase(Breakpoints.begin() + index);
 	}
-	float* Gameboy::GetScreenData() {
+	void* Gameboy::GetScreenData() {
 		return ppu_.GetScreenData();
 	}
 	std::string Gameboy::GetEmulatorName() {
