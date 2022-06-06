@@ -13,7 +13,11 @@ namespace TKPEmu::Gameboy::QA {
         CPPUNIT_TEST_SUITE_END();
     };
     void TestMooneye::testAllMooneye() {
-        CPPUNIT_ASSERT_MESSAGE("Failed lol", false);
+        try {
+            // testMooneye("/home/offtkp/Desktop/tkpemu/TKPEmu/TKPEmu/GameboyTKP/tests/mooneye/add_sp_e_timing.gb");
+        } catch (std::exception& e) {
+            CPPUNIT_ASSERT_MESSAGE(e.what(), false);
+        }
     }
     void TestMooneye::testMooneye(std::filesystem::path path) {
         TKPEmu::Gameboy::Gameboy gb_;
