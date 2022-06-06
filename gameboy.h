@@ -18,7 +18,7 @@ namespace TKPEmu {
 		class GameboyRomData;
 	}
 	namespace Gameboy::QA {
-		struct MooneyeTestCase;
+		struct TestMooneye;
 	}
 }
 namespace TKPEmu::Gameboy {
@@ -94,7 +94,7 @@ namespace TKPEmu::Gameboy {
 		void init_image();
 		std::string print() const override;
 		friend class TKPEmu::Applications::GameboyRomData;
-		friend class TKPEmu::Gameboy::QA::MooneyeTestCase;
+		friend class TKPEmu::Gameboy::QA::TestMooneye;
 	};
 }
 #endif

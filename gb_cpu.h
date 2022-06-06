@@ -164,6 +164,7 @@ namespace TKPEmu::Gameboy::Devices {
         unsigned long TotalClocks = 0;
         void Reset(bool skip);
         int Update();
+        uint8_t GetLastInstr() { return last_instr_; }
 
         friend class TKPEmu::Gameboy::QA::MooneyeTestCase;
     };
