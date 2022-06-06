@@ -27,6 +27,7 @@ namespace TKPEmu::Gameboy::Devices {
         size_t sample_index_ = 0;
         uint8_t& NR52_;
         ChannelArrayPtr channel_array_ptr_;
+        bool init_ = false;
     };
 }
 #endif

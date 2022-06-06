@@ -14,6 +14,12 @@ namespace TKPEmu::Gameboy::Devices {
         }
     }
     void APU::InitSound() {
+        if (init_) {
+            SDL_ClearQueuedAudio(device_id_);
+            std::fill(samples_.begin(), samples_.end(), 0);
+            sample_index_ = 0;
+            return;
+        }
         if (UseSound) {
             SDL_AudioSpec want;
             SDL_zero(want);
@@ -22,16 +28,17 @@ namespace TKPEmu::Gameboy::Devices {
             want.channels = 1;
             want.samples = 512;
             SDL_AudioSpec have;
-            if (SDL_OpenAudio(&want, &have) != 0) {
-                SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "Failed to open audio: %s", SDL_GetError());
-            }
+            // if (SDL_OpenAudio(&want, &have) != 0) {
+            //     SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "Failed to open audio: %s", SDL_GetError());
+            // }
+            device_id_ = SDL_OpenAudioDevice(0, 0, &want, &have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_SAMPLES_CHANGE);
             if (want.format != have.format) {
                 SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "Failed to get the desired AudioSpec");
             }
-            device_id_ = SDL_OpenAudioDevice(0, 0, &want, &have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_SAMPLES_CHANGE);
             float i = 0;
             std::fill(samples_.begin(), samples_.end(), 0);
             SDL_PauseAudioDevice(device_id_, 0);
+            init_ = true;
         }
     }
     void APU::Update(int clk) {
