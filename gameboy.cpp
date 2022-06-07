@@ -361,7 +361,8 @@ namespace TKPEmu::Gameboy {
 		UpdateThread.detach();
 	}
 	std::string Gameboy::GetScreenshotHash() {
-		return md5(bus_.GetVramDump());
+		// return md5(bus_.GetVramDump());
+		return ""; // TODO: wtf bug?
 	}
 	std::vector<std::string> Gameboy::Disassemble(std::string instr) {
 		auto get_hex = [](char c) {
