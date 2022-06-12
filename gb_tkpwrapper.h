@@ -23,6 +23,7 @@ namespace TKPEmu {
 }
 namespace TKPEmu::Gameboy {
 	class Gameboy : public Emulator {
+		TKP_EMULATOR(Gameboy);
 	private:
 		using GameboyPalettes = std::array<std::array<float, 3>,4>;
 		using GameboyKeys = std::array<SDL_Keycode, 4>;
@@ -37,14 +38,6 @@ namespace TKPEmu::Gameboy {
 		using DisInstr = TKPEmu::Tools::DisInstr;
 		using GameboyBreakpoint = TKPEmu::Gameboy::Utils::GameboyBreakpoint;
 	public:
-		Gameboy();
-		Gameboy(std::any args);
-		~Gameboy();
-		void HandleKeyDown(SDL_Keycode key) override;
-		void HandleKeyUp(SDL_Keycode key) override;
-		void* GetScreenData() override;
-		std::string GetEmulatorName() override;
-		bool& IsReadyToDraw() override;
 		void SetLogTypes(std::unique_ptr<std::vector<LogType>> types_ptr);
 		std::string GetScreenshotHash() override;
 		std::vector<std::string> Disassemble(std::string instr) override;
@@ -81,11 +74,8 @@ namespace TKPEmu::Gameboy {
 		void save_state(std::ofstream& ofstream) override;
 		void load_state(std::ifstream& ifstream) override;
 		void start_normal() override;
-		void start_debug() override;
 		void start_console() override;
 		void reset_normal() override;
-		void reset_skip() override;
-		bool load_file(std::string path) override;
 		void update();
 		// this is the old update function that was replaced by update_audio_sync
 		// keeping it anyway

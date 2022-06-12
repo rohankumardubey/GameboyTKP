@@ -571,9 +571,6 @@ namespace TKPEmu::Gameboy {
 	void* Gameboy::GetScreenData() {
 		return ppu_.GetScreenData();
 	}
-	std::string Gameboy::GetEmulatorName() {
-		return "GameboyTKP";
-	}
 	Devices::Cartridge& Gameboy::GetCartridge() {
 		return bus_.GetCartridge();
 	}
