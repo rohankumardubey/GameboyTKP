@@ -5,7 +5,7 @@
 // TODO: writes to vram have special string
 #include <array>
 #include <include/base_application.h>
-#include <GameboyTKP/gameboy.h>
+#include <GameboyTKP/gb_tkpwrapper.h>
 #define PATH_MAX 4096
 namespace TKPEmu::Applications {
 	using Gameboy = TKPEmu::Gameboy::Gameboy;

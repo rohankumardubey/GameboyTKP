@@ -10,7 +10,7 @@
 #include <execution>
 #include <include/base_application.h>
 #include <GameboyTKP/gb_breakpoint.h>
-#include <GameboyTKP/gameboy.h>
+#include <GameboyTKP/gb_tkpwrapper.h>
 namespace TKPEmu::Applications {
     class GameboyDisassembler : public IMApplication {
     private:

@@ -86,11 +86,11 @@ namespace TKPEmu::Gameboy {
 		void reset_normal() override;
 		void reset_skip() override;
 		bool load_file(std::string path) override;
-		void update() override;
+		void update();
 		// this is the old update function that was replaced by update_audio_sync
 		// keeping it anyway
-		inline void update_spinloop();
-		inline void update_audio_sync();
+		__always_inline void update_spinloop();
+		__always_inline void update_audio_sync();
 		void init_image();
 		std::string print() const override;
 		friend class TKPEmu::Applications::GameboyRomData;

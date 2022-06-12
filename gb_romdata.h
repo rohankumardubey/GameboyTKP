@@ -4,7 +4,7 @@
 #include <string>
 #include <chrono>
 #include <include/base_application.h>
-#include <GameboyTKP/gameboy.h>
+#include <GameboyTKP/gb_tkpwrapper.h>
 #include <GameboyTKP/gb_cartridge.h>
 #include <GL/glew.h>
 namespace TKPEmu::Applications {

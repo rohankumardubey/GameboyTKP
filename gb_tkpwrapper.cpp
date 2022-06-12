@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 #include <filesystem>
 // #include <valgrind/callgrind.h>
-#include <GameboyTKP/gameboy.h>
+#include <GameboyTKP/gb_tkpwrapper.h>
 #include <lib/md5.h>
 #include <include/console_colors.h>
 #ifndef CALLGRIND_START_INSTRUMENTATION

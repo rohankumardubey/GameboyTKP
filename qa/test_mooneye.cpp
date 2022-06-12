@@ -1,4 +1,4 @@
-#include "../gameboy.h"
+#include "../gb_tkpwrapper.h"
 #include <filesystem>
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
