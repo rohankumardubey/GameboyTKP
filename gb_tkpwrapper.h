@@ -54,6 +54,8 @@ namespace TKPEmu::Gameboy {
 		Cartridge& GetCartridge();
 		CPU& GetCPU() { return cpu_; }
 		PPU& GetPPU() { return ppu_; }
+		// Used by automated tests
+		void Update() { update(); }
 		std::vector<GameboyBreakpoint> Breakpoints{};
 		std::vector<DisInstr> Instructions{};
 	private:

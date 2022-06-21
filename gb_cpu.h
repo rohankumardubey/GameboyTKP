@@ -16,6 +16,10 @@ namespace TKPEmu::Gameboy::QA {
 }
 namespace TKPEmu::Gameboy::Devices {
     class CPU {
+    public:
+        // CPU registers
+        RegisterType A, B, C, D, E, H, L, F;
+        BigRegisterType PC, SP;
     private:
         Bus& bus_;
         PPU& ppu_;
@@ -153,9 +157,6 @@ namespace TKPEmu::Gameboy::Devices {
             { "SET6B", &CPU::SET6B }, { "SET6C", &CPU::SET6C }, { "SET6D", &CPU::SET6D }, { "SET6E", &CPU::SET6E }, { "SET6H", &CPU::SET6H }, { "SET6L", &CPU::SET6L }, { "SET6HL", &CPU::SET6HL }, { "SET6A", &CPU::SET6A }, { "SET7B", &CPU::SET7B }, { "SET7C", &CPU::SET7C }, { "SET7D", &CPU::SET7D }, { "SET7E", &CPU::SET7E }, { "SET7H", &CPU::SET7H }, { "SET7L", &CPU::SET7L }, { "SET7HL", &CPU::SET7HL }, { "SET7A", &CPU::SET7A }
         } };
 
-        // CPU registers
-        RegisterType A, B, C, D, E, H, L, F;
-        BigRegisterType PC, SP;
         // Memory mapped registers, they are a reference to a position in memory
         RegisterType &IF, &IE, &LY, &STAT;
         const int ClockSpeed = 4194304;
