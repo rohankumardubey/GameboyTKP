@@ -31,6 +31,18 @@ namespace {
         result->first = false;
         CPPUNIT_ASSERT_MESSAGE("4 million instructions exceeded", false);
     }
+    void testBlargg(std::string path, TestResult* result) {
+        TKPEmu::Gameboy::Gameboy gb_;
+        CPPUNIT_ASSERT_MESSAGE("Could not load file: " + path, gb_.LoadFromFile(path));
+        gb_.SkipBoot = true;
+        gb_.Reset();
+        gb_.FastMode = true;
+        auto& cpu = gb_.GetCPU();
+
+
+        result->first = false;
+        CPPUNIT_ASSERT_MESSAGE("10 million instructions exceeded", false);
+    }
 }
 
 namespace TKPEmu::Gameboy::QA {
