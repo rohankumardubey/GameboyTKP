@@ -450,9 +450,6 @@ namespace TKPEmu::Gameboy {
 	void Gameboy::update_audio_sync() {
 		if ((apu_.IsQueueEmpty()) || FastMode) {
 			CALLGRIND_START_INSTRUMENTATION;
-			if (cpu_.PC == 0x100) {
-				bus_.BiosEnabled = false;
-			}
 			uint8_t old_if = interrupt_flag_;
 			int clk = 0;
 			if (!cpu_.skip_next_)

@@ -158,6 +158,11 @@ namespace TKPEmu::Gameboy::Devices {
 			auto address = (i << 8) & 0xFFF;
 			fast_map_[i << 8] = &(wram_banks_[1][address]);
 		}
+		if (BiosEnabled) {
+			// use slow redirecting
+			fast_map_[0x0000] = nullptr;
+			fast_map_[0x0100] = nullptr;
+		}
 	}
 	void Bus::refill_fast_map_rom() {
 		auto ct = cartridge_.GetCartridgeType();
@@ -220,6 +225,11 @@ namespace TKPEmu::Gameboy::Devices {
 				break;
 			}
 		}
+		if (BiosEnabled) {
+			// use slow redirecting
+			fast_map_[0x0000] = nullptr;
+			fast_map_[0x0100] = nullptr;
+		}
 	}
 	void Bus::refill_fast_map_vram() {
 		for (int i = 0x80; i < 0xA0; i++) {
@@ -268,6 +278,9 @@ namespace TKPEmu::Gameboy::Devices {
 					}
 					if (address < 0x100) {
 						return bios[address];
+					} else if (address == 0x100) {
+						BiosEnabled = false;
+						refill_fast_map_rom();
 					}
 				}
 				// If gameboy is not in bios mode, or if the address >= 0x100, we fallthrough
@@ -938,6 +951,7 @@ namespace TKPEmu::Gameboy::Devices {
 				is.close();
 			}
 		}
+		BiosEnabled = true;
 		if (ret)
 			fill_fast_map();
 		UseCGB = cartridge_.UseCGB;
