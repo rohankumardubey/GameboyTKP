@@ -3,7 +3,6 @@
 #define TKP_GB_GAMEBOY_H
 #include <array>
 #include <include/emulator.h>
-#include <include/disassembly_instr.h>
 #include <GameboyTKP/gb_breakpoint.h>
 #include <GameboyTKP/gb_addresses.h>
 #include <GameboyTKP/gb_cpu.h>
@@ -35,14 +34,11 @@ namespace TKPEmu::Gameboy {
 		using Bus = TKPEmu::Gameboy::Devices::Bus;
 		using Timer = TKPEmu::Gameboy::Devices::Timer;
 		using Cartridge = TKPEmu::Gameboy::Devices::Cartridge;
-		using DisInstr = TKPEmu::Tools::DisInstr;
 		using GameboyBreakpoint = TKPEmu::Gameboy::Utils::GameboyBreakpoint;
 	public:
 		void SetLogTypes(std::unique_ptr<std::vector<LogType>> types_ptr);
 		std::string GetScreenshotHash() override;
 		std::vector<std::string> Disassemble(std::string instr) override;
-        DisInstr GetInstruction(uint16_t address);
-		bool AddBreakpoint(GBBPArguments bp);
 		bool* DebugSpriteTint();
 		bool* GetDrawSprites();
 		bool* GetDrawWindow();
@@ -56,8 +52,6 @@ namespace TKPEmu::Gameboy {
 		PPU& GetPPU() { return ppu_; }
 		// Used by automated tests
 		void Update() { update(); }
-		std::vector<GameboyBreakpoint> Breakpoints{};
-		std::vector<DisInstr> Instructions{};
 	private:
 		ChannelArrayPtr channel_array_ptr_;
 		Bus bus_;
@@ -76,7 +70,6 @@ namespace TKPEmu::Gameboy {
 		void save_state(std::ofstream& ofstream) override;
 		void load_state(std::ifstream& ifstream) override;
 		void start_normal() override;
-		void start_console() override;
 		void reset_normal() override;
 		void update();
 		// this is the old update function that was replaced by update_audio_sync

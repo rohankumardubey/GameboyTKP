@@ -1,6 +1,8 @@
 #include <GameboyTKP/gb_ppu.h>
 #include <GL/glew.h>
 #include <iostream>
+#include <algorithm>
+
 namespace TKPEmu::Gameboy::Devices {
 	enum STATMode {
 		MODE_OAM_SCAN = 2,

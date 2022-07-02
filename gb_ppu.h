@@ -2,7 +2,6 @@
 #ifndef TKP_GB_PPU_H
 #define TKP_GB_PPU_H
 #include <GameboyTKP/gb_bus.h>
-#include <include/TKPImage.h>
 #include <GameboyTKP/gb_addresses.h>
 #include <mutex>
 #include <array>
@@ -11,8 +10,6 @@
 namespace TKPEmu::Gameboy::Devices {
 	constexpr int FRAME_CYCLES = 70224;
 	class PPU {
-	private:
-		using TKPImage = TKPEmu::Tools::TKPImage;
 	public:
 		bool ReadyToDraw = false;
 		bool SpriteDebugColor = false;

@@ -10,6 +10,7 @@
 #include <memory>
 #include <deque>
 #include <optional>
+#include <unordered_map>
 #include <GameboyTKP/gb_cartridge.h>
 #include <GameboyTKP/gb_addresses.h>
 #include <GameboyTKP/gb_apu.h>
@@ -61,7 +62,7 @@ namespace TKPEmu::Gameboy::Devices {
             0x21, 0x04, 0x01, 0x11, 0xA8, 0x00, 0x1A, 0x13, 0xBE, 0x20, 0xFE, 0x23, 0x7D, 0xFE, 0x34, 0x20,
             0xF5, 0x06, 0x19, 0x78, 0x86, 0x23, 0x05, 0x20, 0xFB, 0x86, 0x20, 0xFE, 0x3E, 0x01, 0xE0, 0x50,
         };
-        Bus(ChannelArrayPtr channel_array_ptr, std::vector<DisInstr>& instrs);
+        Bus(ChannelArrayPtr channel_array_ptr);
         ~Bus();
         std::string GetVramDump(); // TODO: remove this function, switch to QA struct for test
         uint8_t Read(uint16_t address);
@@ -133,7 +134,6 @@ namespace TKPEmu::Gameboy::Devices {
         std::array<uint8_t, 0x40> obj_cram_{};
         std::array<uint8_t*, 0x10000> fast_map_{};
         ChannelArrayPtr channel_array_ptr_;
-        std::vector<DisInstr>& instructions_;
         uint8_t& redirect_address(uint16_t address);
         uint8_t& fast_redirect_address(uint16_t address);
         void fill_fast_map();

@@ -1,13 +1,9 @@
 #pragma once
 #ifndef TKP_TOOLS_GBADDR_H
 #define TKP_TOOLS_GBADDR_H
-#include <include/disassembly_instr.h>
-#include <GameboyTKP/gb_breakpoint.h>
 #include <cstdint>
 using RegisterType = uint8_t;
 using BigRegisterType = uint16_t;
-using DisInstr = TKPEmu::Tools::DisInstr;
-using GBBPArguments = TKPEmu::Gameboy::Utils::GBBPArguments;
 constexpr size_t LogTypeSize = 17;
 enum class LogType {
     PC, InstrName, InstrNum,

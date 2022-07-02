@@ -17,7 +17,7 @@
 namespace TKPEmu::Gameboy {
 	Gameboy::Gameboy() : 
 		channel_array_ptr_(std::make_shared<ChannelArray>()),
-		bus_(channel_array_ptr_, Instructions),
+		bus_(channel_array_ptr_),
 		apu_(channel_array_ptr_, bus_.GetReference(addr_NR52)),
 		ppu_(bus_, &DrawMutex),
 		timer_(channel_array_ptr_, bus_),
@@ -26,8 +26,6 @@ namespace TKPEmu::Gameboy {
 		interrupt_flag_(bus_.GetReference(addr_if))
 	{
 		(*channel_array_ptr_.get())[0].HasSweep = true;
-		EmulatorImage.width = 160;
-		EmulatorImage.height = 144;
 	}
 	Gameboy::Gameboy(std::any args) :
 		Gameboy()
@@ -36,12 +34,9 @@ namespace TKPEmu::Gameboy {
 			auto keys = std::any_cast<std::pair<GameboyKeys, GameboyKeys>>(args);
 			SetKeysLate(keys.first, keys.second);
 		}
-		init_image();
 	}
 	Gameboy::~Gameboy() {
 		Stopped.store(true);
-		if (start_options != EmuStartOptions::Console)
-			glDeleteTextures(1, &EmulatorImage.texture);
 	}
 	void Gameboy::SetKeysLate(GameboyKeys dirkeys, GameboyKeys actionkeys) {
 		direction_keys_ = dirkeys;
@@ -234,90 +229,6 @@ namespace TKPEmu::Gameboy {
 		UpdateThread = std::thread(func);
 		UpdateThread.detach();
 	}
-	void Gameboy::start_console() {
-		// Don't use sound in this mode
-		apu_.UseSound = false;
-		Paused = false;
-		Stopped = false;
-		Reset();
-		auto& pal = GetPalette();
-		for (int i = 0; i < 3; i++) {
-			pal[0][i] = 0xFF;
-		}
-		for (int i = 0; i < 3; i++) {
-			pal[1][i] = 0xA9;
-		}
-		for (int i = 0; i < 3; i++) {
-			pal[2][i] = 0x54;
-		}
-		while (!Stopped.load()) {
-			if (!Paused.load()) {
-				update();
-				if (cpu_.TotalClocks == ScreenshotClocks - 1) {
-					std::osyncstream scout(std::cout);
-					if (TakeScreenshot) {
-						std::string name = CurrentDirectory + "/" + CurrentFilename + "_result.bmp";
-						scout << "Screenshot saved: " << name << std::endl;
-						Screenshot(name);
-					} else {
-						if (ScreenshotHash == GetScreenshotHash()) {
-							scout << "[" << color_success << CurrentFilename << color_reset "]: Passed" << std::endl;
-							Result = TKPEmu::Testing::TestResult::Passed;
-						} else {
-							scout << "[" << color_error << CurrentFilename << color_reset "]: Failed" << std::endl;
-							Result = TKPEmu::Testing::TestResult::Failed;
-						}
-					}
-					Stopped = true;
-				}
-				if (action_ptr_ && *action_ptr_ != 0) {
-                    SDL_Keycode key = SDLK_UNKNOWN;
-                    switch (*action_ptr_) {
-                        case 1: {
-                            key = SDLK_UP;
-                            break;
-                        }
-                        case 2: {
-                            key = SDLK_RIGHT;
-                            break;
-                        }
-                        case 3: {
-                            key = SDLK_DOWN;
-                            break;
-                        }
-                        case 4: {
-                            key = SDLK_LEFT;
-                            break;
-                        }
-                        case 5: {
-                            key = SDLK_z;
-                            break;
-                        }
-                        case 6: {
-                            key = SDLK_x;
-                            break;
-                        }
-                        case 7: {
-                            key = SDLK_RETURN;
-                            break;
-                        }
-                    }
-                    if (key != SDLK_UNKNOWN) {
-                        HandleKeyDown(key);
-                        std::thread th([this, &key]() {
-                            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                            HandleKeyUp(key);
-                            std::this_thread::sleep_for(std::chrono::milliseconds(800));
-                            Screenshot("image.bmp");
-                        });
-                        th.detach();
-                    }
-                    *action_ptr_ = 0;
-
-                }
-			}
-		}
-	}
 	void Gameboy::start_debug() {
 		apu_.UseSound = true;
 		apu_.InitSound();
@@ -334,20 +245,7 @@ namespace TKPEmu::Gameboy {
 			while (!Stopped.load()) {
 				if (!Paused.load()) {
 					std::lock_guard<std::mutex> lg(DebugUpdateMutex);
-					bool broken = false;
-					if (!first_instr) {
-						for (const auto& bp : Breakpoints) {
-							bool brk = bp.Check();
-							if (brk) {
-								InstructionBreak.store(cpu_.PC);
-								Paused.store(true);
-								broken = true;
-							}
-						}
-					}
-					first_instr = false;
-					if (!broken)
-						update();
+					update();
 				} else {
 					Step.wait(false);
 					std::lock_guard<std::mutex> lg(DebugUpdateMutex);
@@ -501,70 +399,6 @@ namespace TKPEmu::Gameboy {
 		ppu_.UseCGB = bus_.UseCGB;
 		return loaded;
 	}
-	DisInstr Gameboy::GetInstruction(uint16_t address) {
-		uint8_t ins = bus_.Read(address);
-		auto time = InstrTimes[ins];
-		auto instr = DisInstr(address, ins, time);
-		uint8_t p1 = 0, p2 = 0;
-		if (time == 1) {
-			p1 = bus_.Read(address + 1);
-			instr.Params[0] = p1;
-			return instr;
-		}
-		else if (time == 2) {
-			p1 = bus_.Read(address + 1);
-			p2 = bus_.Read(address + 2);
-			instr.Params[0] = p1;
-			instr.Params[1] = p2;
-			return instr;
-		}
-		else {
-			return instr;
-		}
-	}
-	bool Gameboy::AddBreakpoint(GBBPArguments bp) {
-		using RegCheckVector = std::vector<std::function<bool()>>;
-		RegCheckVector register_checks;
-		// TODO: Check if breakpoint already exists before adding it
-		// We calculate which of these checks we need, and add them all to a vector to save execution time
-		// Before being copied to the lambda, the values are decremented, as to keep them (1-256) -> (0-255)
-		// because we used the value of 0 to check whether this is used or not.
-		if (bp.A_using) { register_checks.push_back([this, gbbp = bp.A_value]() { return cpu_.A == gbbp; }); }
-		if (bp.B_using) { register_checks.push_back([this, gbbp = bp.B_value]() { return cpu_.B == gbbp; }); }
-		if (bp.C_using) { register_checks.push_back([this, gbbp = bp.C_value]() { return cpu_.C == gbbp; }); }
-		if (bp.D_using) { register_checks.push_back([this, gbbp = bp.D_value]() { return cpu_.D == gbbp; }); }
-		if (bp.E_using) { register_checks.push_back([this, gbbp = bp.E_value]() { return cpu_.E == gbbp; }); }
-		if (bp.F_using) { register_checks.push_back([this, gbbp = bp.F_value]() { return cpu_.F == gbbp; }); }
-		if (bp.H_using) { register_checks.push_back([this, gbbp = bp.H_value]() { return cpu_.H == gbbp; }); }
-		if (bp.L_using) { register_checks.push_back([this, gbbp = bp.L_value]() { return cpu_.L == gbbp; }); }
-		if (bp.PC_using) { register_checks.push_back([this, gbbp = bp.PC_value]() { return cpu_.PC == gbbp; }); }
-		if (bp.SP_using) { register_checks.push_back([this, gbbp = bp.SP_value]() { return cpu_.SP == gbbp; }); }
-		if (bp.SP_using) { register_checks.push_back([this, gbbp = bp.SP_value]() { return cpu_.SP == gbbp; }); }
-		if (bp.Ins_using) { register_checks.push_back([this, gbbp = bp.Ins_value]() { return (bus_.Read(cpu_.PC)) == gbbp; }); }
-		if (bp.Clocks_using) { register_checks.push_back([this, gbbp = bp.Clocks_value]() { return cpu_.TotalClocks == gbbp; }); }
-		auto lamb = [rc = std::move(register_checks)]() {
-			for (auto& check : rc) {
-				if (!check()) {
-					// If any of the checks fails, that means the breakpoint shouldn't trigger
-					return false;
-				}
-			}
-			// Every check is passed, trigger breakpoint
-			return true;
-		};
-		GameboyBreakpoint gbp;
-		gbp.Args = std::move(bp);
-		gbp.SetChecks(std::move(lamb));
-		std::cout << "Breakpoint added:\n" << gbp.GetName() << std::endl;
-		bool ret = false;
-		if (gbp.BPFromTable)
-			ret = true;
-		Breakpoints.push_back(std::move(gbp));
-		return ret;
-	}
-	void Gameboy::RemoveBreakpoint(int index) {
-		Breakpoints.erase(Breakpoints.begin() + index);
-	}
 	void* Gameboy::GetScreenData() {
 		return ppu_.GetScreenData();
 	}
@@ -573,29 +407,6 @@ namespace TKPEmu::Gameboy {
 	}
 	const auto& Gameboy::GetOpcodeDescription(uint8_t opc) {
 		return cpu_.Instructions[opc].name;
-	}
-	void Gameboy::init_image() {
-		GLuint image_texture;
-		glGenTextures(1, &image_texture);
-		glBindTexture(GL_TEXTURE_2D, image_texture);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glBindTexture(GL_TEXTURE_2D, image_texture);
-		glTexImage2D(
-			GL_TEXTURE_2D,
-			0,
-			GL_RGBA,
-			160,
-			144,
-			0,
-			GL_RGBA,
-			GL_FLOAT,
-			NULL
-		);
-		glBindTexture(GL_TEXTURE_2D, 0);
-		EmulatorImage.texture = image_texture;
 	}
 	Gameboy::GameboyPalettes& Gameboy::GetPalette() {
 		return bus_.Palette;
