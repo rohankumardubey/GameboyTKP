@@ -53,6 +53,10 @@ namespace TKPEmu::Gameboy {
 		while (!Stopped.load()) {
 			if (!Paused.load()) {
 				update();
+				while (MessageQueue->PollRequests()) {
+					auto request = MessageQueue->PopRequest();
+					poll_request(request);
+				}
 			} else {
 				Step.wait(false);
 				Step.store(false);
@@ -119,5 +123,8 @@ namespace TKPEmu::Gameboy {
 	}
 	void* Gameboy::GetScreenData() {
 		return ppu_.GetScreenData();
+	}
+	bool Gameboy::poll_uncommon_request(const Request& request) {
+		return false;
 	}
 }
