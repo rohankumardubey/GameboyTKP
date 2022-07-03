@@ -36,20 +36,6 @@ namespace TKPEmu::Gameboy {
 		using Cartridge = TKPEmu::Gameboy::Devices::Cartridge;
 		using GameboyBreakpoint = TKPEmu::Gameboy::Utils::GameboyBreakpoint;
 	public:
-		void SetLogTypes(std::unique_ptr<std::vector<LogType>> types_ptr);
-		std::string GetScreenshotHash() override;
-		std::vector<std::string> Disassemble(std::string instr) override;
-		bool* DebugSpriteTint();
-		bool* GetDrawSprites();
-		bool* GetDrawWindow();
-		bool* GetDrawBackground();
-		void RemoveBreakpoint(int index);
-		void SetKeysLate(GameboyKeys dirkeys, GameboyKeys actionkeys);
-		const auto& GetOpcodeDescription(uint8_t opc);
-		GameboyPalettes& GetPalette();
-		Cartridge& GetCartridge();
-		CPU& GetCPU() { return cpu_; }
-		PPU& GetPPU() { return ppu_; }
 		// Used by automated tests
 		void Update() { update(); }
 	private:
@@ -62,24 +48,11 @@ namespace TKPEmu::Gameboy {
 		GameboyKeys direction_keys_;
 		GameboyKeys action_keys_;
 		uint8_t& joypad_, &interrupt_flag_;
-		std::chrono::system_clock::time_point frame_start = std::chrono::system_clock::now();
-		int frames = 0;
-		int frame_counter = 0;
 		std::unique_ptr<std::vector<LogType>> log_types_ptr_;
-		void v_log_state() override;
-		void save_state(std::ofstream& ofstream) override;
-		void load_state(std::ifstream& ifstream) override;
-		void start_normal() override;
-		void reset_normal() override;
 		void update();
 		// this is the old update function that was replaced by update_audio_sync
 		// keeping it anyway
-		__always_inline void update_spinloop();
 		__always_inline void update_audio_sync();
-		void init_image();
-		std::string print() const override;
-		friend class TKPEmu::Applications::GameboyRomData;
-		friend class TKPEmu::Gameboy::QA::TestMooneye;
 	};
 }
 #endif
