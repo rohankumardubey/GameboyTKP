@@ -135,11 +135,6 @@ namespace TKPEmu::Gameboy::Devices {
 		return false;
  	}
 	void PPU::Reset() {
-		for (int i = 0; i < 4; i++) {
-			bus_.Palette[i][0] = 255 - 64 * i;
-			bus_.Palette[i][1] = 255 - 64 * i;
-			bus_.Palette[i][2] = 255 - 64 * i;
-		}
 		for (int i = 0; i < (screen_color_data_second_.size() - 4); i += 4) {
 			screen_color_data_second_[i + 0] = bus_.Palette[0][0];
 			screen_color_data_second_[i + 1] = bus_.Palette[0][1];

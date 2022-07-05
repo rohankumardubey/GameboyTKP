@@ -4,14 +4,6 @@
 #include <cstdint>
 using RegisterType = uint8_t;
 using BigRegisterType = uint16_t;
-constexpr size_t LogTypeSize = 17;
-enum class LogType {
-    PC, InstrName, InstrNum,
-    A, B, C, D, 
-    E, F, H, L,
-    LY, SP, 
-    IF, IE, IME, HALT
-};
 enum LCDCFlag {
     BG_ENABLE = 1 << 0,
     OBJ_ENABLE = 1 << 1,
@@ -36,20 +28,6 @@ enum IFInterrupt {
     TIMER = 1 << 2,
     SERIAL = 1 << 3,
     JOYPAD = 1 << 4
-};
-constexpr static std::array<LogType, LogTypeSize> LogTypeMap {
-    LogType::PC, LogType::InstrName, LogType::InstrNum,
-    LogType::A, LogType::F, LogType::B, LogType::C,
-    LogType::D, LogType::E,  LogType::H, LogType::L,
-    LogType::LY, LogType::SP, LogType::IF,
-    LogType::IE, LogType::IME, LogType::HALT
-};
-const static std::array<std::string, LogTypeSize> LogTypeNames {
-    "PC     ", "Instr. ", "Opcode ",
-    "A      ", "F      ", "B      ", "C      ",
-    "D      ", "E      ", "H      ", "L      ",
-    "LY     ", "SP     ", "IF     ",
-    "IE     ", "IME    ", "HALT   ",
 };
 constexpr std::array<uint8_t, 0x100> InstrTimes = {
     0, 2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0,

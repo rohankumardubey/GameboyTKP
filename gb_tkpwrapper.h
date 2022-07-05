@@ -25,7 +25,7 @@ namespace TKPEmu::Gameboy {
 		TKP_EMULATOR(Gameboy);
 	private:
 		using GameboyPalettes = std::array<std::array<float, 3>,4>;
-		using GameboyKeys = std::array<SDL_Keycode, 4>;
+		using GameboyKeys = std::array<uint32_t, 4>;
 		using CPU = TKPEmu::Gameboy::Devices::CPU;
 		using PPU = TKPEmu::Gameboy::Devices::PPU;
 		using APU = TKPEmu::Gameboy::Devices::APU;
@@ -48,7 +48,6 @@ namespace TKPEmu::Gameboy {
 		GameboyKeys direction_keys_;
 		GameboyKeys action_keys_;
 		uint8_t& joypad_, &interrupt_flag_;
-		std::unique_ptr<std::vector<LogType>> log_types_ptr_;
 		void update();
 		// this is the old update function that was replaced by update_audio_sync
 		// keeping it anyway

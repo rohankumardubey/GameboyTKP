@@ -27,10 +27,19 @@ namespace TKPEmu::Gameboy {
 	{
 		(*channel_array_ptr_.get())[0].HasSweep = true;
 	}
-	Gameboy::Gameboy(std::any args) :
+	Gameboy::Gameboy(std::unique_ptr<OptionsBase> args) :
 		Gameboy()
 	{
-		
+		GameboyOptions* gb = static_cast<GameboyOptions*>(args.get());
+		if (!gb)
+			throw ErrorFactory::generate_exception(__func__, __LINE__, "Could not get start options");
+		for (int i = 0; i < 4; i++) {
+			direction_keys_[i] = gb->DirectionMappings[i];
+			action_keys_[i] = gb->ActionMappings[i];
+			bus_.Palette[i][0] = gb->DMGColors[i] & 0xFF;
+			bus_.Palette[i][1] = (gb->DMGColors[i] >> 8) & 0xFF;
+			bus_.Palette[i][2] = gb->DMGColors[i] >> 16;
+		}
 	}
 	Gameboy::~Gameboy() {
 		Stopped.store(true);
@@ -94,7 +103,7 @@ namespace TKPEmu::Gameboy {
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
 	}
-	void Gameboy::HandleKeyDown(SDL_Keycode key) {
+	void Gameboy::HandleKeyDown(uint32_t key) {
 		if (auto it_dir = std::find(direction_keys_.begin(), direction_keys_.end(), key); it_dir != direction_keys_.end()) {
 			int index = it_dir - direction_keys_.begin();
 			bus_.DirectionKeys &= (~(1UL << index));
@@ -106,7 +115,7 @@ namespace TKPEmu::Gameboy {
 			interrupt_flag_ |= IFInterrupt::JOYPAD;
 		}
 	}
-	void Gameboy::HandleKeyUp(SDL_Keycode key) {
+	void Gameboy::HandleKeyUp(uint32_t key) {
 		if (auto it_dir = std::find(direction_keys_.begin(), direction_keys_.end(), key); it_dir != direction_keys_.end()) {
 			int index = it_dir - direction_keys_.begin();
 			bus_.DirectionKeys |= (1UL << index);
