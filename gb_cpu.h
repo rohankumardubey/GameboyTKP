@@ -10,7 +10,6 @@
 #include <GameboyTKP/gb_ppu.h>
 #include <GameboyTKP/gb_timer.h>
 #include <GameboyTKP/gb_addresses.h>
-#include <include/disassembly_instr.h>
 namespace TKPEmu::Gameboy::QA {
     class MooneyeTestCase;
 }

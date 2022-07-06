@@ -8,8 +8,8 @@
 #include <GameboyTKP/gb_addresses.h>
 namespace TKPEmu::Gameboy::Devices {
     using RamBank = std::array<uint8_t, 0x2000>;
-	Bus::Bus(ChannelArrayPtr channel_array_ptr, std::vector<DisInstr>& instrs)
-			: channel_array_ptr_(channel_array_ptr), instructions_(instrs) 
+	Bus::Bus(ChannelArrayPtr channel_array_ptr)
+			: channel_array_ptr_(channel_array_ptr)
 	{
 		(*channel_array_ptr_)[2].LengthInit = 256;
 	}

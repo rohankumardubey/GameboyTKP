@@ -1,5 +1,6 @@
 #include <GameboyTKP/gb_cpu.h>
 #include <cmath>
+#include <iostream>
 
 namespace TKPEmu::Gameboy::Devices {
     CPU::CPU(Bus& bus, PPU& ppu, APU& apu, Timer& timer) :

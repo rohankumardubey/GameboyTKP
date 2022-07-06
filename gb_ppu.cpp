@@ -1,6 +1,8 @@
 #include <GameboyTKP/gb_ppu.h>
 #include <GL/glew.h>
 #include <iostream>
+#include <algorithm>
+#define c(x) (((x) << 3) | ((x) >> 2))
 namespace TKPEmu::Gameboy::Devices {
 	enum STATMode {
 		MODE_OAM_SCAN = 2,
@@ -137,13 +139,13 @@ namespace TKPEmu::Gameboy::Devices {
 			screen_color_data_second_[i + 0] = bus_.Palette[0][0];
 			screen_color_data_second_[i + 1] = bus_.Palette[0][1];
 			screen_color_data_second_[i + 2] = bus_.Palette[0][2];
-			screen_color_data_second_[i + 3] = 255.0f;
+			screen_color_data_second_[i + 3] = 255;
 		}
 		for (int i = 0; i < (screen_color_data_.size() - 4); i += 4) {
 			screen_color_data_[i + 0] = bus_.Palette[0][0];
 			screen_color_data_[i + 1] = bus_.Palette[0][1];
 			screen_color_data_[i + 2] = bus_.Palette[0][2];
-			screen_color_data_[i + 3] = 255.0f;
+			screen_color_data_[i + 3] = 255;
 		}
 		LY = 0x0;
 		LCDC = 0b1001'0001;
@@ -151,7 +153,7 @@ namespace TKPEmu::Gameboy::Devices {
 		clock_ = 0;
 		clock_target_ = 0;
 	}
-	float* PPU::GetScreenData() {
+	uint8_t* PPU::GetScreenData() {
 		return &screen_color_data_[0];
 	}
 	int PPU::set_mode(int mode) {
@@ -249,11 +251,11 @@ namespace TKPEmu::Gameboy::Devices {
 			int colorNum = (((data2 >> colorBit) & 0b1) << 1) | ((data1 >> colorBit) & 0b1);
 			int idx = (pixel * 4) + (LY * 4 * 160);
 			PaletteColors& bg_ref = UseCGB ? get_cur_bg_pal(attrib & 0b111) : get_cur_bg_pal(0);
-			float red, green, blue;
+			uint8_t red, green, blue;
 			if (UseCGB) {
-				red = static_cast<float>(bg_ref[colorNum] & 0b11111) / 0x1F;
-				green = static_cast<float>((bg_ref[colorNum] >> 5) & 0b11111) / 0x1F;
-				blue = static_cast<float>((bg_ref[colorNum] >> 10) & 0b11111) / 0x1F;
+				red = c(bg_ref[colorNum] & 0b11111);
+				green = c((bg_ref[colorNum] >> 5) & 0b11111);
+				blue = c((bg_ref[colorNum] >> 10) & 0b11111);
 			} else {
 				red = bus_.Palette[bg_ref[colorNum]][0];
 				green = bus_.Palette[bg_ref[colorNum]][1];
@@ -264,14 +266,14 @@ namespace TKPEmu::Gameboy::Devices {
 					screen_color_data_second_[idx++] = bus_.Palette[0][0];
 					screen_color_data_second_[idx++] = bus_.Palette[0][1];
 					screen_color_data_second_[idx++] = bus_.Palette[0][2];
-					screen_color_data_second_[idx] = 255.0f;	
+					screen_color_data_second_[idx] = 255;	
 					continue;
 				}
 			} else if (!DrawBackground) {
 				screen_color_data_second_[idx++] = bus_.Palette[0][0];
 				screen_color_data_second_[idx++] = bus_.Palette[0][1];
 				screen_color_data_second_[idx++] = bus_.Palette[0][2];
-				screen_color_data_second_[idx] = 255.0f;
+				screen_color_data_second_[idx] = 255;
 				continue;
 			}
 			if (bus_.ScanlineChanges.size() > 0) [[unlikely]] {
@@ -284,7 +286,7 @@ namespace TKPEmu::Gameboy::Devices {
 			screen_color_data_second_[idx++] = red;
 			screen_color_data_second_[idx++] = green;
 			screen_color_data_second_[idx++] = blue;
-			screen_color_data_second_[idx] = 255.0f;
+			screen_color_data_second_[idx] = 255;
 		}
 	}
 	void PPU::render_sprites() {
@@ -351,11 +353,11 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 				uint8_t bg_attributes = bus_.vram_banks_[1][(identifierLoc + bg_offset) % 0x2000];
 				bool master_priority = LCDC & LCDCFlag::BG_ENABLE;
-				float red, green, blue;
+				uint8_t red, green, blue;
 				if (UseCGB) {
-					red = static_cast<float>(obj_ref[colorNum] & 0b11111) / 0x1F;
-					green = static_cast<float>((obj_ref[colorNum] >> 5) & 0b11111) / 0x1F;
-					blue = static_cast<float>((obj_ref[colorNum] >> 10) & 0b11111) /0x1F;
+					red = c(obj_ref[colorNum] & 0b11111);
+					green = c((obj_ref[colorNum] >> 5) & 0b11111);
+					blue = c((obj_ref[colorNum] >> 10) & 0b11111);
 				} else {
 					auto color = obj_ref[colorNum];
 					red = bus_.Palette[color][0];
@@ -365,9 +367,9 @@ namespace TKPEmu::Gameboy::Devices {
 				if (UseCGB) {
 					if ((bg_attributes & 0b1000'0000) && master_priority) {
 						auto& bg_ref = get_cur_bg_pal(bg_attributes & 0b111);
-						auto bg_red = static_cast<float>(bg_ref[0] & 0b11111) / 0x1F;
-						auto bg_green = static_cast<float>((bg_ref[0] >> 5) & 0b11111) / 0x1F;
-						auto bg_blue = static_cast<float>((bg_ref[0] >> 10) & 0b11111) /0x1F;
+						auto bg_red = c(bg_ref[0] & 0b11111);
+						auto bg_green = c((bg_ref[0] >> 5) & 0b11111);
+						auto bg_blue = c((bg_ref[0] >> 10) & 0b11111);
 						if (!(screen_color_data_second_[idx] == bg_red &&
 							screen_color_data_second_[idx + 1] == bg_green && 
 							screen_color_data_second_[idx + 2] == bg_blue)) {
@@ -379,9 +381,9 @@ namespace TKPEmu::Gameboy::Devices {
 					if (UseCGB) {
 						if (master_priority) {
 							auto& bg_ref = get_cur_bg_pal(bg_attributes & 0b111);
-							auto bg_red = static_cast<float>(bg_ref[0] & 0b11111) / 0x1F;
-							auto bg_green = static_cast<float>((bg_ref[0] >> 5) & 0b11111) / 0x1F;
-							auto bg_blue = static_cast<float>((bg_ref[0] >> 10) & 0b11111) /0x1F;
+							auto bg_red = c(bg_ref[0] & 0b11111);
+							auto bg_green = c((bg_ref[0] >> 5) & 0b11111);
+							auto bg_blue = c((bg_ref[0] >> 10) & 0b11111);
 							if (!(screen_color_data_second_[idx] == bg_red &&
 								screen_color_data_second_[idx + 1] == bg_green && 
 								screen_color_data_second_[idx + 2] == bg_blue)) {
@@ -397,11 +399,11 @@ namespace TKPEmu::Gameboy::Devices {
 						}
 					}
 				}
-				red += (280.0f - red) * SpriteDebugColor;
+				red += (280 - red) * SpriteDebugColor;
 				screen_color_data_second_[idx++] = red;
 				screen_color_data_second_[idx++] = green;
 				screen_color_data_second_[idx++] = blue;
-				screen_color_data_second_[idx] = 255.0f;
+				screen_color_data_second_[idx] = 255;
 			}
 		}
 	}
