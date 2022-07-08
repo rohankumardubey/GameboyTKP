@@ -271,13 +271,13 @@ namespace TKPEmu::Gameboy::Devices {
 					// The logo is hardcoded in the bios normally to check validity of cartridges, so
 					// these two ifs allow us to circmvent the validity check and provide our own logo
 					if (address >= bios_verify_start && address <= bios_verify_end) {
-						return logo[address - bios_verify_start];
+						return unused_mem_area_;//logo[address - bios_verify_start];
 					}
 					if (address >= logo_cartridge_start && address <= logo_cartridge_end) {
-						return logo[address - logo_cartridge_start];
+						return unused_mem_area_;//logo[address - logo_cartridge_start];
 					}
 					if (address < 0x100) {
-						return bios[address];
+						return unused_mem_area_;//bios[address];
 					} else if (address == 0x100) {
 						BiosEnabled = false;
 						refill_fast_map_rom();

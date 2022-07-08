@@ -34,8 +34,8 @@ namespace TKPEmu::Gameboy {
 		if (!gb)
 			throw ErrorFactory::generate_exception(__func__, __LINE__, "Could not get start options");
 		for (int i = 0; i < 4; i++) {
-			direction_keys_[i] = gb->DirectionMappings[i];
-			action_keys_[i] = gb->ActionMappings[i];
+			direction_keys_[i] = gb->Mappings.KeyValues[i];
+			action_keys_[i] = gb->Mappings.KeyValues[4 + i];
 			bus_.Palette[i][0] = gb->DMGColors[i] & 0xFF;
 			bus_.Palette[i][1] = (gb->DMGColors[i] >> 8) & 0xFF;
 			bus_.Palette[i][2] = gb->DMGColors[i] >> 16;
@@ -61,14 +61,18 @@ namespace TKPEmu::Gameboy {
 		bool first_instr = true;
 		while (!Stopped.load()) {
 			if (!Paused.load()) {
-				update();
-				while (MessageQueue->PollRequests()) {
+				while (MessageQueue->PollRequests()) [[unlikely]] {
 					auto request = MessageQueue->PopRequest();
 					poll_request(request);
 				}
+				update();
 			} else {
 				Step.wait(false);
 				Step.store(false);
+				while (MessageQueue->PollRequests()) [[unlikely]] {
+					auto request = MessageQueue->PopRequest();
+					poll_request(request);
+				}
 				update();
 			}
 		}
