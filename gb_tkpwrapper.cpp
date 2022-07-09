@@ -8,6 +8,8 @@
 #include <GameboyTKP/gb_tkpwrapper.h>
 #include <lib/md5.h>
 #include <include/console_colors.h>
+#include <include/emulator_user_data.hxx>
+#include <include/emulator_factory.h>
 #ifndef CALLGRIND_START_INSTRUMENTATION
 #define CALLGRIND_START_INSTRUMENTATION
 #endif
@@ -26,19 +28,15 @@ namespace TKPEmu::Gameboy {
 		interrupt_flag_(bus_.GetReference(addr_if))
 	{
 		(*channel_array_ptr_.get())[0].HasSweep = true;
-	}
-	Gameboy::Gameboy(std::unique_ptr<OptionsBase> args) :
-		Gameboy()
-	{
-		GameboyOptions* gb = static_cast<GameboyOptions*>(args.get());
-		if (!gb)
-			throw ErrorFactory::generate_exception(__func__, __LINE__, "Could not get start options");
+		const EmulatorUserData& user_data = EmulatorFactory::GetEmulatorUserData()[static_cast<int>(EmuType::Gameboy)];
+		const KeyMappings& mappings = EmulatorFactory::GetEmulatorData()[static_cast<int>(EmuType::Gameboy)].Mappings;
 		for (int i = 0; i < 4; i++) {
-			direction_keys_[i] = gb->Mappings.KeyValues[i];
-			action_keys_[i] = gb->Mappings.KeyValues[4 + i];
-			bus_.Palette[i][0] = gb->DMGColors[i] & 0xFF;
-			bus_.Palette[i][1] = (gb->DMGColors[i] >> 8) & 0xFF;
-			bus_.Palette[i][2] = gb->DMGColors[i] >> 16;
+			direction_keys_[i] = mappings.KeyValues[i];
+			action_keys_[i] = mappings.KeyValues[4 + i];
+			auto color = std::stoi(user_data.Get(std::string("dmg_c") + std::to_string(i)));
+			bus_.Palette[i][0] = color & 0xFF;
+			bus_.Palette[i][1] = (color >> 8) & 0xFF;
+			bus_.Palette[i][2] = color >> 16;
 		}
 	}
 	Gameboy::~Gameboy() {
