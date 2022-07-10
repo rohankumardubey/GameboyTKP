@@ -52,6 +52,7 @@ namespace TKPEmu::Gameboy {
 		// this is the old update function that was replaced by update_audio_sync
 		// keeping it anyway
 		__always_inline void update_audio_sync();
+		__always_inline void v_log() override;
 	};
 }
 #endif

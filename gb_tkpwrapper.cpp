@@ -59,18 +59,10 @@ namespace TKPEmu::Gameboy {
 		bool first_instr = true;
 		while (!Stopped.load()) {
 			if (!Paused.load()) {
-				while (MessageQueue->PollRequests()) [[unlikely]] {
-					auto request = MessageQueue->PopRequest();
-					poll_request(request);
-				}
 				update();
 			} else {
 				Step.wait(false);
 				Step.store(false);
-				while (MessageQueue->PollRequests()) [[unlikely]] {
-					auto request = MessageQueue->PopRequest();
-					poll_request(request);
-				}
 				update();
 			}
 		}
@@ -82,7 +74,12 @@ namespace TKPEmu::Gameboy {
 		ppu_.Reset();
 	}
 	void Gameboy::update() {
+		while (MessageQueue->PollRequests()) [[unlikely]] {
+			auto request = MessageQueue->PopRequest();
+			poll_request(request);
+		}
 		update_audio_sync();
+		v_log();
 	}
 	void Gameboy::update_audio_sync() {
 		if ((apu_.IsQueueEmpty()) || FastMode) {
@@ -102,7 +99,7 @@ namespace TKPEmu::Gameboy {
 			apu_.Update(clk);
 			CALLGRIND_STOP_INSTRUMENTATION;
 		} else {
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			// std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
 	}
 	void Gameboy::HandleKeyDown(uint32_t key) {
@@ -137,5 +134,15 @@ namespace TKPEmu::Gameboy {
 	}
 	bool Gameboy::poll_uncommon_request(const Request& request) {
 		return false;
+	}
+	void Gameboy::v_log() {
+		if (logging_) {
+			if (log_flags_.test(0)) {
+				*log_file_ptr_ << "PC: " << std::hex << cpu_.PC << " A:" << (uint16_t)cpu_.A << " F:" << (uint16_t)cpu_.F << " B:" << (uint16_t)cpu_.B
+					<< " C:" << (uint16_t)cpu_.C << " D:" << (uint16_t)cpu_.D << " H:" << (uint16_t)cpu_.H << " L:" << (uint16_t)cpu_.L << " ";
+			}
+
+			*log_file_ptr_ << "\n";
+		}
 	}
 }
