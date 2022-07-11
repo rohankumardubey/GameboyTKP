@@ -141,7 +141,7 @@ namespace TKPEmu::Gameboy::Devices {
 		}
 		for (int i = 0x80; i < 0xA0; i++) {
 			auto address = (i << 8) & 0x1FFF;
-			fast_map_[i] = &((vram_banks_[0])[address]);
+			fast_map_[i] = &((vram_banks_[vram_sel_bank_])[address]);
 		}
 		for (int i = 0xC0; i < 0xD0; i++) {
 			auto address = (i << 8) & 0xFFF;
@@ -154,10 +154,6 @@ namespace TKPEmu::Gameboy::Devices {
 		for (int i = 0xE0; i < 0xF0; i++) {
 			auto address = (i << 8) & 0xFFF;
 			fast_map_[i] = &(wram_banks_[0][address]);
-		}
-		for (int i = 0xF0; i < 0xFE; i++) {
-			auto address = (i << 8) & 0xFFF;
-			fast_map_[i] = &(wram_banks_[1][address]);
 		}
 		if (BiosEnabled) {
 			// use slow redirecting
@@ -924,7 +920,7 @@ namespace TKPEmu::Gameboy::Devices {
 		selected_rom_bank_ = 1;
 		selected_ram_bank_ = 0;
 		wram_sel_bank_ = 1;
-		vram_sel_bank_ = 1;
+		vram_sel_bank_ = UseCGB;
 		BiosEnabled = true;
 	}
 	Cartridge& Bus::GetCartridge() {
@@ -953,9 +949,10 @@ namespace TKPEmu::Gameboy::Devices {
 			}
 		}
 		BiosEnabled = true;
+		UseCGB = cartridge_.UseCGB;
+		SoftReset();
 		if (ret)
 			fill_fast_map();
-		UseCGB = cartridge_.UseCGB;
 		return ret;
 	}
 	void Bus::TransferDMA(uint8_t clk) {
