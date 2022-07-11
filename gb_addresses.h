@@ -95,6 +95,8 @@ constexpr auto addr_dma = 0xFF46;
 constexpr auto addr_bgp = 0xFF47;
 constexpr auto addr_ob0 = 0xFF48;
 constexpr auto addr_ob1 = 0xFF49;
+// Bios
+constexpr auto addr_bank = 0xFF50;
 // HDMA
 constexpr auto addr_hdma1 = 0xFF51;
 constexpr auto addr_hdma2 = 0xFF52;

@@ -15,7 +15,9 @@
 #include <GameboyTKP/gb_addresses.h>
 #include <GameboyTKP/gb_apu.h>
 #include <GameboyTKP/gb_apu_ch.h>
-
+namespace TKPEmu::Gameboy {
+    class Gameboy_TKPWrapper;
+}
 namespace TKPEmu::Gameboy::Devices {
     struct Change {
 		int type = 0;
@@ -29,7 +31,6 @@ namespace TKPEmu::Gameboy::Devices {
     private:
         using RamBank = std::array<uint8_t, 0x2000>;
         using RomBank = std::array<uint8_t, 0x4000>;
-        using CartridgeType = TKPEmu::Gameboy::Devices::CartridgeType;
     public:
         bool BiosEnabled = true;
         Bus(ChannelArrayPtr channel_array_ptr);
@@ -102,7 +103,11 @@ namespace TKPEmu::Gameboy::Devices {
         std::array<uint8_t, 0xA0> oam_{};
         std::array<uint8_t, 0x40> bg_cram_{};
         std::array<uint8_t, 0x40> obj_cram_{};
-        std::array<uint8_t*, 0x10000> fast_map_{};
+        std::array<uint8_t*, 0x100> fast_map_{};
+        std::array<uint8_t, 0x100> dmg_bios_{};
+        std::array<uint8_t, 0x900> cgb_bios_{};
+        bool dmg_bios_loaded_ = false;
+        bool cgb_bios_loaded_ = false;
         ChannelArrayPtr channel_array_ptr_;
         uint8_t& redirect_address(uint16_t address);
         uint8_t& fast_redirect_address(uint16_t address);
@@ -120,6 +125,7 @@ namespace TKPEmu::Gameboy::Devices {
         void disable_dac(int channel_no);
 
         friend class PPU;
+        friend class TKPEmu::Gameboy::Gameboy_TKPWrapper;
     };
 }
 #endif

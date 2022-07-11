@@ -21,8 +21,8 @@ namespace TKPEmu {
 	}
 }
 namespace TKPEmu::Gameboy {
-	class Gameboy : public Emulator {
-		TKP_EMULATOR(Gameboy);
+	class Gameboy_TKPWrapper : public Emulator {
+		TKP_EMULATOR(Gameboy_TKPWrapper);
 	private:
 		using GameboyPalettes = std::array<std::array<float, 3>,4>;
 		using GameboyKeys = std::array<uint32_t, 4>;

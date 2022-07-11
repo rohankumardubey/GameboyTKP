@@ -165,8 +165,6 @@ namespace TKPEmu::Gameboy::Devices {
         void Reset(bool skip);
         int Update();
         uint8_t GetLastInstr() { return last_instr_; }
-
-        friend class TKPEmu::Gameboy::QA::MooneyeTestCase;
     };
 }
 #endif

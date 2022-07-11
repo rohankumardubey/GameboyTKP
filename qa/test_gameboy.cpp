@@ -7,7 +7,7 @@
 using TestResult = std::pair<bool, std::string>; // passed, path
 namespace {
     void testMooneye(std::string path, TestResult* result) {
-        TKPEmu::Gameboy::Gameboy gb_;
+        TKPEmu::Gameboy::Gameboy_TKPWrapper gb_;
         CPPUNIT_ASSERT_MESSAGE("Could not load file: " + path, gb_.LoadFromFile(path));
         gb_.SkipBoot = true;
         gb_.Reset();
@@ -32,7 +32,7 @@ namespace {
         CPPUNIT_ASSERT_MESSAGE("4 million instructions exceeded", false);
     }
     void testBlargg(std::string path, TestResult* result) {
-        TKPEmu::Gameboy::Gameboy gb_;
+        TKPEmu::Gameboy::Gameboy_TKPWrapper gb_;
         CPPUNIT_ASSERT_MESSAGE("Could not load file: " + path, gb_.LoadFromFile(path));
         gb_.SkipBoot = true;
         gb_.Reset();

@@ -17,7 +17,7 @@
 #define CALLGRIND_STOP_INSTRUMENTATION
 #endif
 namespace TKPEmu::Gameboy {
-	Gameboy::Gameboy() : 
+	Gameboy_TKPWrapper::Gameboy_TKPWrapper() : 
 		channel_array_ptr_(std::make_shared<ChannelArray>()),
 		bus_(channel_array_ptr_),
 		apu_(channel_array_ptr_, bus_.GetReference(addr_NR52)),
@@ -38,14 +38,37 @@ namespace TKPEmu::Gameboy {
 			bus_.Palette[i][1] = (color >> 8) & 0xFF;
 			bus_.Palette[i][2] = color >> 16;
 		}
+		if (user_data.Get("skip_bios") == "false") {
+			auto dmg_path = user_data.Get("dmg_path");
+			auto cgb_path = user_data.Get("cgb_path");
+			if (std::filesystem::exists(dmg_path)) {
+				std::ifstream ifs(dmg_path, std::ios::binary);
+				if (ifs.is_open()) {
+					ifs.read(reinterpret_cast<char*>(&bus_.dmg_bios_[0]), sizeof(bus_.dmg_bios_));
+					ifs.close();
+					bus_.dmg_bios_loaded_ = true;
+					bus_.BiosEnabled = true;
+				}
+			}
+			if (std::filesystem::exists(cgb_path)) {
+				std::ifstream ifs(cgb_path, std::ios::binary);
+				if (ifs.is_open()) {
+					ifs.read(reinterpret_cast<char*>(&bus_.cgb_bios_[0]), sizeof(bus_.cgb_bios_));
+					ifs.close();
+					bus_.cgb_bios_loaded_ = true;
+					bus_.BiosEnabled = true;
+				}
+			}
+			SkipBoot = !bus_.BiosEnabled;
+		}
 	}
-	Gameboy::~Gameboy() {
+	Gameboy_TKPWrapper::~Gameboy_TKPWrapper() {
 		Stopped.store(true);
 	}
-	bool& Gameboy::IsReadyToDraw() {
+	bool& Gameboy_TKPWrapper::IsReadyToDraw() {
 		return ppu_.ReadyToDraw;
 	}
-	void Gameboy::start() {
+	void Gameboy_TKPWrapper::start() {
 		std::lock_guard<std::mutex> lg(ThreadStartedMutex);
 		apu_.UseSound = true;
 		apu_.InitSound();
@@ -67,13 +90,13 @@ namespace TKPEmu::Gameboy {
 			}
 		}
 	}
-	void Gameboy::reset() {
+	void Gameboy_TKPWrapper::reset() {
 		bus_.SoftReset();
 		cpu_.Reset(SkipBoot);
 		timer_.Reset();
 		ppu_.Reset();
 	}
-	void Gameboy::update() {
+	void Gameboy_TKPWrapper::update() {
 		while (MessageQueue->PollRequests()) [[unlikely]] {
 			auto request = MessageQueue->PopRequest();
 			poll_request(request);
@@ -81,7 +104,7 @@ namespace TKPEmu::Gameboy {
 		update_audio_sync();
 		v_log();
 	}
-	void Gameboy::update_audio_sync() {
+	void Gameboy_TKPWrapper::update_audio_sync() {
 		if ((apu_.IsQueueEmpty()) || FastMode) {
 			CALLGRIND_START_INSTRUMENTATION;
 			uint8_t old_if = interrupt_flag_;
@@ -102,7 +125,7 @@ namespace TKPEmu::Gameboy {
 			// std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
 	}
-	void Gameboy::HandleKeyDown(uint32_t key) {
+	void Gameboy_TKPWrapper::HandleKeyDown(uint32_t key) {
 		if (auto it_dir = std::find(direction_keys_.begin(), direction_keys_.end(), key); it_dir != direction_keys_.end()) {
 			int index = it_dir - direction_keys_.begin();
 			bus_.DirectionKeys &= (~(1UL << index));
@@ -114,7 +137,7 @@ namespace TKPEmu::Gameboy {
 			interrupt_flag_ |= IFInterrupt::JOYPAD;
 		}
 	}
-	void Gameboy::HandleKeyUp(uint32_t key) {
+	void Gameboy_TKPWrapper::HandleKeyUp(uint32_t key) {
 		if (auto it_dir = std::find(direction_keys_.begin(), direction_keys_.end(), key); it_dir != direction_keys_.end()) {
 			int index = it_dir - direction_keys_.begin();
 			bus_.DirectionKeys |= (1UL << index);
@@ -124,19 +147,20 @@ namespace TKPEmu::Gameboy {
 			bus_.ActionKeys |= (1UL << index);
 		}
 	}
-	bool Gameboy::load_file(std::string path) {
-		auto loaded = bus_.LoadCartridge(std::forward<std::string>(path));;
+	bool Gameboy_TKPWrapper::load_file(std::string path) {
+		auto loaded = bus_.LoadCartridge(std::forward<std::string>(path));
 		ppu_.UseCGB = bus_.UseCGB;
 		return loaded;
 	}
-	void* Gameboy::GetScreenData() {
+	void* Gameboy_TKPWrapper::GetScreenData() {
 		return ppu_.GetScreenData();
 	}
-	bool Gameboy::poll_uncommon_request(const Request& request) {
+	bool Gameboy_TKPWrapper::poll_uncommon_request(const Request& request) {
 		return false;
 	}
-	void Gameboy::v_log() {
+	void Gameboy_TKPWrapper::v_log() {
 		if (logging_) {
+			*log_file_ptr_ << std::hex << (int)bus_.Read(cpu_.PC) << " " << (int)bus_.Read(cpu_. PC + 1);
 			if (log_flags_.test(0)) {
 				*log_file_ptr_ << "PC: " << std::hex << cpu_.PC << " A:" << (uint16_t)cpu_.A << " F:" << (uint16_t)cpu_.F << " B:" << (uint16_t)cpu_.B
 					<< " C:" << (uint16_t)cpu_.C << " D:" << (uint16_t)cpu_.D << " H:" << (uint16_t)cpu_.H << " L:" << (uint16_t)cpu_.L << " ";

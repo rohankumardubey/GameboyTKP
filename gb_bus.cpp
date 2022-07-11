@@ -12,6 +12,7 @@ namespace TKPEmu::Gameboy::Devices {
 			: channel_array_ptr_(channel_array_ptr)
 	{
 		(*channel_array_ptr_)[2].LengthInit = 256;
+		
 	}
 	Bus::~Bus() {
 		battery_save();
@@ -132,36 +133,38 @@ namespace TKPEmu::Gameboy::Devices {
 	void Bus::fill_fast_map() {
 		for (int i = 0x0; i < 0x40; i++) {
 			auto address = (i << 8) & 0x3FFF;
-			fast_map_[i << 8] = &((rom_banks_[0])[address]);
+			fast_map_[i] = &((rom_banks_[0])[address]);
 		}
 		for (int i = 0x40; i < 0x80; i++) {
 			auto address = (i << 8) & 0x3FFF;
-			fast_map_[i << 8] = &((rom_banks_[1])[address]);
+			fast_map_[i] = &((rom_banks_[1])[address]);
 		}
 		for (int i = 0x80; i < 0xA0; i++) {
 			auto address = (i << 8) & 0x1FFF;
-			fast_map_[i << 8] = &((vram_banks_[0])[address]);
+			fast_map_[i] = &((vram_banks_[0])[address]);
 		}
 		for (int i = 0xC0; i < 0xD0; i++) {
 			auto address = (i << 8) & 0xFFF;
-			fast_map_[i << 8] = &(wram_banks_[0][address]);
+			fast_map_[i] = &(wram_banks_[0][address]);
 		}
 		for (int i = 0xD0; i < 0xE0; i++) {
 			auto address = (i << 8) & 0xFFF;
-			fast_map_[i << 8] = &(wram_banks_[1][address]);
+			fast_map_[i] = &(wram_banks_[1][address]);
 		}
 		for (int i = 0xE0; i < 0xF0; i++) {
 			auto address = (i << 8) & 0xFFF;
-			fast_map_[i << 8] = &(wram_banks_[0][address]);
+			fast_map_[i] = &(wram_banks_[0][address]);
 		}
 		for (int i = 0xF0; i < 0xFE; i++) {
 			auto address = (i << 8) & 0xFFF;
-			fast_map_[i << 8] = &(wram_banks_[1][address]);
+			fast_map_[i] = &(wram_banks_[1][address]);
 		}
 		if (BiosEnabled) {
 			// use slow redirecting
-			fast_map_[0x0000] = nullptr;
-			fast_map_[0x0100] = nullptr;
+			fast_map_[0x00] = nullptr;
+			for (int i = 0x02; i < 0x09; i += 0x1) {
+				fast_map_[i] = nullptr;
+			}
 		}
 	}
 	void Bus::refill_fast_map_rom() {
@@ -173,7 +176,7 @@ namespace TKPEmu::Gameboy::Devices {
 				auto sel = (banking_mode_ ? selected_rom_bank_ & 0b1100000 : 0) % cartridge_.GetRomSize();
 				for (int i = 0x0; i < 0x40; i++) {
 					auto address = (i << 8) % 0x4000;
-					fast_map_[i << 8] = &((rom_banks_[sel])[address]);
+					fast_map_[i] = &((rom_banks_[sel])[address]);
 				}
 				auto sel_h = selected_rom_bank_ % cartridge_.GetRomSize();
 				if ((sel_h & 0b11111) == 0) {
@@ -183,7 +186,7 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 				for (int i = 0x40; i < 0x80; i++) {
 					auto address = (i << 8) % 0x4000;
-					fast_map_[i << 8] = &((rom_banks_[sel_h])[address]);
+					fast_map_[i] = &((rom_banks_[sel_h])[address]);
 				}
 				break;
 			}
@@ -195,7 +198,7 @@ namespace TKPEmu::Gameboy::Devices {
 				auto sel = selected_rom_bank_ % cartridge_.GetRomSize();
 				for (int i = 0x40; i < 0x80; i++) {
 					auto address = (i << 8) % 0x4000;
-					fast_map_[i << 8] = &((rom_banks_[sel])[address]);
+					fast_map_[i] = &((rom_banks_[sel])[address]);
 				}
 				break;
 			}
@@ -206,7 +209,7 @@ namespace TKPEmu::Gameboy::Devices {
 				auto sel = selected_rom_bank_ % cartridge_.GetRomSize();
 				for (int i = 0x40; i < 0x80; i++) {
 					auto address = (i << 8) % 0x4000;
-					fast_map_[i << 8] = &((rom_banks_[sel])[address]);
+					fast_map_[i] = &((rom_banks_[sel])[address]);
 				}
 				break;
 			}
@@ -220,7 +223,7 @@ namespace TKPEmu::Gameboy::Devices {
 				sel = sel | (selected_rom_bank_high_ << 8);
 				for (int i = 0x40; i < 0x80; i++) {
 					auto address = (i << 8) % 0x4000;
-					fast_map_[i << 8] = &((rom_banks_[sel])[address]);
+					fast_map_[i] = &((rom_banks_[sel])[address]);
 				}
 				break;
 			}
@@ -228,28 +231,30 @@ namespace TKPEmu::Gameboy::Devices {
 		if (BiosEnabled) {
 			// use slow redirecting
 			fast_map_[0x0000] = nullptr;
-			fast_map_[0x0100] = nullptr;
+			for (int i = 0x02; i < 0x09; i += 0x01) {
+				fast_map_[i] = nullptr;
+			}
 		}
 	}
 	void Bus::refill_fast_map_vram() {
 		for (int i = 0x80; i < 0xA0; i++) {
 			auto address = (i << 8) % 0x2000;
-			fast_map_[i << 8] = &((vram_banks_[vram_sel_bank_])[address]);
+			fast_map_[i] = &((vram_banks_[vram_sel_bank_])[address]);
 		}
 	}
 	void Bus::refill_fast_map_wram() {
 		for (int i = 0xD0; i < 0xE0; i++) {
 			auto address = (i << 8) % 0x1000;
-			fast_map_[i << 8] = &(wram_banks_[wram_sel_bank_][address]);
+			fast_map_[i] = &(wram_banks_[wram_sel_bank_][address]);
 		}
 		for (int i = 0xF0; i < 0xFE; i++) {
 			auto address = (i << 8) % 0x1000;
-			fast_map_[i << 8] = &(wram_banks_[wram_sel_bank_][address]);
+			fast_map_[i] = &(wram_banks_[wram_sel_bank_][address]);
 		}
 	}
 	// TODO: add ram to fast map
 	uint8_t& Bus::fast_redirect_address(uint16_t address) {
-		uint8_t* paddr = fast_map_[address & 0xFF00];
+		uint8_t* paddr = fast_map_[address >> 8];
 		if (paddr) {
 			return *(paddr + (address & 0xFF));
 		} else {
@@ -264,27 +269,17 @@ namespace TKPEmu::Gameboy::Devices {
 		switch (address & 0xF000) {
 			case 0x0000: {
 				if (BiosEnabled) {
-					static constexpr uint16_t bios_verify_start = 0xA8;
-					static constexpr uint16_t bios_verify_end = 0xD7;
-					static constexpr uint16_t logo_cartridge_start = 0x104;
-					static constexpr uint16_t logo_cartridge_end = 0x133;
-					// The logo is hardcoded in the bios normally to check validity of cartridges, so
-					// these two ifs allow us to circmvent the validity check and provide our own logo
-					if (address >= bios_verify_start && address <= bios_verify_end) {
-						return unused_mem_area_;//logo[address - bios_verify_start];
-					}
-					if (address >= logo_cartridge_start && address <= logo_cartridge_end) {
-						return unused_mem_area_;//logo[address - logo_cartridge_start];
-					}
-					if (address < 0x100) {
-						return unused_mem_area_;//bios[address];
-					} else if (address == 0x100) {
-						BiosEnabled = false;
-						refill_fast_map_rom();
+					if (!UseCGB && dmg_bios_loaded_) {
+						if (address < 0x100) {
+							return dmg_bios_[address];
+						}
+					} else if (UseCGB && cgb_bios_loaded_) {
+						if (address < 0x100)
+							return cgb_bios_[address];
+						else if (address >= 0x200 && address < 0x900)
+							return cgb_bios_[address];
 					}
 				}
-				// If gameboy is not in bios mode, or if the address >= 0x100, we fallthrough
-				// to the next case
 				[[fallthrough]];  // This avoids a compiler warning. Fallthrough is intentional
 			}
 			case 0x1000:
@@ -643,6 +638,12 @@ namespace TKPEmu::Gameboy::Devices {
 					}
 					break;
 				}
+				case addr_bank: {
+					BiosEnabled = false;
+					refill_fast_map_rom();
+					data |= 0b1111'1111;
+					break;
+				}
 				case addr_hdma1: {
 					hdma_source_ &= 0xFF;
 					hdma_source_ |= data << 8;
@@ -674,13 +675,13 @@ namespace TKPEmu::Gameboy::Devices {
 						if (data != 0) {
 							use_gdma_ = data & 0b1000'0000;
 							hdma_size_ = ((data & 0b0111'1111) + 1);
+							hdma_transfer_ = true;
+							hdma_index_ = 0;
 							if (use_gdma_) {
 								for (int i = 0; i < hdma_size_; i++) {
 									TransferHDMA();
 								}
 							}
-							hdma_index_ = 0;
-							hdma_transfer_ = true;
 						} else {
 							hdma_transfer_ = false;
 						}
@@ -879,7 +880,7 @@ namespace TKPEmu::Gameboy::Devices {
 				case 0xFF27: case 0xFF28: case 0xFF29:
 				case 0xFF2A: case 0xFF2B: case 0xFF2C: case 0xFF2D: case 0xFF2E: 
 				case 0xFF2F: case 0xFF4C: case 0xFF4D:
-				case 0xFF4E: case 0xFF50: case 0xFF56: case 0xFF57:
+				case 0xFF4E: case 0xFF56: case 0xFF57:
 				case 0xFF58: case 0xFF59: case 0xFF5A: case 0xFF5B: case 0xFF5C:
 				case 0xFF5D: case 0xFF5E: case 0xFF5F: case 0xFF60: case 0xFF61:
 				case 0xFF62: case 0xFF63: case 0xFF64: case 0xFF65: case 0xFF66:
