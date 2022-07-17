@@ -5,48 +5,11 @@
 #include "../../lib/threadpool.hxx"
 
 using TestResult = std::pair<bool, std::string>; // passed, path
-namespace {
-    void testMooneye(std::string path, TestResult* result) {
-        TKPEmu::Gameboy::Gameboy_TKPWrapper gb_;
-        CPPUNIT_ASSERT_MESSAGE("Could not load file: " + path, gb_.LoadFromFile(path));
-        gb_.SkipBoot = true;
-        gb_.Reset();
-        gb_.FastMode = true;
-        auto& cpu = gb_.GetCPU();
-        #define must(a, b) if (a != b) { result->first = false; return; }
-        for (unsigned i = 0; i < 4'000'000; i++) {
-            gb_.Update();
-            if (cpu.GetLastInstr() == 0x40) {
-                must(uint8_t(0x03), cpu.B);
-                must(uint8_t(0x05), cpu.C);
-                must(uint8_t(0x08), cpu.D);
-                must(uint8_t(0x0D), cpu.E);
-                must(uint8_t(0x15), cpu.H);
-                must(uint8_t(0x22), cpu.L);
-                result->first = true;
-                return;
-            }
-        }
-        #undef must
-        result->first = false;
-        CPPUNIT_ASSERT_MESSAGE("4 million instructions exceeded", false);
-    }
-    void testBlargg(std::string path, TestResult* result) {
-        TKPEmu::Gameboy::Gameboy_TKPWrapper gb_;
-        CPPUNIT_ASSERT_MESSAGE("Could not load file: " + path, gb_.LoadFromFile(path));
-        gb_.SkipBoot = true;
-        gb_.Reset();
-        gb_.FastMode = true;
-        auto& cpu = gb_.GetCPU();
-
-
-        result->first = false;
-        CPPUNIT_ASSERT_MESSAGE("10 million instructions exceeded", false);
-    }
-}
 
 namespace TKPEmu::Gameboy::QA {
     class TestGameboy : public CppUnit::TestFixture {
+        static void testSingleMooneye(std::string path, TestResult* result);
+        static void testSingleBlargg(std::string path, TestResult* result);
         void testAllMooneye();
         CPPUNIT_TEST_SUITE(TestGameboy);
         CPPUNIT_TEST(testAllMooneye);
@@ -68,7 +31,7 @@ namespace TKPEmu::Gameboy::QA {
             if (entry.is_regular_file() && entry.path().extension() == ".gb") {
                 std::string name = entry.path().parent_path().filename().string() + "/" + entry.path().filename().string();
                 mooneye_results_[i] = {false, name};
-                std::function<void()> job = std::bind(testMooneye, entry.path().string(), &mooneye_results_[i]);
+                std::function<void()> job = std::bind(testSingleMooneye, entry.path().string(), &mooneye_results_[i]);
                 gb_jobs.push_back(job);
                 ++i;
             }
@@ -88,6 +51,43 @@ namespace TKPEmu::Gameboy::QA {
             ofs << "| " << r.second << " | " << (r.first ? ":+1:" : ":x:") << " |\n";
         }
         CPPUNIT_ASSERT_EQUAL_MESSAGE("Not all tests passed", count, count - fail_count);
+    }
+    void TestGameboy::testSingleMooneye(std::string path, TestResult* result) {
+        TKPEmu::Gameboy::Gameboy_TKPWrapper gb_;
+        CPPUNIT_ASSERT_MESSAGE("Could not load file: " + path, gb_.LoadFromFile(path));
+        gb_.SkipBoot = true;
+        gb_.Reset();
+        gb_.FastMode = true;
+        auto& cpu = gb_.cpu_;
+        #define must(a, b) if (a != b) { result->first = false; return; }
+        for (unsigned i = 0; i < 4'000'000; i++) {
+            gb_.Update();
+            if (cpu.GetLastInstr() == 0x40) {
+                must(uint8_t(0x03), cpu.B);
+                must(uint8_t(0x05), cpu.C);
+                must(uint8_t(0x08), cpu.D);
+                must(uint8_t(0x0D), cpu.E);
+                must(uint8_t(0x15), cpu.H);
+                must(uint8_t(0x22), cpu.L);
+                result->first = true;
+                return;
+            }
+        }
+        #undef must
+        result->first = false;
+        CPPUNIT_ASSERT_MESSAGE("4 million instructions exceeded", false);
+    }
+    void TestGameboy::testSingleBlargg(std::string path, TestResult* result) {
+        TKPEmu::Gameboy::Gameboy_TKPWrapper gb_;
+        CPPUNIT_ASSERT_MESSAGE("Could not load file: " + path, gb_.LoadFromFile(path));
+        gb_.SkipBoot = true;
+        gb_.Reset();
+        gb_.FastMode = true;
+        auto& cpu = gb_.cpu_;
+
+
+        result->first = false;
+        CPPUNIT_ASSERT_MESSAGE("10 million instructions exceeded", false);
     }
     CPPUNIT_TEST_SUITE_REGISTRATION(TestGameboy);
 }

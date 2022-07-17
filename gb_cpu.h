@@ -11,7 +11,7 @@
 #include <GameboyTKP/gb_timer.h>
 #include <GameboyTKP/gb_addresses.h>
 namespace TKPEmu::Gameboy::QA {
-    class MooneyeTestCase;
+    class TestGameboy;
 }
 namespace TKPEmu::Gameboy::Devices {
     class CPU {
@@ -165,6 +165,7 @@ namespace TKPEmu::Gameboy::Devices {
         void Reset(bool skip);
         int Update();
         uint8_t GetLastInstr() { return last_instr_; }
+        friend class TKPEmu::Gameboy::QA::TestGameboy;
     };
 }
 #endif

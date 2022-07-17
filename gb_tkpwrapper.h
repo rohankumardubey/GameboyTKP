@@ -17,7 +17,7 @@ namespace TKPEmu {
 		class GameboyRomData;
 	}
 	namespace Gameboy::QA {
-		struct TestMooneye;
+		struct TestGameboy;
 	}
 }
 namespace TKPEmu::Gameboy {
@@ -53,6 +53,7 @@ namespace TKPEmu::Gameboy {
 		// keeping it anyway
 		__always_inline void update_audio_sync();
 		__always_inline void v_log() override;
+		friend class TKPEmu::Gameboy::QA::TestGameboy;
 	};
 }
 #endif
