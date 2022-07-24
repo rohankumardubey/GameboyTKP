@@ -1,5 +1,4 @@
 #include <GameboyTKP/gb_ppu.h>
-#include <GL/glew.h>
 #include <iostream>
 #include <algorithm>
 #define c(x) (((x) << 3) | ((x) >> 2))

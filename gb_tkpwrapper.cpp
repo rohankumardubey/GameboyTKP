@@ -2,7 +2,6 @@
 #include <atomic>
 #include <chrono>
 #include <syncstream>
-#include <GL/glew.h>
 #include <filesystem>
 // #include <valgrind/callgrind.h>
 #include <GameboyTKP/gb_tkpwrapper.h>

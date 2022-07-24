@@ -1057,6 +1057,7 @@ namespace TKPEmu::Gameboy::Devices {
         tTemp = 4;
     }
     void CPU::STOP() {
+        std::cout << "stop instruction is not implemented" << std::endl;
         PC++;
     }
     void CPU::RET() {
