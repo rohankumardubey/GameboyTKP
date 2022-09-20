@@ -38,7 +38,6 @@ namespace TKPEmu::Gameboy::Devices {
 		HuC1_RAM_BATTERY = 0xFF
 	};
 	struct Header {
-		// 0x4 bytes is the entry point, 0x30 bytes is nintendo
 		char unusedData[0x34];
 		char name[0xB];
 		char manufacturer[0x4];
