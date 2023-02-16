@@ -32,7 +32,7 @@ namespace TKPEmu::Gameboy::Devices {
         using RamBank = std::array<uint8_t, 0x2000>;
         using RomBank = std::array<uint8_t, 0x4000>;
     public:
-        bool BiosEnabled = true;
+        bool BiosEnabled = false;
         Bus(ChannelArrayPtr channel_array_ptr);
         ~Bus();
         std::string GetVramDump(); // TODO: remove this function, switch to QA struct for test

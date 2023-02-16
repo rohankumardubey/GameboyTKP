@@ -62,6 +62,8 @@ namespace TKPEmu::Gameboy {
 					}
 				}
 				SkipBoot = !bus_.BiosEnabled;
+			} else {
+				SkipBoot = true;
 			}
 		} else {
 			SkipBoot = true;
