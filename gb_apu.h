@@ -1,7 +1,6 @@
 #pragma once
 #ifndef TKP_GB_APU_H
 #define TKP_GB_APU_H
-#include <SDL2/SDL.h>
 #include <queue>
 #include <GameboyTKP/gb_apu_ch.h>
 namespace TKPEmu::Gameboy::Devices {
@@ -15,14 +14,14 @@ namespace TKPEmu::Gameboy::Devices {
         void InitSound();
         void Update(int clk);
         inline void QueueSamples() {
-            SDL_QueueAudio(device_id_, &samples_[0], sizeof(samples_));
+            // SDL_QueueAudio(device_id_, &samples_[0], sizeof(samples_));
         }
         inline bool IsQueueEmpty() {
-            return SDL_GetQueuedAudioSize(device_id_) < 100;
+            return false;//SDL_GetQueuedAudioSize(device_id_) < 100;
         }
         bool UseSound = false;
     private:
-        SDL_AudioDeviceID device_id_;
+        // QAudioSink* audio_sink_;
         std::array<int16_t, 512> samples_;
         size_t sample_index_ = 0;
         uint8_t& NR52_;
