@@ -15,7 +15,7 @@ namespace TKPEmu::Gameboy::Devices {
 		b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
 		return b;
 	}
-	PPU::PPU(Bus& bus, std::mutex* draw_mutex) : bus_(bus), draw_mutex_(draw_mutex),
+	PPU::PPU(Bus& bus) : bus_(bus),
 		LCDC(bus.GetReference(0xFF40)),
 		STAT(bus.GetReference(0xFF41)),
 		LYC(bus.GetReference(0xFF45)),
@@ -25,7 +25,11 @@ namespace TKPEmu::Gameboy::Devices {
 		SCX(bus.GetReference(0xFF43)),
 		WY(bus.GetReference(0xFF4A)),
 		WX(bus.GetReference(0xFF4B))
-	{}
+	{
+		screen_color_data_.resize(4 * 160 * 144);
+		screen_color_data_second_.resize(4 * 160 * 144);
+		Reset();
+	}
 	void PPU::Update(uint8_t cycles) {
 		static constexpr int clock_max = 456 * 144 + 456 * 10;
 		static int  mode3_extend = 0; // unused for now
@@ -111,7 +115,6 @@ namespace TKPEmu::Gameboy::Devices {
 				IF |= set_mode(MODE_VBLANK);
 				window_internal_ = 0;
 				window_internal_temp_ = 0;
-				std::lock_guard<std::mutex> lg(*draw_mutex_);
 				std::swap(screen_color_data_, screen_color_data_second_);
 				ReadyToDraw = true;
 			}
@@ -134,6 +137,11 @@ namespace TKPEmu::Gameboy::Devices {
 		return false;
  	}
 	void PPU::Reset() {
+		for (int i = 0; i < 4; i++) {
+			bus_.Palette[i][0] = 0xFF - 64 * i;
+			bus_.Palette[i][1] = 0xFF - 64 * i;
+			bus_.Palette[i][2] = 0xFF - 64 * i;
+		}
 		for (int i = 0; i < (screen_color_data_second_.size() - 4); i += 4) {
 			screen_color_data_second_[i + 0] = bus_.Palette[0][0];
 			screen_color_data_second_[i + 1] = bus_.Palette[0][1];

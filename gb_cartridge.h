@@ -55,7 +55,7 @@ namespace TKPEmu::Gameboy::Devices {
 	};
 	class Cartridge {
 	private:
-		Header header_;
+		Header header_ {};
 		int k = sizeof(header_);
 		static constexpr std::array<int, 6> ram_sizes_ { 0, 0, 1, 4, 16, 8 };
 		bool text_cached_ = false;

@@ -17,7 +17,7 @@ namespace TKPEmu::Gameboy::Devices {
             // SDL_QueueAudio(device_id_, &samples_[0], sizeof(samples_));
         }
         inline bool IsQueueEmpty() {
-            return false;//SDL_GetQueuedAudioSize(device_id_) < 100;
+            return true;//SDL_GetQueuedAudioSize(device_id_) < 100;
         }
         bool UseSound = false;
     private:

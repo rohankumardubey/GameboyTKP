@@ -49,6 +49,7 @@ namespace TKPEmu::Gameboy::Devices {
         std::vector<RamBank>& GetRamBanks();
         Cartridge& GetCartridge();
         bool LoadCartridge(std::string filename);
+        bool LoadCartridge(uint8_t* data);
         std::array<std::array<uint8_t, 3>, 4> Palette;
         std::unordered_map<uint8_t, Change> ScanlineChanges;
         std::array<PaletteColors, 8> BGPalettes{};

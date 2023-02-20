@@ -2,6 +2,8 @@
 #ifndef TKP_TOOLS_GBADDR_H
 #define TKP_TOOLS_GBADDR_H
 #include <cstdint>
+#include <array>
+
 using RegisterType = uint8_t;
 using BigRegisterType = uint16_t;
 enum LCDCFlag {

@@ -6,13 +6,14 @@
 #include <filesystem>
 #include <GameboyTKP/gb_bus.h>
 #include <GameboyTKP/gb_addresses.h>
+#include <cstring>
 namespace TKPEmu::Gameboy::Devices {
     using RamBank = std::array<uint8_t, 0x2000>;
 	Bus::Bus(ChannelArrayPtr channel_array_ptr)
 			: channel_array_ptr_(channel_array_ptr)
 	{
-		(*channel_array_ptr_)[2].LengthInit = 256;
-		
+		if (channel_array_ptr)
+			(*channel_array_ptr_)[2].LengthInit = 256;
 	}
 	Bus::~Bus() {
 		battery_save();
@@ -908,10 +909,10 @@ namespace TKPEmu::Gameboy::Devices {
 	void Bus::SoftReset() {
 		hram_.fill(0);
 		SoundEnabled = true;
-		for (int i = 0xFF10; i < 0xFF25; i++) {
-			Write(i, 0);
-		}
-		SoundEnabled = false;
+		// for (int i = 0xFF10; i < 0xFF25; i++) {
+		// 	Write(i, 0);
+		// }
+		// SoundEnabled = false;
 		oam_.fill(0);
 		vram_banks_[0].fill(0);
 		vram_banks_[1].fill(0);
@@ -954,6 +955,28 @@ namespace TKPEmu::Gameboy::Devices {
 		if (ret)
 			fill_fast_map();
 		return ret;
+	}
+	bool Bus::LoadCartridge(uint8_t* data) {
+		Reset();
+		Header header = *reinterpret_cast<Header*>(data + 0x100);
+		// if (header.romSize == 0)
+		// 	exit(1);
+		std::stringstream ss;
+		ss << "data:";
+		ss << (int)header.romSize;
+		ss << std::string(header.name);
+		rom_banks_.resize(2); // todo: doesnt resize
+		ram_banks_.resize(header.ramSize);
+		std::memcpy(rom_banks_[0].data(), data, sizeof(uint8_t) * 0x4000);
+		std::memcpy(rom_banks_[1].data(), data + 0x4000, sizeof(uint8_t) * 0x4000);
+		// bool ret = cartridge_.Load(data, rom_banks_, ram_banks_);
+		// rom_banks_size_ = cartridge_.GetRomSize();
+		// BiosEnabled = true;
+		// UseCGB = cartridge_.UseCGB;
+		// SoftReset();
+		// if (ret)
+		// 	fill_fast_map();
+		return true;
 	}
 	void Bus::TransferDMA(uint8_t clk) {
 		if (dma_transfer_) {

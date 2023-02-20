@@ -2,6 +2,8 @@
 #ifndef TKP_TOOLS_GBBP_H
 #define TKP_TOOLS_GBBP_H
 #include <functional>
+#include <string>
+
 namespace TKPEmu::Gameboy::Utils {
 	struct GBBPArguments {
 		bool A_using = false; uint16_t A_value = 0;
