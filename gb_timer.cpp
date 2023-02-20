@@ -74,14 +74,16 @@ namespace TKPEmu::Gameboy::Devices {
 				// Falling edge of bit 4, step frame sequencer
 				// TODO: cgb double speed makes it bit 5
 				for (int i = 0; i < 4; i++) {
-					auto& chan = (*channel_array_ptr_)[i];
-					chan.StepFrameSequencer();
-					if (chan.LengthTimer == 0) {
-						bus_.ClearNR52Bit(i);
-					}
-					if (chan.DisableChannelFlag) {
-						bus_.ClearNR52Bit(i);
-						chan.DisableChannelFlag = false;
+					if (channel_array_ptr_) {
+						auto& chan = (*channel_array_ptr_)[i];
+						chan.StepFrameSequencer();
+						if (chan.LengthTimer == 0) {
+							bus_.ClearNR52Bit(i);
+						}
+						if (chan.DisableChannelFlag) {
+							bus_.ClearNR52Bit(i);
+							chan.DisableChannelFlag = false;
+						}
 					}
 				}
 			}
@@ -101,6 +103,6 @@ namespace TKPEmu::Gameboy::Devices {
 				}
 			}
 		}
-		return ret;
+		return false;// ret;
 	}
 }

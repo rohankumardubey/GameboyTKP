@@ -19,6 +19,7 @@ namespace TKPEmu::Gameboy::Devices {
         // CPU registers
         RegisterType A, B, C, D, E, H, L, F;
         BigRegisterType PC, SP;
+        uint8_t last_instr_ = 0;
     private:
         Bus& bus_;
         PPU& ppu_;
@@ -29,7 +30,6 @@ namespace TKPEmu::Gameboy::Devices {
         int tTemp = 0;
         int tRemove = 0;
         bool stop_ = false;
-        uint8_t last_instr_ = 0;
 
         // Instruction functions
         void NOP(); void LDBC16(); void LDBCA(); void INCBC(); void INCB(); void DECB(); void LDB8(); void RLCA(); void LD16SP(); void ADDHLBC(); void LDABC(); void DECBC(); void INCC(); void DECC(); void LDC8(); void RRCA();

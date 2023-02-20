@@ -14,6 +14,8 @@ public:
     void Update();
     void* GetScreenData();
     void LoadCartridge(void* data);
+    void HandleKeyDown(uint32_t key);
+    void HandleKeyUp(uint32_t key);
     using CPU = TKPEmu::Gameboy::Devices::CPU;
     CPU cpu_;
 private:

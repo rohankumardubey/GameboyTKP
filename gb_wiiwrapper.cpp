@@ -1,7 +1,8 @@
 #include <GameboyTKP/gb_wiiwrapper.h>
+#include <wiiuse/wpad.h>
 
 GB_WiiWrapper::GB_WiiWrapper() :
-    channel_array_ptr_(nullptr),
+    channel_array_ptr_(std::make_shared<ChannelArray>()),
     bus_(channel_array_ptr_),
     apu_(channel_array_ptr_, bus_.GetReference(addr_NR52)),
     ppu_(bus_),
@@ -33,4 +34,43 @@ void GB_WiiWrapper::LoadCartridge(void* data) {
 
 void* GB_WiiWrapper::GetScreenData() {
     return ppu_.GetScreenData();
+}
+
+void GB_WiiWrapper::HandleKeyDown(uint32_t key) {
+    if ((key & WPAD_BUTTON_RIGHT) || (key & WPAD_BUTTON_LEFT) || (key & WPAD_BUTTON_UP) || (key & WPAD_BUTTON_DOWN)) {
+        auto index =
+            (key & WPAD_BUTTON_UP) ? 0 :
+            (key & WPAD_BUTTON_DOWN) ? 1 :
+            (key & WPAD_BUTTON_LEFT) ? 2 :
+            (key & WPAD_BUTTON_RIGHT) ? 3 : 0;
+        bus_.DirectionKeys &= (~(1UL << index));
+        interrupt_flag_ |= IFInterrupt::JOYPAD;
+    }
+    if ((key & WPAD_BUTTON_1) || (key & WPAD_BUTTON_2) || (key & WPAD_BUTTON_PLUS) || (key & WPAD_BUTTON_MINUS)) {
+        auto index =
+            (key & WPAD_BUTTON_1) ? 0 :
+            (key & WPAD_BUTTON_2) ? 1 :
+            (key & WPAD_BUTTON_MINUS) ? 2 :
+            (key & WPAD_BUTTON_PLUS) ? 3 : 0;
+        bus_.ActionKeys &= (~(1UL << index));
+        interrupt_flag_ |= IFInterrupt::JOYPAD;
+    }
+}
+void GB_WiiWrapper::HandleKeyUp(uint32_t key) {
+    if ((key & WPAD_BUTTON_RIGHT) || (key & WPAD_BUTTON_LEFT) || (key & WPAD_BUTTON_UP) || (key & WPAD_BUTTON_DOWN)) {
+        auto index =
+            (key & WPAD_BUTTON_UP) ? 0 :
+            (key & WPAD_BUTTON_DOWN) ? 1 :
+            (key & WPAD_BUTTON_LEFT) ? 2 :
+            (key & WPAD_BUTTON_RIGHT) ? 3 : 0;
+        bus_.DirectionKeys |= (1UL << index);
+    }
+    if ((key & WPAD_BUTTON_1) || (key & WPAD_BUTTON_2) || (key & WPAD_BUTTON_PLUS) || (key & WPAD_BUTTON_MINUS)) {
+    auto index =
+        (key & WPAD_BUTTON_1) ? 0 :
+        (key & WPAD_BUTTON_2) ? 1 :
+        (key & WPAD_BUTTON_MINUS) ? 2 :
+        (key & WPAD_BUTTON_PLUS) ? 3 : 0;
+        bus_.ActionKeys |= (1UL << index);
+    }
 }
