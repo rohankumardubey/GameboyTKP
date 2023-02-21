@@ -17,8 +17,6 @@ public:
     void HandleKeyDown(uint32_t key);
     void HandleKeyUp(uint32_t key);
     using CPU = TKPEmu::Gameboy::Devices::CPU;
-    CPU cpu_;
-private:
     using GameboyPalettes = std::array<std::array<float, 3>,4>;
     using GameboyKeys = std::array<uint32_t, 4>;
     using PPU = TKPEmu::Gameboy::Devices::PPU;
@@ -29,6 +27,7 @@ private:
     using Timer = TKPEmu::Gameboy::Devices::Timer;
     using Cartridge = TKPEmu::Gameboy::Devices::Cartridge;
     ChannelArrayPtr channel_array_ptr_;
+    CPU cpu_;
     Bus bus_;
     APU apu_;
     PPU ppu_;

@@ -7,6 +7,7 @@
 #include <array>
 #define ENTRY_POINT 0x100
 namespace TKPEmu::Gameboy::Devices {
+	class Bus;
 	enum class CartridgeType {
 		ERROR = 0x4,
 		ROM_ONLY = 0x0,
@@ -71,6 +72,7 @@ namespace TKPEmu::Gameboy::Devices {
 		std::string GetLicenseeNew();
 		std::string GetLicenseeOld();
 		bool UseCGB = false;
+		friend class Bus;
 	};
 }
 #endif

@@ -959,23 +959,17 @@ namespace TKPEmu::Gameboy::Devices {
 	bool Bus::LoadCartridge(uint8_t* data) {
 		Reset();
 		Header header = *reinterpret_cast<Header*>(data + 0x100);
-		// if (header.romSize == 0)
-		// 	exit(1);
-		std::stringstream ss;
-		ss << "data:";
-		ss << (int)header.romSize;
-		ss << std::string(header.name);
-		rom_banks_.resize(2); // todo: doesnt resize
-		ram_banks_.resize(header.ramSize);
-		std::memcpy(rom_banks_[0].data(), data, sizeof(uint8_t) * 0x4000);
-		std::memcpy(rom_banks_[1].data(), data + 0x4000, sizeof(uint8_t) * 0x4000);
-		// bool ret = cartridge_.Load(data, rom_banks_, ram_banks_);
-		// rom_banks_size_ = cartridge_.GetRomSize();
-		// BiosEnabled = true;
-		// UseCGB = cartridge_.UseCGB;
-		// SoftReset();
-		// if (ret)
-		// 	fill_fast_map();
+		cartridge_.header_ = header;
+		rom_banks_.resize(cartridge_.GetRomSize());
+		ram_banks_.resize(cartridge_.GetRamSize());
+		for (int i = 0; i < rom_banks_.size(); i++) {
+			std::memcpy(rom_banks_[i].data(), data + (i * 0x4000), sizeof(uint8_t) * 0x4000);
+		}
+		rom_banks_size_ = cartridge_.GetRomSize();
+		BiosEnabled = false;
+		UseCGB = cartridge_.header_.gameboyColor & 0x80;
+		SoftReset();
+		fill_fast_map();
 		return true;
 	}
 	void Bus::TransferDMA(uint8_t clk) {

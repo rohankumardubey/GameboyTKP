@@ -30,6 +30,7 @@ void GB_WiiWrapper::Update() {
 
 void GB_WiiWrapper::LoadCartridge(void* data) {
     bus_.LoadCartridge((uint8_t*)data);
+    ppu_.UseCGB = bus_.UseCGB;
 }
 
 void* GB_WiiWrapper::GetScreenData() {
@@ -39,10 +40,10 @@ void* GB_WiiWrapper::GetScreenData() {
 void GB_WiiWrapper::HandleKeyDown(uint32_t key) {
     if ((key & WPAD_BUTTON_RIGHT) || (key & WPAD_BUTTON_LEFT) || (key & WPAD_BUTTON_UP) || (key & WPAD_BUTTON_DOWN)) {
         auto index =
-            (key & WPAD_BUTTON_UP) ? 0 :
-            (key & WPAD_BUTTON_DOWN) ? 1 :
-            (key & WPAD_BUTTON_LEFT) ? 2 :
-            (key & WPAD_BUTTON_RIGHT) ? 3 : 0;
+            (key & WPAD_BUTTON_DOWN) ? 0 :
+            (key & WPAD_BUTTON_UP) ? 1 :
+            (key & WPAD_BUTTON_RIGHT) ? 2 :
+            (key & WPAD_BUTTON_LEFT) ? 3 : 0;
         bus_.DirectionKeys &= (~(1UL << index));
         interrupt_flag_ |= IFInterrupt::JOYPAD;
     }
@@ -59,10 +60,10 @@ void GB_WiiWrapper::HandleKeyDown(uint32_t key) {
 void GB_WiiWrapper::HandleKeyUp(uint32_t key) {
     if ((key & WPAD_BUTTON_RIGHT) || (key & WPAD_BUTTON_LEFT) || (key & WPAD_BUTTON_UP) || (key & WPAD_BUTTON_DOWN)) {
         auto index =
-            (key & WPAD_BUTTON_UP) ? 0 :
-            (key & WPAD_BUTTON_DOWN) ? 1 :
-            (key & WPAD_BUTTON_LEFT) ? 2 :
-            (key & WPAD_BUTTON_RIGHT) ? 3 : 0;
+            (key & WPAD_BUTTON_DOWN) ? 0 :
+            (key & WPAD_BUTTON_UP) ? 1 :
+            (key & WPAD_BUTTON_RIGHT) ? 2 :
+            (key & WPAD_BUTTON_LEFT) ? 3 : 0;
         bus_.DirectionKeys |= (1UL << index);
     }
     if ((key & WPAD_BUTTON_1) || (key & WPAD_BUTTON_2) || (key & WPAD_BUTTON_PLUS) || (key & WPAD_BUTTON_MINUS)) {
